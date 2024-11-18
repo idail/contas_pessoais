@@ -343,59 +343,61 @@ class _AuthLoginWidgetState extends State<AuthLoginWidget>
     );
   }
 
-  Future<void> logar(String usuario, String senha) async {
+  Future<void> logar() async {
+    var recebeUsuario = usuariotext.text;
+    var recebeSenhaUsuario = senhatext.text;
+
     var uri = Uri.parse(
-        "http://192.168.15.200/np3beneficios_appphp/api/autenticacao/autenticacao.php?usuario=$usuario&senha=$senha");
+        "http://192.168.100.6/contas_pessoais_php/api/Usuario.php?recebe_login_usuario=$recebeUsuario&recebe_senha_usuario=$recebeSenhaUsuario");
     var resposta = await http.get(uri, headers: {"Accept": "application/json"});
+    
     print(resposta.body);
+
     var retorno = jsonDecode(resposta.body);
 
     if(retorno == "nenhum usuario localizado"){
       //mostrarAlerta("Informação", "Favor verificar os dados preenchidos");
     }else{
-    String codigo_departamento_fornecedor;
-    var nome_grupo = retorno["nome_grupo_usuario"];
-    var nome_usuario = retorno["nome"];
-    var login_usuario = retorno["login_usuario"];
-    var departamentos = retorno["departamentos"];
-    String codigo_usuario =
-        retorno["codigo_usuario_autenticado"].toString();
+    //String codigo_departamento_fornecedor;
+    //var login_usuario = retorno["login_usuario"];
+    //var departamentos = retorno["departamentos"];
+    var nome_usuario = retorno["nome_usuario"];
+    String codigo_usuario = retorno["codigo_usuario"].toString();
 
-    if (retorno["codigo_departamento_fornecedor"] != null &&
-        retorno["codigo_departamento_fornecedor"].toString().isNotEmpty) {
-      codigo_departamento_fornecedor = retorno["codigo_departamento_fornecedor"].toString();
-      print(codigo_departamento_fornecedor);
-    }else{
-      codigo_departamento_fornecedor = "nada";
-    }
+    // if (retorno["codigo_departamento_fornecedor"] != null &&
+    //     retorno["codigo_departamento_fornecedor"].toString().isNotEmpty) {
+    //   codigo_departamento_fornecedor = retorno["codigo_departamento_fornecedor"].toString();
+    //   print(codigo_departamento_fornecedor);
+    // }else{
+    //   codigo_departamento_fornecedor = "nada";
+    // }
 
-    var email_usuario = "";
+    // var email_usuario = "";
 
-    if(retorno["email_usuario"].toString().isNotEmpty && retorno["email_usuario"] != null)
-      email_usuario = retorno["email_usuario"];
-    else
-      email_usuario = "nada";
+    // if(retorno["email_usuario"].toString().isNotEmpty && retorno["email_usuario"] != null)
+    //   email_usuario = retorno["email_usuario"];
+    // else
+    //   email_usuario = "nada";
 
     try {
-       String tipoAcesso = await verificaLogin(nome_grupo);
+       //String tipoAcesso = await verificaLogin(nome_grupo);
 
        // Define os parâmetros obrigatórios
       // Define os parâmetros obrigatórios como String
       var pathParameters = <String, String>{
-        "tipoacesso": tipoAcesso,
         "nomeusuario": nome_usuario,
         "usuario_codigo": codigo_usuario,
       };
 
       // Adiciona o parâmetro opcional somente se houver valor, garantindo que seja String
-      if (codigo_departamento_fornecedor != "" && codigo_departamento_fornecedor.isNotEmpty) {
-        pathParameters["codigo_departamento_fornecedor"] = codigo_departamento_fornecedor;
-      }
+      // if (codigo_departamento_fornecedor != "" && codigo_departamento_fornecedor.isNotEmpty) {
+      //   pathParameters["codigo_departamento_fornecedor"] = codigo_departamento_fornecedor;
+      // }
 
-      List<String> departamentos_gestor= departamentos;
-      pathParameters["login_usuario"] = login_usuario;
-      pathParameters["email_usuario"] = email_usuario;
-      pathParameters["departamentos_gestor"] = departamentos_gestor as String;
+      // List<String> departamentos_gestor= departamentos;
+      // pathParameters["login_usuario"] = login_usuario;
+      // pathParameters["email_usuario"] = email_usuario;
+      // pathParameters["departamentos_gestor"] = departamentos_gestor as String;
 
       context.pushNamed('Main_Home',pathParameters: pathParameters);
 
@@ -434,13 +436,13 @@ class _AuthLoginWidgetState extends State<AuthLoginWidget>
     }
   }
 
-  Future<String> verificaLogin(String dado) async {
-    if (dado == "Fornecedor") {
-      return "fornecedor";
-    } else {
-      return "gestor";
-    }
-  }
+  // Future<String> verificaLogin(String dado) async {
+  //   if (dado == "Fornecedor") {
+  //     return "fornecedor";
+  //   } else {
+  //     return "gestor";
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -453,7 +455,10 @@ class _AuthLoginWidgetState extends State<AuthLoginWidget>
           width: double.infinity,
           height: double.infinity,
           decoration: BoxDecoration(
-            //color:Colors.blue,
+          //   image: DecorationImage(
+          //   image: AssetImage("assets/images/background_image.png"), // Caminho da imagem
+          //   fit: BoxFit.cover, // Ajusta a imagem para cobrir a tela inteira
+          // ),
             ),
           alignment: const AlignmentDirectional(0.0, 0.0),
           child: SingleChildScrollView(
@@ -769,7 +774,7 @@ class _AuthLoginWidgetState extends State<AuthLoginWidget>
                                       if (usuariotext.text.isEmpty || senhatext.text.isEmpty) {
                                         mostrarAlerta("Campos obrigatórios", "Por favor, preencha o usuário e a senha.");
                                       } else {
-                                        logar(usuariotext.text, senhatext.text);
+                                        logar();
                                       }
                                     },
                                     text: "Logar",
