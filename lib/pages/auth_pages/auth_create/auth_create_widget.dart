@@ -54,13 +54,13 @@ class _AuthCreateWidgetState extends State<AuthCreateWidget>
         imagemselecionada = File(imagemrecebida!.path);
       });
     }else{
-        imagemselecionada = null; // Caminho da imagem padrão
+        imagemselecionada = imagemPath as File?; // Caminho da imagem padrão
     }
   }
 
   Future<void> cadastrar() async{
     var uri = Uri.parse(
-        "http://192.168.100.46/contas_pessoais_php/api/Usuario.php");
+        "http://10.125.65.251/contas_pessoais_php/api/Usuario.php");
     // Extrair o nome da imagem
 
     String nomeImagem = "";
