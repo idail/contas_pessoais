@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '/components/main_logo_small/main_logo_small_widget.dart';
 import '/flutter_flow/flutter_flow_animations.dart';
@@ -46,21 +47,54 @@ class _AuthCreateWidgetState extends State<AuthCreateWidget>
 
   bool senhaVerificada = false;
 
+  File? _image;
+
   Future<void> selecaoImagem() async {
-    final picker = ImagePicker();
-    imagemrecebida = await picker.pickImage(source: ImageSource.gallery);
-    if (imagemrecebida != null) {
+    // final picker = ImagePicker();
+    // imagemrecebida = await picker.pickImage(source: ImageSource.gallery);
+    // if (imagemrecebida != null) {
+    //   setState(() {
+    //     imagemselecionada = File(imagemrecebida!.path);
+    //   });
+    // }else{
+    //     imagemselecionada = null; // Caminho da imagem padrão
+    // }
+
+    try {
+      // Selecionar a imagem usando o ImagePicker
+      final pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
+
+      if (pickedImage == null) return; // O usuário cancelou
+
+      // Obter o diretório para salvar o arquivo
+      final appDir = await getApplicationDocumentsDirectory();
+      final imagesDir = Directory('${appDir.path}/images');
+
+      print(imagesDir);
+
+      // Criar a pasta, se não existir
+      if (!await imagesDir.exists()) {
+        await imagesDir.create(recursive: true);
+      }
+
+      // Caminho do arquivo para salvar
+      final fileName = pickedImage.name;
+      final localImage = File('${imagesDir.path}/$fileName');
+
+      // Copiar o arquivo selecionado para o novo local
+      await File(pickedImage.path).copy(localImage.path);
+
       setState(() {
         imagemselecionada = File(imagemrecebida!.path);
       });
     }else{
-        imagemselecionada = imagemPath as File?; // Caminho da imagem padrão
+        imagemselecionada = null; // Caminho da imagem padrão
     }
   }
 
   Future<void> cadastrar() async{
     var uri = Uri.parse(
-        "http://10.125.65.251/contas_pessoais_php/api/Usuario.php");
+        "http://192.168.100.46/contas_pessoais_php/api/Usuario.php");
     // Extrair o nome da imagem
 
     String nomeImagem = "";
