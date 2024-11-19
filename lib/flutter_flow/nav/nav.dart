@@ -105,10 +105,8 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         ),
         FFRoute(
           name: 'Main_profilePage',
-          path: '/mainProfilePage',
-          builder: (context, params) => params.isEmpty
-              ? NavBarPage(initialPage: 'Main_profilePage',)
-              : const MainProfilePageWidget(),
+          path: '/mainProfilePage/:codigousuario',
+          builder: (context, params) => NavBarPage(initialPage: 'Main_profilePage',usuario_codigo: params.getParam("usuario_codigo", ParamType.int)),
         ),
         FFRoute(
           name: 'userDetails',

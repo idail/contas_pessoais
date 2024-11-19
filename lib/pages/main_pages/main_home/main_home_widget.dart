@@ -11,8 +11,8 @@ import 'package:http/http.dart' as http;
 
 class MainHomeWidget extends StatefulWidget {
   final String? nomeusuario;
-  final int ?codigousuario;
-  MainHomeWidget({Key? key, this.nomeusuario, this.codigousuario}) : super(key: key);
+  final int? codigousuario;
+  MainHomeWidget({Key? key, this.nomeusuario, required this.codigousuario}) : super(key: key);
 
   @override
   State<MainHomeWidget> createState() => _MainHomeWidgetState();
@@ -22,7 +22,7 @@ class MainHomeWidget extends StatefulWidget {
 
 class _MainHomeWidgetState extends State<MainHomeWidget>
     with TickerProviderStateMixin {
-  late MainHomeModel _model;
+  //late MainHomeModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -843,7 +843,7 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
 
   @override
   void dispose() {
-    _model.dispose();
+    // _model.dispose();
 
     super.dispose();
   }
@@ -987,18 +987,18 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
                 mainAxisSize: MainAxisSize.max,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (responsiveVisibility(
-                    context: context,
-                    phone: false,
-                    tablet: false,
-                  ))
-                    wrapWithModel(
-                      model: _model.webNavModel,
-                      updateCallback: () => setState(() {}),
-                      child: const WebNavWidget(
-                        selectedNav: 1,
-                      ),
-                    ),
+                  // if (responsiveVisibility(
+                  //   context: context,
+                  //   phone: false,
+                  //   tablet: false,
+                  // ))
+                  //   wrapWithModel(
+                  //     model: _model.webNavModel,
+                  //     updateCallback: () => setState(() {}),
+                  //     child: const WebNavWidget(
+                  //       selectedNav: 1,
+                  //     ),
+                  //   ),
                   Expanded(
                     flex: 10,
                     child: SingleChildScrollView(

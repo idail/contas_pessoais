@@ -11,9 +11,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'main_profile_page_model.dart';
 export 'main_profile_page_model.dart';
+import 'package:http/http.dart' as http;
 
 class MainProfilePageWidget extends StatefulWidget {
-  const MainProfilePageWidget({super.key});
+  final int? codigousuario;
+  const MainProfilePageWidget({super.key, required this.codigousuario});
 
   @override
   State<MainProfilePageWidget> createState() => _MainProfilePageWidgetState();
@@ -21,16 +23,50 @@ class MainProfilePageWidget extends StatefulWidget {
 
 class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
     with TickerProviderStateMixin {
-  late MainProfilePageModel _model;
+  //late MainProfilePageModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   final animationsMap = <String, AnimationInfo>{};
 
+  TextEditingController nomeUsuarioEspecifico = TextEditingController();
+  TextEditingController loginUsuarioEspecifico = TextEditingController();
+  TextEditingController emailUsuarioEspecifico = TextEditingController();
+  TextEditingController senhaUsuarioEspecifico = TextEditingController();
+
+  bool _isPasswordVisible = false;
+
+  var retornoUsuarioEspecifico;
+
+  Future<void> buscarDados() async{
+    int? codigoUsuario = widget.codigousuario;
+
+    print(codigoUsuario);
+
+    var uri = Uri.parse("http://192.168.100.46/contas_pessoais_php/api/Usuario.php?execucao=busca_dados_usuario&recebe_codigo_usuario=$codigoUsuario");
+
+    var resposta = await http.get(uri, headers: {"Accept": "application/json"});
+
+    print(uri);
+
+    print(resposta.body);
+
+    retornoUsuarioEspecifico = jsonDecode(resposta.body);
+
+    print(retornoUsuarioEspecifico);
+
+    nomeUsuarioEspecifico.text = retornoUsuarioEspecifico["nome_usuario"];
+    loginUsuarioEspecifico.text = retornoUsuarioEspecifico["login_usuario"];
+    emailUsuarioEspecifico.text = retornoUsuarioEspecifico["email_usuario"];
+    senhaUsuarioEspecifico.text = retornoUsuarioEspecifico["senha_usuario"];
+  }
+
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => MainProfilePageModel());
+
+    buscarDados();
+    //_model = createModel(context, () => MainProfilePageModel());
 
     // logFirebaseEvent('screen_view',
     //     parameters: {'screen_name': 'Main_profilePage'});
@@ -102,7 +138,7 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
 
   @override
   void dispose() {
-    _model.dispose();
+    //_model.dispose();
 
     super.dispose();
   }
@@ -114,24 +150,24 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
       backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
       body: Column(
         mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Expanded(
             child: Row(
               mainAxisSize: MainAxisSize.max,
               children: [
-                if (responsiveVisibility(
-                  context: context,
-                  phone: false,
-                  tablet: false,
-                ))
-                  wrapWithModel(
-                    model: _model.webNavModel,
-                    updateCallback: () => setState(() {}),
-                    child: const WebNavWidget(
-                      selectedNav: 5,
-                    ),
-                  ),
+                // if (responsiveVisibility(
+                //   context: context,
+                //   phone: false,
+                //   tablet: false,
+                // ))
+                //   wrapWithModel(
+                //     model: _model.webNavModel,
+                //     updateCallback: () => setState(() {}),
+                //     child: const WebNavWidget(
+                //       selectedNav: 5,
+                //     ),
+                //   ),
                 Expanded(
                   child: Container(
                     width: 100.0,
@@ -153,6 +189,8 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                     .secondaryBackground,
                               ),
                             ),
+
+
                             Container(
                               width: double.infinity,
                               decoration: BoxDecoration(
@@ -172,9 +210,7 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                       padding: const EdgeInsetsDirectional.fromSTEB(
                                           16.0, 0.0, 0.0, 0.0),
                                       child: Text(
-                                        FFLocalizations.of(context).getText(
-                                          'qrxn5crt' /* My Profile */,
-                                        ),
+                                        "Perfil",
                                         textAlign: TextAlign.start,
                                         style: FlutterFlowTheme.of(context)
                                             .displaySmall
@@ -185,113 +221,99 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                       ).animateOnPageLoad(animationsMap[
                                           'textOnPageLoadAnimation']!),
                                     ),
-                                    if (responsiveVisibility(
-                                      context: context,
-                                      tabletLandscape: false,
-                                      desktop: false,
-                                    ))
-                                      FlutterFlowIconButton(
-                                        borderColor: Colors.transparent,
-                                        borderRadius: 30.0,
-                                        borderWidth: 1.0,
-                                        buttonSize: 60.0,
-                                        icon: Icon(
-                                          Icons.search_rounded,
-                                          color: FlutterFlowTheme.of(context)
-                                              .primaryText,
-                                          size: 30.0,
-                                        ),
-                                        onPressed: () async {
-                                          // logFirebaseEvent(
-                                          //     'MAIN_PROFILE_search_rounded_ICN_ON_TAP');
-                                          await showModalBottomSheet(
-                                            isScrollControlled: true,
-                                            backgroundColor: Colors.transparent,
-                                            barrierColor: const Color(0x1A000000),
-                                            context: context,
-                                            builder: (context) {
-                                              return Padding(
-                                                padding:
-                                                    MediaQuery.viewInsetsOf(
-                                                        context),
-                                                child: const SizedBox(
-                                                  height: double.infinity,
-                                                  child: CommandPaletteWidget(),
-                                                ),
-                                              );
-                                            },
-                                          ).then(
-                                              (value) => safeSetState(() {}));
-                                        },
-                                      ),
+                                    // if (responsiveVisibility(
+                                    //   context: context,
+                                    //   tabletLandscape: false,
+                                    //   desktop: false,
+                                    // ))
+                                    //   FlutterFlowIconButton(
+                                    //     borderColor: Colors.transparent,
+                                    //     borderRadius: 30.0,
+                                    //     borderWidth: 1.0,
+                                    //     buttonSize: 60.0,
+                                    //     icon: Icon(
+                                    //       Icons.search_rounded,
+                                    //       color: FlutterFlowTheme.of(context)
+                                    //           .primaryText,
+                                    //       size: 30.0,
+                                    //     ),
+                                    //     onPressed: () async {
+                                    //       await showModalBottomSheet(
+                                    //         isScrollControlled: true,
+                                    //         backgroundColor: Colors.transparent,
+                                    //         barrierColor: const Color(0x1A000000),
+                                    //         context: context,
+                                    //         builder: (context) {
+                                    //           return Padding(
+                                    //             padding:
+                                    //                 MediaQuery.viewInsetsOf(
+                                    //                     context),
+                                    //             child: const SizedBox(
+                                    //               height: double.infinity,
+                                    //               child: CommandPaletteWidget(),
+                                    //             ),
+                                    //           );
+                                    //         },
+                                    //       ).then(
+                                    //           (value) => safeSetState(() {}));
+                                    //     },
+                                    //   ),
                                   ],
                                 ),
                               ),
                             ),
+
+                            
                             Container(
-  width: double.infinity,
-  decoration: BoxDecoration(
-    color: FlutterFlowTheme.of(context).secondaryBackground,
-    boxShadow: [
-      BoxShadow(
-        blurRadius: 1.0,
-        color: FlutterFlowTheme.of(context).primaryBackground,
-        offset: const Offset(0.0, 0.0),
-      )
-    ],
-  ),
-  child: Padding(
-    padding: const EdgeInsetsDirectional.fromSTEB(24.0, 12.0, 24.0, 12.0),
-    child: Row(
-      mainAxisSize: MainAxisSize.max,
-      children: [
-        Container(
-          width: 70.0,
-          height: 70.0,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12.0),
-            border: Border.all(
-              color: FlutterFlowTheme.of(context).primary,
-            ),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12.0),
-            child: Image.asset(
-              'assets/images/foto-perfil.jpg', // Substitua pelo caminho da sua imagem
-              fit: BoxFit.cover,
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 0.0, 0.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 0.0, 0.0),
-                child: Text(
-                  FFLocalizations.of(context).getText(
-                    'yj2g6q7m' /* Andrew D. */,
-                  ),
-                  style: FlutterFlowTheme.of(context).headlineSmall.override(
-                    fontFamily: 'Outfit',
-                    letterSpacing: 0.0,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    ),
-  ),
-),
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                color: FlutterFlowTheme.of(context).secondaryBackground,
+                                boxShadow: [
+                                  BoxShadow(
+                                    blurRadius: 1.0,
+                                    color: FlutterFlowTheme.of(context).primaryBackground,
+                                    offset: const Offset(0.0, 0.0),
+                                  ),
+                                ],
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(12.0),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      width: 100.0,
+                                      height: 100.0,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(12.0),
+                                        border: Border.all(
+                                          color: FlutterFlowTheme.of(context).primary,
+                                        ),
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(12.0),
+                                        child: Image.asset(
+                                          'assets/images/foto-perfil.jpg', // Substitua pelo caminho da sua imagem
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+
+
+
 
                             Column(
                               mainAxisSize: MainAxisSize.max,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                // Campos de dados abaixo
+                                
+
                                 // Padding(
                                 //   padding: const EdgeInsetsDirectional.fromSTEB(
                                 //       24.0, 12.0, 0.0, 0.0),
@@ -307,93 +329,421 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                 //         ),
                                 //   ),
                                 // ),
-                                // Padding(
-                                //   padding: const EdgeInsetsDirectional.fromSTEB(
-                                //       16.0, 0.0, 16.0, 0.0),
-                                //   child: InkWell(
-                                //     splashColor: Colors.transparent,
-                                //     focusColor: Colors.transparent,
-                                //     hoverColor: Colors.transparent,
-                                //     highlightColor: Colors.transparent,
-                                //     onTap: () async {
-                                //       logFirebaseEvent(
-                                //           'MAIN_PROFILE_Container_geiuas93_ON_TAP');
 
-                                //       context.pushNamed('forgotPassword');
-                                //     },
-                                //     child: AnimatedContainer(
-                                //       duration: const Duration(milliseconds: 100),
-                                //       curve: Curves.easeInOut,
-                                //       width: double.infinity,
-                                //       height: 60.0,
-                                //       constraints: const BoxConstraints(
-                                //         minHeight: 70.0,
-                                //       ),
-                                //       decoration: BoxDecoration(
-                                //         color: FlutterFlowTheme.of(context)
-                                //             .secondaryBackground,
-                                //         boxShadow: const [
-                                //           BoxShadow(
-                                //             blurRadius: 3.0,
-                                //             color: Color(0x33000000),
-                                //             offset: Offset(
-                                //               0.0,
-                                //               1.0,
-                                //             ),
-                                //           )
-                                //         ],
-                                //         borderRadius:
-                                //             BorderRadius.circular(12.0),
-                                //         border: Border.all(
-                                //           color: FlutterFlowTheme.of(context)
-                                //               .alternate,
-                                //           width: 1.0,
-                                //         ),
-                                //       ),
-                                //       child: Padding(
-                                //         padding: const EdgeInsetsDirectional.fromSTEB(
-                                //             8.0, 8.0, 16.0, 8.0),
-                                //         child: Row(
-                                //           mainAxisSize: MainAxisSize.max,
-                                //           mainAxisAlignment:
-                                //               MainAxisAlignment.spaceBetween,
-                                //           children: [
-                                //             Padding(
-                                //               padding: const EdgeInsetsDirectional
-                                //                   .fromSTEB(
-                                //                       12.0, 0.0, 0.0, 0.0),
-                                //               child: Text(
-                                //                 FFLocalizations.of(context)
-                                //                     .getText(
-                                //                   'h43llaan' /* Change Password */,
-                                //                 ),
-                                //                 style:
-                                //                     FlutterFlowTheme.of(context)
-                                //                         .labelLarge
-                                //                         .override(
-                                //                           fontFamily:
-                                //                               'Plus Jakarta Sans',
-                                //                           letterSpacing: 0.0,
-                                //                         ),
-                                //               ),
-                                //             ),
-                                //             Align(
-                                //               alignment: const AlignmentDirectional(
-                                //                   0.9, 0.0),
-                                //               child: Icon(
-                                //                 Icons.arrow_forward_ios,
-                                //                 color:
-                                //                     FlutterFlowTheme.of(context)
-                                //                         .secondaryText,
-                                //                 size: 18.0,
-                                //               ),
-                                //             ),
-                                //           ],
-                                //         ),
-                                //       ),
-                                //     ),
-                                //   ),
-                                // ),
+
+                                Padding(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+                                  child: Container(
+                                    width: double.infinity,
+                                    height: 60.0,
+                                    constraints: const BoxConstraints(
+                                      minHeight: 70.0,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: FlutterFlowTheme.of(context).secondaryBackground,
+                                      boxShadow: const [
+                                        BoxShadow(
+                                          blurRadius: 3.0,
+                                          color: Color(0x33000000),
+                                          offset: Offset(0.0, 1.0),
+                                        ),
+                                      ],
+                                      borderRadius: BorderRadius.circular(12.0),
+                                      border: Border.all(
+                                        color: FlutterFlowTheme.of(context).alternate,
+                                        width: 1.0,
+                                      ),
+                                    ),
+                                    child: 
+                                    
+                                    TextFormField(
+                                      controller: nomeUsuarioEspecifico,
+                                      autofocus: true,
+                                      obscureText: false,
+                                      decoration: InputDecoration(
+                                        labelText: "Nome",
+                                        labelStyle: FlutterFlowTheme.of(context).labelMedium.override(
+                                              fontFamily: 'Plus Jakarta Sans',
+                                              letterSpacing: 0.0,
+                                              fontSize: 20,
+                                            ),
+                                        hintText: "Informe seu nome",
+                                        hintStyle: FlutterFlowTheme.of(context).labelMedium.override(
+                                              fontFamily: 'Plus Jakarta Sans',
+                                              letterSpacing: 0.0,
+                                            ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: FlutterFlowTheme.of(context).alternate,
+                                            width: 2.0,
+                                          ),
+                                          borderRadius: BorderRadius.circular(12.0),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: FlutterFlowTheme.of(context).primary,
+                                            width: 2.0,
+                                          ),
+                                          borderRadius: BorderRadius.circular(12.0),
+                                        ),
+                                        errorBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: FlutterFlowTheme.of(context).error,
+                                            width: 2.0,
+                                          ),
+                                          borderRadius: BorderRadius.circular(12.0),
+                                        ),
+                                        focusedErrorBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: FlutterFlowTheme.of(context).error,
+                                            width: 2.0,
+                                          ),
+                                          borderRadius: BorderRadius.circular(12.0),
+                                        ),
+                                        filled: true,
+                                        fillColor: FlutterFlowTheme.of(context).accent4,
+                                        contentPadding: const EdgeInsetsDirectional.fromSTEB(20.0, 24.0, 20.0, 24.0),
+                                        prefixIcon: Icon(
+                                          Icons.person, // Ícone de pessoa
+                                          color: FlutterFlowTheme.of(context).alternate, // Cor do ícone
+                                        ),
+                                      ),
+                                      style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                            fontFamily: 'Plus Jakarta Sans',
+                                            letterSpacing: 0.0,
+                                          ),
+                                      cursorColor: FlutterFlowTheme.of(context).primary,
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return 'Por favor, insira seu nome';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ),
+                                ),
+
+
+                                Padding(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+                                  child: Container(
+                                    width: double.infinity,
+                                    height: 60.0,
+                                    constraints: const BoxConstraints(
+                                      minHeight: 70.0,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: FlutterFlowTheme.of(context).secondaryBackground,
+                                      boxShadow: const [
+                                        BoxShadow(
+                                          blurRadius: 3.0,
+                                          color: Color(0x33000000),
+                                          offset: Offset(0.0, 1.0),
+                                        ),
+                                      ],
+                                      borderRadius: BorderRadius.circular(12.0),
+                                      border: Border.all(
+                                        color: FlutterFlowTheme.of(context).alternate,
+                                        width: 1.0,
+                                      ),
+                                    ),
+                                    child: TextFormField(
+                                      controller: loginUsuarioEspecifico,
+                                      autofocus: true,
+                                      obscureText: false,
+                                      decoration: InputDecoration(
+                                        labelText: "Login",
+                                        labelStyle: FlutterFlowTheme.of(context).labelMedium.override(
+                                              fontFamily: 'Plus Jakarta Sans',
+                                              letterSpacing: 0.0,
+                                              fontSize: 20,
+                                            ),
+                                        hintText: "Informe seu login",
+                                        hintStyle: FlutterFlowTheme.of(context).labelMedium.override(
+                                              fontFamily: 'Plus Jakarta Sans',
+                                              letterSpacing: 0.0,
+                                            ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: FlutterFlowTheme.of(context).alternate,
+                                            width: 2.0,
+                                          ),
+                                          borderRadius: BorderRadius.circular(12.0),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: FlutterFlowTheme.of(context).primary,
+                                            width: 2.0,
+                                          ),
+                                          borderRadius: BorderRadius.circular(12.0),
+                                        ),
+                                        errorBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: FlutterFlowTheme.of(context).error,
+                                            width: 2.0,
+                                          ),
+                                          borderRadius: BorderRadius.circular(12.0),
+                                        ),
+                                        focusedErrorBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: FlutterFlowTheme.of(context).error,
+                                            width: 2.0,
+                                          ),
+                                          borderRadius: BorderRadius.circular(12.0),
+                                        ),
+                                        filled: true,
+                                        fillColor: FlutterFlowTheme.of(context).accent4,
+                                        contentPadding: const EdgeInsetsDirectional.fromSTEB(20.0, 24.0, 20.0, 24.0),
+                                        prefixIcon: Icon(
+                                          Icons.login_sharp, // Ícone de login
+                                          color: FlutterFlowTheme.of(context).alternate, // Cor do ícone
+                                        ),
+                                      ),
+                                      style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                            fontFamily: 'Plus Jakarta Sans',
+                                            letterSpacing: 0.0,
+                                          ),
+                                      cursorColor: FlutterFlowTheme.of(context).primary,
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return 'Por favor, insira seu login';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ),
+                                ),
+
+
+
+                                Padding(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+                                  child: Container(
+                                    width: double.infinity,
+                                    height: 60.0,
+                                    constraints: const BoxConstraints(
+                                      minHeight: 70.0,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: FlutterFlowTheme.of(context).secondaryBackground,
+                                      boxShadow: const [
+                                        BoxShadow(
+                                          blurRadius: 3.0,
+                                          color: Color(0x33000000),
+                                          offset: Offset(0.0, 1.0),
+                                        ),
+                                      ],
+                                      borderRadius: BorderRadius.circular(12.0),
+                                      border: Border.all(
+                                        color: FlutterFlowTheme.of(context).alternate,
+                                        width: 1.0,
+                                      ),
+                                    ),
+                                    child: TextFormField(
+                                      controller: emailUsuarioEspecifico,
+                                      autofocus: true,
+                                      obscureText: false,
+                                      decoration: InputDecoration(
+                                        labelText: "E-mail",
+                                        labelStyle: FlutterFlowTheme.of(context).labelMedium.override(
+                                              fontFamily: 'Plus Jakarta Sans',
+                                              letterSpacing: 0.0,
+                                              fontSize: 20,
+                                            ),
+                                        hintText: "Informe seu e-mail",
+                                        hintStyle: FlutterFlowTheme.of(context).labelMedium.override(
+                                              fontFamily: 'Plus Jakarta Sans',
+                                              letterSpacing: 0.0,
+                                            ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: FlutterFlowTheme.of(context).alternate,
+                                            width: 2.0,
+                                          ),
+                                          borderRadius: BorderRadius.circular(12.0),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: FlutterFlowTheme.of(context).primary,
+                                            width: 2.0,
+                                          ),
+                                          borderRadius: BorderRadius.circular(12.0),
+                                        ),
+                                        errorBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: FlutterFlowTheme.of(context).error,
+                                            width: 2.0,
+                                          ),
+                                          borderRadius: BorderRadius.circular(12.0),
+                                        ),
+                                        focusedErrorBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: FlutterFlowTheme.of(context).error,
+                                            width: 2.0,
+                                          ),
+                                          borderRadius: BorderRadius.circular(12.0),
+                                        ),
+                                        filled: true,
+                                        fillColor: FlutterFlowTheme.of(context).accent4,
+                                        contentPadding: const EdgeInsetsDirectional.fromSTEB(20.0, 24.0, 20.0, 24.0),
+                                        prefixIcon: Icon(
+                                          Icons.email, // Ícone de e-mail
+                                          color: FlutterFlowTheme.of(context).alternate, // Cor do ícone
+                                        ),
+                                      ),
+                                      style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                            fontFamily: 'Plus Jakarta Sans',
+                                            letterSpacing: 0.0,
+                                          ),
+                                      cursorColor: FlutterFlowTheme.of(context).primary,
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return 'Por favor, insira seu e-mail';
+                                        }
+                                        // Validação simples para formato de e-mail
+                                        String emailPattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
+                                        RegExp regExp = RegExp(emailPattern);
+                                        if (!regExp.hasMatch(value)) {
+                                          return 'Por favor, insira um e-mail válido';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ),
+                                ),
+
+                                Padding(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+                                    child: Container(
+                                      width: double.infinity,
+                                      height: 60.0,
+                                      constraints: const BoxConstraints(
+                                        minHeight: 70.0,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: FlutterFlowTheme.of(context).secondaryBackground,
+                                        boxShadow: const [
+                                          BoxShadow(
+                                            blurRadius: 3.0,
+                                            color: Color(0x33000000),
+                                            offset: Offset(0.0, 1.0),
+                                          ),
+                                        ],
+                                        borderRadius: BorderRadius.circular(12.0),
+                                        border: Border.all(
+                                          color: FlutterFlowTheme.of(context).alternate,
+                                          width: 1.0,
+                                        ),
+                                      ),
+                                      child: 
+                                      TextFormField(
+                                        controller: senhaUsuarioEspecifico,
+                                        autofocus: true,
+                                        obscureText: !_isPasswordVisible,  // Controla a visibilidade da senha
+                                        decoration: InputDecoration(
+                                          labelText: "Senha",
+                                          labelStyle: FlutterFlowTheme.of(context).labelMedium.override(
+                                                fontFamily: 'Plus Jakarta Sans',
+                                                letterSpacing: 0.0,
+                                                fontSize: 20,
+                                              ),
+                                          hintText: "Informe sua senha",
+                                          hintStyle: FlutterFlowTheme.of(context).labelMedium.override(
+                                                fontFamily: 'Plus Jakarta Sans',
+                                                letterSpacing: 0.0,
+                                              ),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                              color: FlutterFlowTheme.of(context).alternate,
+                                              width: 2.0,
+                                            ),
+                                            borderRadius: BorderRadius.circular(12.0),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                              color: FlutterFlowTheme.of(context).primary,
+                                              width: 2.0,
+                                            ),
+                                            borderRadius: BorderRadius.circular(12.0),
+                                          ),
+                                          errorBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                              color: FlutterFlowTheme.of(context).error,
+                                              width: 2.0,
+                                            ),
+                                            borderRadius: BorderRadius.circular(12.0),
+                                          ),
+                                          focusedErrorBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                              color: FlutterFlowTheme.of(context).error,
+                                              width: 2.0,
+                                            ),
+                                            borderRadius: BorderRadius.circular(12.0),
+                                          ),
+                                          filled: true,
+                                          fillColor: FlutterFlowTheme.of(context).accent4,
+                                          contentPadding: const EdgeInsetsDirectional.fromSTEB(20.0, 24.0, 20.0, 24.0),
+                                          prefixIcon: Icon(
+                                            Icons.lock, // Ícone de senha
+                                            color: FlutterFlowTheme.of(context).alternate, // Cor do ícone
+                                          ),
+                                          suffixIcon: IconButton(
+                                            icon: Icon(
+                                              _isPasswordVisible ? Icons.visibility : Icons.visibility_off, // Alterna entre os ícones
+                                              color: FlutterFlowTheme.of(context).alternate,
+                                            ),
+                                            onPressed: () {
+                                              setState(() {
+                                                _isPasswordVisible = !_isPasswordVisible; // Alterna a visibilidade da senha
+                                              });
+                                            },
+                                          ),
+                                        ),
+                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                              fontFamily: 'Plus Jakarta Sans',
+                                              letterSpacing: 0.0,
+                                            ),
+                                        cursorColor: FlutterFlowTheme.of(context).primary,
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return 'Por favor, insira sua senha';
+                                          }
+                                          return null;
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                Padding(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(16.0, 12.0, 16.0, 0.0),
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      debugPrint('Editar botão pressionado');
+                                      // Adicione a lógica de edição aqui
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: FlutterFlowTheme.of(context).primary,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12.0),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                                      minimumSize: const Size(180.0, 50.0), // Largura aumentada
+                                      elevation: 3.0,
+                                    ),
+                                    child: Text(
+                                      'Editar',
+                                      style: FlutterFlowTheme.of(context).titleSmall.override(
+                                            fontFamily: 'Plus Jakarta Sans',
+                                            color: Colors.white,
+                                            fontSize: 16.0,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                    ),
+                                  ),
+                                ),
+
+
+
+
                                 // Builder(
                                 //   builder: (context) => Padding(
                                 //     padding: const EdgeInsetsDirectional.fromSTEB(
@@ -404,8 +754,7 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                 //       hoverColor: Colors.transparent,
                                 //       highlightColor: Colors.transparent,
                                 //       onTap: () async {
-                                //         logFirebaseEvent(
-                                //             'MAIN_PROFILE_Container_h7tyfdoi_ON_TAP');
+                                        
                                 //         if (MediaQuery.sizeOf(context).width >=
                                 //             991.0) {
                                 //           await showDialog(

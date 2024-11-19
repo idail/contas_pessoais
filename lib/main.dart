@@ -98,7 +98,7 @@ class _MyAppState extends State<MyApp> {
 }
 
 class NavBarPage extends StatefulWidget {
-  NavBarPage({super.key, this.initialPage, this.page, this.tipoacesso, this.nomeusuario, this.usuario_codigo, 
+  const NavBarPage({super.key, this.initialPage, this.page, this.tipoacesso, this.nomeusuario, this.usuario_codigo, 
   this.codigo_departamento_fornecedor, this.login_usuario , this.email_usuario, this.departamentos_gestor});
 
   final String? initialPage;
@@ -145,7 +145,7 @@ class _NavBarPageState extends State<NavBarPage> {
       codigo_departamento_fornecedor: recebe_codigo_departamento_fornecedor,email_usuario: widget.email_usuario,login_usuario:widget.login_usuario , nome_usuario: widget.nomeusuario,
       departamentos_gestor:widget.departamentos_gestor),
       'Main_messages': const MainMessagesWidget(),
-      'Main_profilePage': const MainProfilePageWidget(),
+      'Main_profilePage': MainProfilePageWidget(codigousuario: widget.usuario_codigo),
     };
     final currentIndex = tabs.keys.toList().indexOf(_currentPageName);
 
