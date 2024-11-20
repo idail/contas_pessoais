@@ -1,3 +1,8 @@
+import 'dart:io';
+
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+
 import '/components/modals/command_palette/command_palette_widget.dart';
 import '/components/modals_extra/modal_profile_edit/modal_profile_edit_widget.dart';
 import '/components/web_nav/web_nav_widget.dart';
@@ -38,12 +43,14 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
 
   var retornoUsuarioEspecifico;
 
+  File? imagemSelecionada; // Armazenará a imagem selecionada
+
   Future<void> buscarDados() async{
     int? codigoUsuario = widget.codigousuario;
 
     print(codigoUsuario);
 
-    var uri = Uri.parse("http://192.168.100.6/contas_pessoais_php/api/Usuario.php?execucao=busca_dados_usuario&recebe_codigo_usuario=$codigoUsuario");
+    var uri = Uri.parse("http://192.168.100.46/contas_pessoais_php/api/Usuario.php?execucao=busca_dados_usuario&recebe_codigo_usuario=$codigoUsuario");
 
     var resposta = await http.get(uri, headers: {"Accept": "application/json"});
 
@@ -59,7 +66,118 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
     loginUsuarioEspecifico.text = retornoUsuarioEspecifico["login_usuario"];
     emailUsuarioEspecifico.text = retornoUsuarioEspecifico["email_usuario"];
     senhaUsuarioEspecifico.text = retornoUsuarioEspecifico["senha_usuario"];
+    //imagemSelecionada = File(retornoUsuarioEspecifico["imagem_usuario"]);
   }
+
+  
+  final String imagemPadraoPath = 'assets/images/sem_foto.jpg'; // Caminho da imagem padrão
+  late String nomeImagem = "";
+
+  Future<void> selecaoImagem() async {
+    try {
+      // Selecionar a imagem usando o ImagePicker
+      final pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
+
+      // Obter o diretório para salvar o arquivo
+      final appDir = await getApplicationDocumentsDirectory();
+      final imagesDir = Directory('${appDir.path}/images');
+
+      // Criar a pasta, se não existir
+      if (!await imagesDir.exists()) {
+        await imagesDir.create(recursive: true);
+      }
+
+      if (pickedImage == null) {
+        // Caso o usuário cancele a seleção, a imagem padrão será exibida
+        setState(() {
+          imagemSelecionada = null; // Não define um arquivo de imagem
+          nomeImagem = "sem_foto.jpg"; // Apenas o nome para fins de exibição, se necessário
+        });
+      } else {
+        // Caminho do arquivo para salvar
+        final fileName = pickedImage.name;
+        final localImage = File('${imagesDir.path}/$fileName');
+
+        // Copiar o arquivo selecionado para o novo local
+        await File(pickedImage.path).copy(localImage.path);
+
+        setState(() {
+          imagemSelecionada = localImage;
+          nomeImagem = pickedImage.name;
+        });
+      }
+
+      // Feedback visual ao salvar
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(imagemSelecionada != null
+              ? 'Imagem salva em: ${imagemSelecionada!.path}'
+              : 'Nenhuma imagem foi selecionada.'),
+        ),
+      );
+    } catch (e) {
+      // Exibir mensagem de erro
+      print("Erro ao selecionar a imagem: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Erro ao salvar a imagem.'),
+        ),
+      );
+    }
+  }
+
+
+  Future<void> alterar_usuario() async {
+    int? codigoUsuarioAlterar = widget.codigousuario;
+
+    String url = "http://192.168.100.46/contas_pessoais_php/api/Usuario.php";
+
+    // Dados a serem enviados no corpo da requisição
+    var valores = jsonEncode({
+      "codigo_usuario_alterar": codigoUsuarioAlterar,
+      "nome_usuario_alterar": nomeUsuarioEspecifico.text,
+      "login_usuario_alterar": loginUsuarioEspecifico.text,
+      "email_usuario_alterar": emailUsuarioEspecifico.text,
+      "senha_usuario_alterar": senhaUsuarioEspecifico.text,
+      "nome_imagem_usuario_alterar": nomeImagem,
+    });
+
+    try {
+      final response = await http.put(
+        Uri.parse(url),
+        body: valores,
+        headers: {
+          "Accept": "application/json",
+          'Content-Type': 'application/json',
+        },
+      );
+
+      // Verificar a resposta da API
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+
+        print(data);
+
+        // if (data['status'] == 'success') {
+        //   ScaffoldMessenger.of(context).showSnackBar(
+        //     SnackBar(content: Text('Dados atualizados com sucesso!')),
+        //   );
+        // } else {
+        //   ScaffoldMessenger.of(context).showSnackBar(
+        //     SnackBar(content: Text('Erro: ${data['message']}')),
+        //   );
+        // }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Falha ao conectar com a API.')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro: $e')),
+      );
+    }
+  } 
 
   @override
   void initState() {
@@ -267,11 +385,11 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                             Container(
                               width: double.infinity,
                               decoration: BoxDecoration(
-                                color: FlutterFlowTheme.of(context).secondaryBackground,
+                                color: Theme.of(context).scaffoldBackgroundColor,
                                 boxShadow: [
                                   BoxShadow(
                                     blurRadius: 1.0,
-                                    color: FlutterFlowTheme.of(context).primaryBackground,
+                                    color: Theme.of(context).primaryColor.withOpacity(0.1),
                                     offset: const Offset(0.0, 0.0),
                                   ),
                                 ],
@@ -282,28 +400,40 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    Container(
-                                      width: 100.0,
-                                      height: 100.0,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(12.0),
-                                        border: Border.all(
-                                          color: FlutterFlowTheme.of(context).primary,
+                                    GestureDetector(
+                                      onTap: selecaoImagem, // Chama o método para alterar a imagem
+                                      child: Container(
+                                        width: 100.0,
+                                        height: 100.0,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(12.0),
+                                          border: Border.all(
+                                            color: Theme.of(context).primaryColor,
+                                          ),
+                                        ),
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(12.0),
+                                          child: imagemSelecionada != null
+                                              ? Image.file(
+                                                  imagemSelecionada!,
+                                                  fit: BoxFit.cover,
+                                                )
+                                              : Image.asset(
+                                                  imagemPadraoPath, // Exibe a imagem padrão
+                                                  fit: BoxFit.cover,
+                                                ),
                                         ),
                                       ),
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(12.0),
-                                        child: Image.asset(
-                                          'assets/images/foto-perfil.jpg', // Substitua pelo caminho da sua imagem
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Text(
+                                      'Clique para alterar a foto',
+                                      style: TextStyle(color: Theme.of(context).primaryColor),
                                     ),
                                   ],
                                 ),
                               ),
                             ),
-
 
 
 
@@ -716,10 +846,9 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                 Padding(
                                   padding: const EdgeInsetsDirectional.fromSTEB(16.0, 12.0, 16.0, 0.0),
                                   child: ElevatedButton(
-                                    onPressed: () {
-                                      debugPrint('Editar botão pressionado');
+                                    onPressed: () async { alterar_usuario();}
                                       // Adicione a lógica de edição aqui
-                                    },
+                                    ,
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: FlutterFlowTheme.of(context).primary,
                                       shape: RoundedRectangleBorder(

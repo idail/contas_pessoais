@@ -61,36 +61,66 @@ class _AuthCreateWidgetState extends State<AuthCreateWidget>
     // }
 
     try {
-      // Selecionar a imagem usando o ImagePicker
-      final pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
+    // Selecionar a imagem usando o ImagePicker
+    final pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
 
-      if (pickedImage == null) return; // O usuário cancelou
+    // Obter o diretório para salvar o arquivo
+    final appDir = await getApplicationDocumentsDirectory();
+    final imagesDir = Directory('${appDir.path}/images');
 
-      // Obter o diretório para salvar o arquivo
-      final appDir = await getApplicationDocumentsDirectory();
-      final imagesDir = Directory('${appDir.path}/images');
+    // Criar a pasta, se não existir
+    if (!await imagesDir.exists()) {
+      await imagesDir.create(recursive: true);
+    }
 
-      print(imagesDir);
+    File localImage;
 
-      // Criar a pasta, se não existir
-      if (!await imagesDir.exists()) {
-        await imagesDir.create(recursive: true);
+    if (pickedImage == null) {
+      // Caso nenhuma imagem seja selecionada, usar imagem padrão
+      final defaultImage = File(imagemPath); // Caminho da imagem padrão
+      final defaultImageCopy = File('${imagesDir.path}/sem_foto.jpg');
+
+      // Copiar a imagem padrão para o local desejado
+      if (!await defaultImageCopy.exists()) {
+        await defaultImage.copy(defaultImageCopy.path);
       }
 
+      localImage = defaultImageCopy;
+    } else {
       // Caminho do arquivo para salvar
       final fileName = pickedImage.name;
-      final localImage = File('${imagesDir.path}/$fileName');
+      localImage = File('${imagesDir.path}/$fileName');
 
       // Copiar o arquivo selecionado para o novo local
       await File(pickedImage.path).copy(localImage.path);
-
-      setState(() {
-        imagemselecionada = File(imagemrecebida!.path);
-      });
-    }else{
-        imagemselecionada = null; // Caminho da imagem padrão
     }
+
+    // Atualizar a imagem selecionada
+    setState(() {
+      imagemselecionada = localImage;
+    });
+
+    // Exibir o SnackBar com o local da imagem salva
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Imagem salva em: ${localImage.path}'),
+      ),
+    );
+  } catch (e) {
+    // Caso ocorra um erro, atribuir a imagem padrão e informar o erro
+    setState(() {
+      imagemselecionada = File(imagemPath); // Caminho da imagem padrão
+    });
+    print("Erro ao selecionar a imagem: $e");
+
+    // Exibir mensagem de erro
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Erro ao salvar a imagem.'),
+      ),
+    );
   }
+}
 
   Future<void> cadastrar() async{
     var uri = Uri.parse(
