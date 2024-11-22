@@ -50,7 +50,7 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
 
     print(codigoUsuario);
 
-    var uri = Uri.parse("http://192.168.100.46/contas_pessoais_php/api/Usuario.php?execucao=busca_dados_usuario&recebe_codigo_usuario=$codigoUsuario");
+    var uri = Uri.parse("http://192.168.100.6/contas_pessoais_php/api/Usuario.php?execucao=busca_dados_usuario&recebe_codigo_usuario=$codigoUsuario");
 
     var resposta = await http.get(uri, headers: {"Accept": "application/json"});
 
@@ -62,11 +62,23 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
 
     print(retornoUsuarioEspecifico);
 
-    nomeUsuarioEspecifico.text = retornoUsuarioEspecifico["nome_usuario"];
-    loginUsuarioEspecifico.text = retornoUsuarioEspecifico["login_usuario"];
-    emailUsuarioEspecifico.text = retornoUsuarioEspecifico["email_usuario"];
-    senhaUsuarioEspecifico.text = retornoUsuarioEspecifico["senha_usuario"];
-    //imagemSelecionada = File(retornoUsuarioEspecifico["imagem_usuario"]);
+    if(retornoUsuarioEspecifico["imagem_usuario"] != "assets/images/sem_foto.jpg")
+        imagemSelecionada = retornoUsuarioEspecifico["imagem_usuario"];
+    else
+       imagemSelecionada = null;
+
+    final directory = await getApplicationDocumentsDirectory();
+    final caminhoCompletoImagem = "${directory.path}/$imagemSelecionada";
+
+
+    setState(() async {
+      nomeUsuarioEspecifico.text = retornoUsuarioEspecifico["nome_usuario"];
+      loginUsuarioEspecifico.text = retornoUsuarioEspecifico["login_usuario"];
+      emailUsuarioEspecifico.text = retornoUsuarioEspecifico["email_usuario"];
+      senhaUsuarioEspecifico.text = retornoUsuarioEspecifico["senha_usuario"];
+
+      imagemSelecionada = File(caminhoCompletoImagem);
+    });
   }
 
   
@@ -91,7 +103,7 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
         // Caso o usuário cancele a seleção, a imagem padrão será exibida
         setState(() {
           imagemSelecionada = null; // Não define um arquivo de imagem
-          nomeImagem = "sem_foto.jpg"; // Apenas o nome para fins de exibição, se necessário
+          nomeImagem = "assets/images/sem_foto.jpg"; // Apenas o nome para fins de exibição, se necessário
         });
       } else {
         // Caminho do arquivo para salvar
@@ -130,7 +142,7 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
   Future<void> alterar_usuario() async {
     int? codigoUsuarioAlterar = widget.codigousuario;
 
-    String url = "http://192.168.100.46/contas_pessoais_php/api/Usuario.php";
+    String url = "http://192.168.100.6/contas_pessoais_php/api/Usuario.php";
 
     // Dados a serem enviados no corpo da requisição
     var valores = jsonEncode({
