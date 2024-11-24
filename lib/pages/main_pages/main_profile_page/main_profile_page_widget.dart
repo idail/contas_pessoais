@@ -45,6 +45,8 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
 
   File? imagemSelecionada; // Armazenará a imagem selecionada
 
+  late String imagem;
+
   Future<void> buscarDados() async{
     int? codigoUsuario = widget.codigousuario;
 
@@ -63,15 +65,15 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
     print(retornoUsuarioEspecifico);
 
     if(retornoUsuarioEspecifico["imagem_usuario"] != "assets/images/sem_foto.jpg")
-        imagemSelecionada = retornoUsuarioEspecifico["imagem_usuario"];
+        imagem = retornoUsuarioEspecifico["imagem_usuario"];
     else
-       imagemSelecionada = null;
+       imagem = imagemPadraoPath;
 
     final directory = await getApplicationDocumentsDirectory();
-    final caminhoCompletoImagem = "${directory.path}/$imagemSelecionada";
+    final caminhoCompletoImagem = "${directory.path}/$imagem";
 
 
-    setState(() async {
+    setState(() {
       nomeUsuarioEspecifico.text = retornoUsuarioEspecifico["nome_usuario"];
       loginUsuarioEspecifico.text = retornoUsuarioEspecifico["login_usuario"];
       emailUsuarioEspecifico.text = retornoUsuarioEspecifico["email_usuario"];
