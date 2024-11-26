@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -66,31 +68,47 @@ class _AuthCreateWidgetState extends State<AuthCreateWidget>
 
     // Obter o diretório para salvar o arquivo
     final appDir = await getApplicationDocumentsDirectory();
-    final imagesDir = Directory('${appDir.path}/images');
+    final imagesDirectory = Directory('${appDir.path}/images');
+
+    
+    //final imagesDir = Directory('${appDir.path}/images');
 
     // Criar a pasta, se não existir
-    if (!await imagesDir.exists()) {
-      await imagesDir.create(recursive: true);
+    // if (!await imagesDir.exists()) {
+    //   await imagesDir.create(recursive: true);
+    // }
+
+    // Crie o diretório se ele não existir
+    if (!imagesDirectory.existsSync()) {
+      imagesDirectory.createSync(recursive: true);
     }
 
     File localImage;
 
     if (pickedImage == null) {
+
+      // Copie a imagem dos assets para o diretório
+      final ByteData data = await rootBundle.load('assets/images/sem_foto.jpg');
+      final File arquivo = File('${imagesDirectory.path}/sem_foto.jpg');
+      await arquivo.writeAsBytes(data.buffer.asUint8List());
+
+
       // Caso nenhuma imagem seja selecionada, usar imagem padrão
-      final defaultImage = File(imagemPath); // Caminho da imagem padrão
-      final defaultImageCopy = File('${imagesDir.path}/sem_foto.jpg');
+      //final defaultImage = File(imagemPath); // Caminho da imagem padrão
+      //final defaultImageCopy = File('${imagesDir.path}/sem_foto.jpg');
 
       // Copiar a imagem padrão para o local desejado
-      if (!await defaultImageCopy.exists()) {
-        await defaultImage.copy(defaultImageCopy.path);
-      }
+      // if (!await defaultImageCopy.exists()) {
+      //   await defaultImage.copy(defaultImageCopy.path);
+      // }
 
-      localImage = defaultImageCopy;
+      localImage = arquivo;
     } else {
       // Caminho do arquivo para salvar
       final fileName = pickedImage.name;
-      localImage = File('${imagesDir.path}/$fileName');
-
+      //localImage = File('${imagesDir.path}/$fileName');
+      
+      localImage = File('${imagesDirectory.path}/$fileName');
       // Copiar o arquivo selecionado para o novo local
       await File(pickedImage.path).copy(localImage.path);
     }
@@ -124,7 +142,7 @@ class _AuthCreateWidgetState extends State<AuthCreateWidget>
 
   Future<void> cadastrar() async{
     var uri = Uri.parse(
-        "http://192.168.100.6/contas_pessoais_php/api/Usuario.php");
+        "http://10.80.130.70/contas_pessoais_php/api/Usuario.php");
     // Extrair o nome da imagem
 
     String nomeImagem = "";

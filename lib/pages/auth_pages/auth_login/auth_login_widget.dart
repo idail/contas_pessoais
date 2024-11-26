@@ -348,7 +348,7 @@ class _AuthLoginWidgetState extends State<AuthLoginWidget>
     var recebeSenhaUsuario = senhatext.text;
 
     var uri = Uri.parse(
-        "http://192.168.100.6/contas_pessoais_php/api/Usuario.php?execucao=busca_usuario&recebe_login_usuario=$recebeUsuario&recebe_senha_usuario=$recebeSenhaUsuario");
+        "http://10.80.130.70/contas_pessoais_php/api/Usuario.php?execucao=busca_usuario&recebe_login_usuario=$recebeUsuario&recebe_senha_usuario=$recebeSenhaUsuario");
     var resposta = await http.get(uri, headers: {"Accept": "application/json"});
     
     print(resposta.body);
@@ -356,7 +356,7 @@ class _AuthLoginWidgetState extends State<AuthLoginWidget>
     var retorno = jsonDecode(resposta.body);
 
     if(retorno == "nenhum usuario localizado"){
-      //mostrarAlerta("Informação", "Favor verificar os dados preenchidos");
+      mostrarAlerta("Informação", "Favor verificar os dados preenchidos");
     }else{
     //String codigo_departamento_fornecedor;
     //var login_usuario = retorno["login_usuario"];
