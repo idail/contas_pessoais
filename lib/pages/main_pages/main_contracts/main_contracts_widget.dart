@@ -153,10 +153,24 @@ Widget build(BuildContext context) {
                 title: 'Renda',
                 buttonLabel: 'Cadastrar', // Passando o botão
                 onPressed: () {
-                  // Navegar para a tela 'RendaScreen' ao clicar no botão
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => CadastroRendaPage()),
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return Dialog(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16.0),
+                        ),
+                        elevation: 16.0,
+                        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            maxHeight: 400,
+                            maxWidth: 300,
+                          ),
+                          child: CadastroRendaPage(),
+                        ),
+                      );
+                    },
                   );
                 },
               ),
@@ -280,11 +294,4 @@ Widget _buildHorizontalCard(
     ),
   );
 }
-
-
-
-
-
-
-
 }
