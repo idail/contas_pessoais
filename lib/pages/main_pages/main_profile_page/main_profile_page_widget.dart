@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -47,12 +49,16 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
 
   late String imagem;
 
-  Future<void> buscarDados() async{
+  final String imagemPadraoPath =
+      'assets/images/sem_foto.jpg'; // Caminho da imagem padrão
+
+  Future<void> buscarDados() async {
     int? codigoUsuario = widget.codigousuario;
 
     print(codigoUsuario);
 
-    var uri = Uri.parse("http://10.80.130.70/contas_pessoais_php/api/Usuario.php?execucao=busca_dados_usuario&recebe_codigo_usuario=$codigoUsuario");
+    var uri = Uri.parse(
+        "http://192.168.100.6/contas_pessoais_php/api/Usuario.php?execucao=busca_dados_usuario&recebe_codigo_usuario=$codigoUsuario");
 
     var resposta = await http.get(uri, headers: {"Accept": "application/json"});
 
@@ -64,14 +70,45 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
 
     print(retornoUsuarioEspecifico);
 
-    if(retornoUsuarioEspecifico["imagem_usuario"] != "assets/images/sem_foto.jpg")
-        imagem = retornoUsuarioEspecifico["imagem_usuario"];
-    else
-       imagem = imagemPadraoPath;
+    var caminhoCompletoImagem = "";
 
-    final directory = await getApplicationDocumentsDirectory();
-    final caminhoCompletoImagem = "${directory.path}/$imagem";
+    File arquivo;
 
+    if (retornoUsuarioEspecifico["imagem_usuario"] !=
+        "assets/images/sem_foto.jpg") {
+      imagem = retornoUsuarioEspecifico["imagem_usuario"];
+
+      final directory = await getApplicationDocumentsDirectory();
+      final imagesDirectory = Directory('${directory.path}/images');
+      //caminhoCompletoImagem = "${directory.path}/$imagem";
+
+      setState(() {
+        imagemSelecionada = File(imagem);
+      });
+    } else {
+      // // Copie a imagem dos assets para o diretório
+      // final ByteData data = await rootBundle.load('assets/images/sem_foto.jpg');
+      // //arquivo = File('${imagesDirectory.path}/sem_foto.jpg');
+      // arquivo = File("assets/images/sem_foto.jpg");
+      //imagem = arquivo;
+      //imagem = imagemPadraoPath;
+
+      // Caso seja "sem_foto.jpg", copie dos assets para o diretório local
+      final ByteData data = await rootBundle.load('assets/images/sem_foto.jpg');
+      final caminhoImagemPadrao = imagemPadraoPath;
+
+      arquivo = File(caminhoImagemPadrao);
+
+      // if (!arquivo.existsSync()) {
+      //   // Copia a imagem somente se ainda não estiver no diretório
+      //   await arquivo.writeAsBytes(data.buffer.asUint8List());
+      // }
+
+      setState(() {
+        imagemSelecionada = null;
+      });
+    }
+    //final caminhoCompletoImagem = "${directory.path}/$imagem";
 
     setState(() {
       nomeUsuarioEspecifico.text = retornoUsuarioEspecifico["nome_usuario"];
@@ -79,47 +116,69 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
       emailUsuarioEspecifico.text = retornoUsuarioEspecifico["email_usuario"];
       senhaUsuarioEspecifico.text = retornoUsuarioEspecifico["senha_usuario"];
 
-      imagemSelecionada = File(caminhoCompletoImagem);
+      // if (retornoUsuarioEspecifico["imagem_usuario"] !=
+      //     "assets/images/sem_foto.jpg") {
+      //   imagemSelecionada = File(caminhoCompletoImagem);
+      // }
     });
   }
 
-  
-  final String imagemPadraoPath = 'assets/images/sem_foto.jpg'; // Caminho da imagem padrão
   late String nomeImagem = "";
 
   Future<void> selecaoImagem() async {
     try {
       // Selecionar a imagem usando o ImagePicker
-      final pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
+      final pickedImage =
+          await ImagePicker().pickImage(source: ImageSource.gallery);
 
       // Obter o diretório para salvar o arquivo
       final appDir = await getApplicationDocumentsDirectory();
-      final imagesDir = Directory('${appDir.path}/images');
+      final imagesDirectory = Directory('${appDir.path}/images');
 
       // Criar a pasta, se não existir
-      if (!await imagesDir.exists()) {
-        await imagesDir.create(recursive: true);
+      // if (!await imagesDir.exists()) {
+      //   await imagesDir.create(recursive: true);
+      // }
+
+      if (!imagesDirectory.existsSync()) {
+        imagesDirectory.createSync(recursive: true);
       }
+
+      File imagemLocal;
 
       if (pickedImage == null) {
         // Caso o usuário cancele a seleção, a imagem padrão será exibida
-        setState(() {
-          imagemSelecionada = null; // Não define um arquivo de imagem
-          nomeImagem = "assets/images/sem_foto.jpg"; // Apenas o nome para fins de exibição, se necessário
-        });
+
+        // Copie a imagem dos assets para o diretório
+        final ByteData data = await rootBundle.load('assets/images/sem_foto.jpg');
+        final File arquivo = File('${imagesDirectory.path}/sem_foto.jpg');
+        await arquivo.writeAsBytes(data.buffer.asUint8List());
+
+        // setState(() {
+        //   imagemSelecionada = null; // Não define um arquivo de imagem
+        //   nomeImagem =
+        //       "assets/images/sem_foto.jpg"; // Apenas o nome para fins de exibição, se necessário
+        // });
+
+        imagemLocal = arquivo;
       } else {
         // Caminho do arquivo para salvar
         final fileName = pickedImage.name;
-        final localImage = File('${imagesDir.path}/$fileName');
+        
+        imagemLocal = File('${imagesDirectory.path}/$fileName');
 
         // Copiar o arquivo selecionado para o novo local
-        await File(pickedImage.path).copy(localImage.path);
+        await File(pickedImage.path).copy(imagemLocal.path);
 
-        setState(() {
-          imagemSelecionada = localImage;
-          nomeImagem = pickedImage.name;
-        });
+        // setState(() {
+        //   imagemSelecionada = localImage;
+        //   nomeImagem = pickedImage.name;
+        // });
       }
+
+      setState(() {
+        imagemSelecionada = imagemLocal;
+      });
 
       // Feedback visual ao salvar
       ScaffoldMessenger.of(context).showSnackBar(
@@ -140,11 +199,10 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
     }
   }
 
-
   Future<void> alterar_usuario() async {
     int? codigoUsuarioAlterar = widget.codigousuario;
 
-    String url = "http://10.80.130.70/contas_pessoais_php/api/Usuario.php";
+    String url = "http://192.168.100.6/contas_pessoais_php/api/Usuario.php";
 
     // Dados a serem enviados no corpo da requisição
     var valores = jsonEncode({
@@ -191,7 +249,7 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
         SnackBar(content: Text('Erro: $e')),
       );
     }
-  } 
+  }
 
   @override
   void initState() {
@@ -321,8 +379,6 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                     .secondaryBackground,
                               ),
                             ),
-
-
                             Container(
                               width: double.infinity,
                               decoration: BoxDecoration(
@@ -339,8 +395,9 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     Padding(
-                                      padding: const EdgeInsetsDirectional.fromSTEB(
-                                          16.0, 0.0, 0.0, 0.0),
+                                      padding:
+                                          const EdgeInsetsDirectional.fromSTEB(
+                                              16.0, 0.0, 0.0, 0.0),
                                       child: Text(
                                         "Perfil",
                                         textAlign: TextAlign.start,
@@ -394,16 +451,17 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                 ),
                               ),
                             ),
-
-                            
                             Container(
                               width: double.infinity,
                               decoration: BoxDecoration(
-                                color: Theme.of(context).scaffoldBackgroundColor,
+                                color:
+                                    Theme.of(context).scaffoldBackgroundColor,
                                 boxShadow: [
                                   BoxShadow(
                                     blurRadius: 1.0,
-                                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                                    color: Theme.of(context)
+                                        .primaryColor
+                                        .withOpacity(0.1),
                                     offset: const Offset(0.0, 0.0),
                                   ),
                                 ],
@@ -415,18 +473,22 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     GestureDetector(
-                                      onTap: selecaoImagem, // Chama o método para alterar a imagem
+                                      onTap:
+                                          selecaoImagem, // Chama o método para alterar a imagem
                                       child: Container(
                                         width: 100.0,
                                         height: 100.0,
                                         decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(12.0),
+                                          borderRadius:
+                                              BorderRadius.circular(12.0),
                                           border: Border.all(
-                                            color: Theme.of(context).primaryColor,
+                                            color:
+                                                Theme.of(context).primaryColor,
                                           ),
                                         ),
                                         child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(12.0),
+                                          borderRadius:
+                                              BorderRadius.circular(12.0),
                                           child: imagemSelecionada != null
                                               ? Image.file(
                                                   imagemSelecionada!,
@@ -442,21 +504,19 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                     const SizedBox(height: 10),
                                     Text(
                                       'Clique para alterar a foto',
-                                      style: TextStyle(color: Theme.of(context).primaryColor),
+                                      style: TextStyle(
+                                          color:
+                                              Theme.of(context).primaryColor),
                                     ),
                                   ],
                                 ),
                               ),
                             ),
-
-
-
                             Column(
                               mainAxisSize: MainAxisSize.max,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 // Campos de dados abaixo
-                                
 
                                 // Padding(
                                 //   padding: const EdgeInsetsDirectional.fromSTEB(
@@ -474,9 +534,9 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                 //   ),
                                 // ),
 
-
                                 Padding(
-                                  padding: const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
+                                      16.0, 0.0, 16.0, 0.0),
                                   child: Container(
                                     width: double.infinity,
                                     height: 60.0,
@@ -484,7 +544,8 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                       minHeight: 70.0,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: FlutterFlowTheme.of(context).secondaryBackground,
+                                      color: FlutterFlowTheme.of(context)
+                                          .secondaryBackground,
                                       boxShadow: const [
                                         BoxShadow(
                                           blurRadius: 3.0,
@@ -494,69 +555,88 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                       ],
                                       borderRadius: BorderRadius.circular(12.0),
                                       border: Border.all(
-                                        color: FlutterFlowTheme.of(context).alternate,
+                                        color: FlutterFlowTheme.of(context)
+                                            .alternate,
                                         width: 1.0,
                                       ),
                                     ),
-                                    child: 
-                                    
-                                    TextFormField(
+                                    child: TextFormField(
                                       controller: nomeUsuarioEspecifico,
                                       autofocus: true,
                                       obscureText: false,
                                       decoration: InputDecoration(
                                         labelText: "Nome",
-                                        labelStyle: FlutterFlowTheme.of(context).labelMedium.override(
+                                        labelStyle: FlutterFlowTheme.of(context)
+                                            .labelMedium
+                                            .override(
                                               fontFamily: 'Plus Jakarta Sans',
                                               letterSpacing: 0.0,
                                               fontSize: 20,
                                             ),
                                         hintText: "Informe seu nome",
-                                        hintStyle: FlutterFlowTheme.of(context).labelMedium.override(
+                                        hintStyle: FlutterFlowTheme.of(context)
+                                            .labelMedium
+                                            .override(
                                               fontFamily: 'Plus Jakarta Sans',
                                               letterSpacing: 0.0,
                                             ),
                                         enabledBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: FlutterFlowTheme.of(context).alternate,
+                                            color: FlutterFlowTheme.of(context)
+                                                .alternate,
                                             width: 2.0,
                                           ),
-                                          borderRadius: BorderRadius.circular(12.0),
+                                          borderRadius:
+                                              BorderRadius.circular(12.0),
                                         ),
                                         focusedBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: FlutterFlowTheme.of(context).primary,
+                                            color: FlutterFlowTheme.of(context)
+                                                .primary,
                                             width: 2.0,
                                           ),
-                                          borderRadius: BorderRadius.circular(12.0),
+                                          borderRadius:
+                                              BorderRadius.circular(12.0),
                                         ),
                                         errorBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: FlutterFlowTheme.of(context).error,
+                                            color: FlutterFlowTheme.of(context)
+                                                .error,
                                             width: 2.0,
                                           ),
-                                          borderRadius: BorderRadius.circular(12.0),
+                                          borderRadius:
+                                              BorderRadius.circular(12.0),
                                         ),
                                         focusedErrorBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: FlutterFlowTheme.of(context).error,
+                                            color: FlutterFlowTheme.of(context)
+                                                .error,
                                             width: 2.0,
                                           ),
-                                          borderRadius: BorderRadius.circular(12.0),
+                                          borderRadius:
+                                              BorderRadius.circular(12.0),
                                         ),
                                         filled: true,
-                                        fillColor: FlutterFlowTheme.of(context).accent4,
-                                        contentPadding: const EdgeInsetsDirectional.fromSTEB(20.0, 24.0, 20.0, 24.0),
+                                        fillColor: FlutterFlowTheme.of(context)
+                                            .accent4,
+                                        contentPadding:
+                                            const EdgeInsetsDirectional
+                                                .fromSTEB(
+                                                20.0, 24.0, 20.0, 24.0),
                                         prefixIcon: Icon(
                                           Icons.person, // Ícone de pessoa
-                                          color: FlutterFlowTheme.of(context).alternate, // Cor do ícone
+                                          color: FlutterFlowTheme.of(context)
+                                              .alternate, // Cor do ícone
                                         ),
                                       ),
-                                      style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                      style: FlutterFlowTheme.of(context)
+                                          .bodyMedium
+                                          .override(
                                             fontFamily: 'Plus Jakarta Sans',
                                             letterSpacing: 0.0,
                                           ),
-                                      cursorColor: FlutterFlowTheme.of(context).primary,
+                                      cursorColor:
+                                          FlutterFlowTheme.of(context).primary,
                                       validator: (value) {
                                         if (value == null || value.isEmpty) {
                                           return 'Por favor, insira seu nome';
@@ -567,9 +647,9 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                   ),
                                 ),
 
-
                                 Padding(
-                                  padding: const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
+                                      16.0, 0.0, 16.0, 0.0),
                                   child: Container(
                                     width: double.infinity,
                                     height: 60.0,
@@ -577,7 +657,8 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                       minHeight: 70.0,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: FlutterFlowTheme.of(context).secondaryBackground,
+                                      color: FlutterFlowTheme.of(context)
+                                          .secondaryBackground,
                                       boxShadow: const [
                                         BoxShadow(
                                           blurRadius: 3.0,
@@ -587,7 +668,8 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                       ],
                                       borderRadius: BorderRadius.circular(12.0),
                                       border: Border.all(
-                                        color: FlutterFlowTheme.of(context).alternate,
+                                        color: FlutterFlowTheme.of(context)
+                                            .alternate,
                                         width: 1.0,
                                       ),
                                     ),
@@ -597,57 +679,77 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                       obscureText: false,
                                       decoration: InputDecoration(
                                         labelText: "Login",
-                                        labelStyle: FlutterFlowTheme.of(context).labelMedium.override(
+                                        labelStyle: FlutterFlowTheme.of(context)
+                                            .labelMedium
+                                            .override(
                                               fontFamily: 'Plus Jakarta Sans',
                                               letterSpacing: 0.0,
                                               fontSize: 20,
                                             ),
                                         hintText: "Informe seu login",
-                                        hintStyle: FlutterFlowTheme.of(context).labelMedium.override(
+                                        hintStyle: FlutterFlowTheme.of(context)
+                                            .labelMedium
+                                            .override(
                                               fontFamily: 'Plus Jakarta Sans',
                                               letterSpacing: 0.0,
                                             ),
                                         enabledBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: FlutterFlowTheme.of(context).alternate,
+                                            color: FlutterFlowTheme.of(context)
+                                                .alternate,
                                             width: 2.0,
                                           ),
-                                          borderRadius: BorderRadius.circular(12.0),
+                                          borderRadius:
+                                              BorderRadius.circular(12.0),
                                         ),
                                         focusedBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: FlutterFlowTheme.of(context).primary,
+                                            color: FlutterFlowTheme.of(context)
+                                                .primary,
                                             width: 2.0,
                                           ),
-                                          borderRadius: BorderRadius.circular(12.0),
+                                          borderRadius:
+                                              BorderRadius.circular(12.0),
                                         ),
                                         errorBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: FlutterFlowTheme.of(context).error,
+                                            color: FlutterFlowTheme.of(context)
+                                                .error,
                                             width: 2.0,
                                           ),
-                                          borderRadius: BorderRadius.circular(12.0),
+                                          borderRadius:
+                                              BorderRadius.circular(12.0),
                                         ),
                                         focusedErrorBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: FlutterFlowTheme.of(context).error,
+                                            color: FlutterFlowTheme.of(context)
+                                                .error,
                                             width: 2.0,
                                           ),
-                                          borderRadius: BorderRadius.circular(12.0),
+                                          borderRadius:
+                                              BorderRadius.circular(12.0),
                                         ),
                                         filled: true,
-                                        fillColor: FlutterFlowTheme.of(context).accent4,
-                                        contentPadding: const EdgeInsetsDirectional.fromSTEB(20.0, 24.0, 20.0, 24.0),
+                                        fillColor: FlutterFlowTheme.of(context)
+                                            .accent4,
+                                        contentPadding:
+                                            const EdgeInsetsDirectional
+                                                .fromSTEB(
+                                                20.0, 24.0, 20.0, 24.0),
                                         prefixIcon: Icon(
                                           Icons.login_sharp, // Ícone de login
-                                          color: FlutterFlowTheme.of(context).alternate, // Cor do ícone
+                                          color: FlutterFlowTheme.of(context)
+                                              .alternate, // Cor do ícone
                                         ),
                                       ),
-                                      style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                      style: FlutterFlowTheme.of(context)
+                                          .bodyMedium
+                                          .override(
                                             fontFamily: 'Plus Jakarta Sans',
                                             letterSpacing: 0.0,
                                           ),
-                                      cursorColor: FlutterFlowTheme.of(context).primary,
+                                      cursorColor:
+                                          FlutterFlowTheme.of(context).primary,
                                       validator: (value) {
                                         if (value == null || value.isEmpty) {
                                           return 'Por favor, insira seu login';
@@ -658,10 +760,9 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                   ),
                                 ),
 
-
-
                                 Padding(
-                                  padding: const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
+                                      16.0, 0.0, 16.0, 0.0),
                                   child: Container(
                                     width: double.infinity,
                                     height: 60.0,
@@ -669,7 +770,8 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                       minHeight: 70.0,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: FlutterFlowTheme.of(context).secondaryBackground,
+                                      color: FlutterFlowTheme.of(context)
+                                          .secondaryBackground,
                                       boxShadow: const [
                                         BoxShadow(
                                           blurRadius: 3.0,
@@ -679,7 +781,8 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                       ],
                                       borderRadius: BorderRadius.circular(12.0),
                                       border: Border.all(
-                                        color: FlutterFlowTheme.of(context).alternate,
+                                        color: FlutterFlowTheme.of(context)
+                                            .alternate,
                                         width: 1.0,
                                       ),
                                     ),
@@ -689,63 +792,84 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                       obscureText: false,
                                       decoration: InputDecoration(
                                         labelText: "E-mail",
-                                        labelStyle: FlutterFlowTheme.of(context).labelMedium.override(
+                                        labelStyle: FlutterFlowTheme.of(context)
+                                            .labelMedium
+                                            .override(
                                               fontFamily: 'Plus Jakarta Sans',
                                               letterSpacing: 0.0,
                                               fontSize: 20,
                                             ),
                                         hintText: "Informe seu e-mail",
-                                        hintStyle: FlutterFlowTheme.of(context).labelMedium.override(
+                                        hintStyle: FlutterFlowTheme.of(context)
+                                            .labelMedium
+                                            .override(
                                               fontFamily: 'Plus Jakarta Sans',
                                               letterSpacing: 0.0,
                                             ),
                                         enabledBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: FlutterFlowTheme.of(context).alternate,
+                                            color: FlutterFlowTheme.of(context)
+                                                .alternate,
                                             width: 2.0,
                                           ),
-                                          borderRadius: BorderRadius.circular(12.0),
+                                          borderRadius:
+                                              BorderRadius.circular(12.0),
                                         ),
                                         focusedBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: FlutterFlowTheme.of(context).primary,
+                                            color: FlutterFlowTheme.of(context)
+                                                .primary,
                                             width: 2.0,
                                           ),
-                                          borderRadius: BorderRadius.circular(12.0),
+                                          borderRadius:
+                                              BorderRadius.circular(12.0),
                                         ),
                                         errorBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: FlutterFlowTheme.of(context).error,
+                                            color: FlutterFlowTheme.of(context)
+                                                .error,
                                             width: 2.0,
                                           ),
-                                          borderRadius: BorderRadius.circular(12.0),
+                                          borderRadius:
+                                              BorderRadius.circular(12.0),
                                         ),
                                         focusedErrorBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: FlutterFlowTheme.of(context).error,
+                                            color: FlutterFlowTheme.of(context)
+                                                .error,
                                             width: 2.0,
                                           ),
-                                          borderRadius: BorderRadius.circular(12.0),
+                                          borderRadius:
+                                              BorderRadius.circular(12.0),
                                         ),
                                         filled: true,
-                                        fillColor: FlutterFlowTheme.of(context).accent4,
-                                        contentPadding: const EdgeInsetsDirectional.fromSTEB(20.0, 24.0, 20.0, 24.0),
+                                        fillColor: FlutterFlowTheme.of(context)
+                                            .accent4,
+                                        contentPadding:
+                                            const EdgeInsetsDirectional
+                                                .fromSTEB(
+                                                20.0, 24.0, 20.0, 24.0),
                                         prefixIcon: Icon(
                                           Icons.email, // Ícone de e-mail
-                                          color: FlutterFlowTheme.of(context).alternate, // Cor do ícone
+                                          color: FlutterFlowTheme.of(context)
+                                              .alternate, // Cor do ícone
                                         ),
                                       ),
-                                      style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                      style: FlutterFlowTheme.of(context)
+                                          .bodyMedium
+                                          .override(
                                             fontFamily: 'Plus Jakarta Sans',
                                             letterSpacing: 0.0,
                                           ),
-                                      cursorColor: FlutterFlowTheme.of(context).primary,
+                                      cursorColor:
+                                          FlutterFlowTheme.of(context).primary,
                                       validator: (value) {
                                         if (value == null || value.isEmpty) {
                                           return 'Por favor, insira seu e-mail';
                                         }
                                         // Validação simples para formato de e-mail
-                                        String emailPattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
+                                        String emailPattern =
+                                            r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
                                         RegExp regExp = RegExp(emailPattern);
                                         if (!regExp.hasMatch(value)) {
                                           return 'Por favor, insira um e-mail válido';
@@ -757,124 +881,161 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                 ),
 
                                 Padding(
-                                    padding: const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
-                                    child: Container(
-                                      width: double.infinity,
-                                      height: 60.0,
-                                      constraints: const BoxConstraints(
-                                        minHeight: 70.0,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: FlutterFlowTheme.of(context).secondaryBackground,
-                                        boxShadow: const [
-                                          BoxShadow(
-                                            blurRadius: 3.0,
-                                            color: Color(0x33000000),
-                                            offset: Offset(0.0, 1.0),
-                                          ),
-                                        ],
-                                        borderRadius: BorderRadius.circular(12.0),
-                                        border: Border.all(
-                                          color: FlutterFlowTheme.of(context).alternate,
-                                          width: 1.0,
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
+                                      16.0, 0.0, 16.0, 0.0),
+                                  child: Container(
+                                    width: double.infinity,
+                                    height: 60.0,
+                                    constraints: const BoxConstraints(
+                                      minHeight: 70.0,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: FlutterFlowTheme.of(context)
+                                          .secondaryBackground,
+                                      boxShadow: const [
+                                        BoxShadow(
+                                          blurRadius: 3.0,
+                                          color: Color(0x33000000),
+                                          offset: Offset(0.0, 1.0),
                                         ),
+                                      ],
+                                      borderRadius: BorderRadius.circular(12.0),
+                                      border: Border.all(
+                                        color: FlutterFlowTheme.of(context)
+                                            .alternate,
+                                        width: 1.0,
                                       ),
-                                      child: 
-                                      TextFormField(
-                                        controller: senhaUsuarioEspecifico,
-                                        autofocus: true,
-                                        obscureText: !_isPasswordVisible,  // Controla a visibilidade da senha
-                                        decoration: InputDecoration(
-                                          labelText: "Senha",
-                                          labelStyle: FlutterFlowTheme.of(context).labelMedium.override(
-                                                fontFamily: 'Plus Jakarta Sans',
-                                                letterSpacing: 0.0,
-                                                fontSize: 20,
-                                              ),
-                                          hintText: "Informe sua senha",
-                                          hintStyle: FlutterFlowTheme.of(context).labelMedium.override(
-                                                fontFamily: 'Plus Jakarta Sans',
-                                                letterSpacing: 0.0,
-                                              ),
-                                          enabledBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                              color: FlutterFlowTheme.of(context).alternate,
-                                              width: 2.0,
+                                    ),
+                                    child: TextFormField(
+                                      controller: senhaUsuarioEspecifico,
+                                      autofocus: true,
+                                      obscureText:
+                                          !_isPasswordVisible, // Controla a visibilidade da senha
+                                      decoration: InputDecoration(
+                                        labelText: "Senha",
+                                        labelStyle: FlutterFlowTheme.of(context)
+                                            .labelMedium
+                                            .override(
+                                              fontFamily: 'Plus Jakarta Sans',
+                                              letterSpacing: 0.0,
+                                              fontSize: 20,
                                             ),
-                                            borderRadius: BorderRadius.circular(12.0),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                              color: FlutterFlowTheme.of(context).primary,
-                                              width: 2.0,
-                                            ),
-                                            borderRadius: BorderRadius.circular(12.0),
-                                          ),
-                                          errorBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                              color: FlutterFlowTheme.of(context).error,
-                                              width: 2.0,
-                                            ),
-                                            borderRadius: BorderRadius.circular(12.0),
-                                          ),
-                                          focusedErrorBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                              color: FlutterFlowTheme.of(context).error,
-                                              width: 2.0,
-                                            ),
-                                            borderRadius: BorderRadius.circular(12.0),
-                                          ),
-                                          filled: true,
-                                          fillColor: FlutterFlowTheme.of(context).accent4,
-                                          contentPadding: const EdgeInsetsDirectional.fromSTEB(20.0, 24.0, 20.0, 24.0),
-                                          prefixIcon: Icon(
-                                            Icons.lock, // Ícone de senha
-                                            color: FlutterFlowTheme.of(context).alternate, // Cor do ícone
-                                          ),
-                                          suffixIcon: IconButton(
-                                            icon: Icon(
-                                              _isPasswordVisible ? Icons.visibility : Icons.visibility_off, // Alterna entre os ícones
-                                              color: FlutterFlowTheme.of(context).alternate,
-                                            ),
-                                            onPressed: () {
-                                              setState(() {
-                                                _isPasswordVisible = !_isPasswordVisible; // Alterna a visibilidade da senha
-                                              });
-                                            },
-                                          ),
-                                        ),
-                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                        hintText: "Informe sua senha",
+                                        hintStyle: FlutterFlowTheme.of(context)
+                                            .labelMedium
+                                            .override(
                                               fontFamily: 'Plus Jakarta Sans',
                                               letterSpacing: 0.0,
                                             ),
-                                        cursorColor: FlutterFlowTheme.of(context).primary,
-                                        validator: (value) {
-                                          if (value == null || value.isEmpty) {
-                                            return 'Por favor, insira sua senha';
-                                          }
-                                          return null;
-                                        },
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: FlutterFlowTheme.of(context)
+                                                .alternate,
+                                            width: 2.0,
+                                          ),
+                                          borderRadius:
+                                              BorderRadius.circular(12.0),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: FlutterFlowTheme.of(context)
+                                                .primary,
+                                            width: 2.0,
+                                          ),
+                                          borderRadius:
+                                              BorderRadius.circular(12.0),
+                                        ),
+                                        errorBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: FlutterFlowTheme.of(context)
+                                                .error,
+                                            width: 2.0,
+                                          ),
+                                          borderRadius:
+                                              BorderRadius.circular(12.0),
+                                        ),
+                                        focusedErrorBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: FlutterFlowTheme.of(context)
+                                                .error,
+                                            width: 2.0,
+                                          ),
+                                          borderRadius:
+                                              BorderRadius.circular(12.0),
+                                        ),
+                                        filled: true,
+                                        fillColor: FlutterFlowTheme.of(context)
+                                            .accent4,
+                                        contentPadding:
+                                            const EdgeInsetsDirectional
+                                                .fromSTEB(
+                                                20.0, 24.0, 20.0, 24.0),
+                                        prefixIcon: Icon(
+                                          Icons.lock, // Ícone de senha
+                                          color: FlutterFlowTheme.of(context)
+                                              .alternate, // Cor do ícone
+                                        ),
+                                        suffixIcon: IconButton(
+                                          icon: Icon(
+                                            _isPasswordVisible
+                                                ? Icons.visibility
+                                                : Icons
+                                                    .visibility_off, // Alterna entre os ícones
+                                            color: FlutterFlowTheme.of(context)
+                                                .alternate,
+                                          ),
+                                          onPressed: () {
+                                            setState(() {
+                                              _isPasswordVisible =
+                                                  !_isPasswordVisible; // Alterna a visibilidade da senha
+                                            });
+                                          },
+                                        ),
                                       ),
+                                      style: FlutterFlowTheme.of(context)
+                                          .bodyMedium
+                                          .override(
+                                            fontFamily: 'Plus Jakarta Sans',
+                                            letterSpacing: 0.0,
+                                          ),
+                                      cursorColor:
+                                          FlutterFlowTheme.of(context).primary,
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return 'Por favor, insira sua senha';
+                                        }
+                                        return null;
+                                      },
                                     ),
                                   ),
+                                ),
                                 Padding(
-                                  padding: const EdgeInsetsDirectional.fromSTEB(16.0, 12.0, 16.0, 0.0),
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
+                                      16.0, 12.0, 16.0, 0.0),
                                   child: ElevatedButton(
-                                    onPressed: () async { alterar_usuario();}
-                                      // Adicione a lógica de edição aqui
+                                    onPressed: () async {
+                                      alterar_usuario();
+                                    }
+                                    // Adicione a lógica de edição aqui
                                     ,
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: FlutterFlowTheme.of(context).primary,
+                                      backgroundColor:
+                                          FlutterFlowTheme.of(context).primary,
                                       shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12.0),
+                                        borderRadius:
+                                            BorderRadius.circular(12.0),
                                       ),
-                                      padding: const EdgeInsets.symmetric(vertical: 16.0),
-                                      minimumSize: const Size(180.0, 50.0), // Largura aumentada
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 16.0),
+                                      minimumSize: const Size(
+                                          180.0, 50.0), // Largura aumentada
                                       elevation: 3.0,
                                     ),
                                     child: Text(
                                       'Editar',
-                                      style: FlutterFlowTheme.of(context).titleSmall.override(
+                                      style: FlutterFlowTheme.of(context)
+                                          .titleSmall
+                                          .override(
                                             fontFamily: 'Plus Jakarta Sans',
                                             color: Colors.white,
                                             fontSize: 16.0,
@@ -883,9 +1044,6 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                     ),
                                   ),
                                 ),
-
-
-
 
                                 // Builder(
                                 //   builder: (context) => Padding(
@@ -897,7 +1055,7 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                 //       hoverColor: Colors.transparent,
                                 //       highlightColor: Colors.transparent,
                                 //       onTap: () async {
-                                        
+
                                 //         if (MediaQuery.sizeOf(context).width >=
                                 //             991.0) {
                                 //           await showDialog(
@@ -1030,12 +1188,15 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                 //   ),
                                 // ),
                                 Align(
-                                  alignment: const AlignmentDirectional(0.0, 0.0),
+                                  alignment:
+                                      const AlignmentDirectional(0.0, 0.0),
                                   child: Padding(
-                                    padding: const EdgeInsetsDirectional.fromSTEB(
-                                        16.0, 0.0, 16.0, 0.0),
+                                    padding:
+                                        const EdgeInsetsDirectional.fromSTEB(
+                                            16.0, 0.0, 16.0, 0.0),
                                     child: AnimatedContainer(
-                                      duration: const Duration(milliseconds: 100),
+                                      duration:
+                                          const Duration(milliseconds: 100),
                                       curve: Curves.easeInOut,
                                       width: double.infinity,
                                       constraints: const BoxConstraints(
@@ -1073,14 +1234,16 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                               CrossAxisAlignment.start,
                                           children: [
                                             Align(
-                                              alignment: const AlignmentDirectional(
-                                                  -1.0, -1.0),
+                                              alignment:
+                                                  const AlignmentDirectional(
+                                                      -1.0, -1.0),
                                               child: Column(
                                                 mainAxisSize: MainAxisSize.max,
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
-                                                  Text("Escolhar a cor que deseja",
+                                                  Text(
+                                                    "Escolhar a cor que deseja",
                                                     style: FlutterFlowTheme.of(
                                                             context)
                                                         .titleLarge
@@ -1093,9 +1256,10 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                                   Padding(
                                                     padding:
                                                         const EdgeInsetsDirectional
-                                                            .fromSTEB(0.0, 4.0,
-                                                                0.0, 0.0),
-                                                    child: Text("",
+                                                            .fromSTEB(
+                                                            0.0, 4.0, 0.0, 0.0),
+                                                    child: Text(
+                                                      "",
                                                       style: FlutterFlowTheme
                                                               .of(context)
                                                           .labelMedium
@@ -1110,11 +1274,13 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                               ),
                                             ),
                                             Align(
-                                              alignment: const AlignmentDirectional(
-                                                  0.0, 0.0),
+                                              alignment:
+                                                  const AlignmentDirectional(
+                                                      0.0, 0.0),
                                               child: Padding(
-                                                padding: const EdgeInsetsDirectional
-                                                    .fromSTEB(
+                                                padding:
+                                                    const EdgeInsetsDirectional
+                                                        .fromSTEB(
                                                         0.0, 16.0, 0.0, 16.0),
                                                 child: Wrap(
                                                   spacing: 16.0,
@@ -1135,9 +1301,10 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                                       child: Stack(
                                                         children: [
                                                           AnimatedContainer(
-                                                            duration: const Duration(
-                                                                milliseconds:
-                                                                    150),
+                                                            duration:
+                                                                const Duration(
+                                                                    milliseconds:
+                                                                        150),
                                                             curve: Curves
                                                                 .easeInOut,
                                                             decoration:
@@ -1210,10 +1377,10 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                                                       Padding(
                                                                     padding: const EdgeInsetsDirectional
                                                                         .fromSTEB(
-                                                                            8.0,
-                                                                            12.0,
-                                                                            8.0,
-                                                                            0.0),
+                                                                        8.0,
+                                                                        12.0,
+                                                                        8.0,
+                                                                        0.0),
                                                                     child:
                                                                         Column(
                                                                       mainAxisSize:
@@ -1224,7 +1391,8 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                                                               .spaceBetween,
                                                                       children: [
                                                                         Padding(
-                                                                          padding: const EdgeInsetsDirectional.fromSTEB(
+                                                                          padding: const EdgeInsetsDirectional
+                                                                              .fromSTEB(
                                                                               8.0,
                                                                               0.0,
                                                                               0.0,
@@ -1354,9 +1522,10 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                                       child: Stack(
                                                         children: [
                                                           AnimatedContainer(
-                                                            duration: const Duration(
-                                                                milliseconds:
-                                                                    150),
+                                                            duration:
+                                                                const Duration(
+                                                                    milliseconds:
+                                                                        150),
                                                             curve: Curves
                                                                 .easeInOut,
                                                             decoration:
@@ -1430,10 +1599,10 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                                                       Padding(
                                                                     padding: const EdgeInsetsDirectional
                                                                         .fromSTEB(
-                                                                            8.0,
-                                                                            12.0,
-                                                                            8.0,
-                                                                            0.0),
+                                                                        8.0,
+                                                                        12.0,
+                                                                        8.0,
+                                                                        0.0),
                                                                     child:
                                                                         Column(
                                                                       mainAxisSize:
@@ -1444,7 +1613,8 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                                                               .spaceBetween,
                                                                       children: [
                                                                         Padding(
-                                                                          padding: const EdgeInsetsDirectional.fromSTEB(
+                                                                          padding: const EdgeInsetsDirectional
+                                                                              .fromSTEB(
                                                                               8.0,
                                                                               0.0,
                                                                               0.0,
@@ -1458,7 +1628,8 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                                                             children: [
                                                                               Padding(
                                                                                 padding: const EdgeInsetsDirectional.fromSTEB(0.0, 4.0, 0.0, 4.0),
-                                                                                child: Text("Modo Claro",
+                                                                                child: Text(
+                                                                                  "Modo Claro",
                                                                                   style: FlutterFlowTheme.of(context).titleLarge.override(
                                                                                         fontFamily: 'Plus Jakarta Sans',
                                                                                         color: const Color(0xFF1B1D27),
@@ -1605,16 +1776,14 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                             },
                                           );
                                         },
-                                        text:
-                                            "Sair",
+                                        text: "Sair",
                                         options: FFButtonOptions(
                                           height: 44.0,
-                                          padding:
-                                              const EdgeInsetsDirectional.fromSTEB(
-                                                  24.0, 0.0, 24.0, 0.0),
+                                          padding: const EdgeInsetsDirectional
+                                              .fromSTEB(24.0, 0.0, 24.0, 0.0),
                                           iconPadding:
-                                              const EdgeInsetsDirectional.fromSTEB(
-                                                  0.0, 0.0, 0.0, 0.0),
+                                              const EdgeInsetsDirectional
+                                                  .fromSTEB(0.0, 0.0, 0.0, 0.0),
                                           color: FlutterFlowTheme.of(context)
                                               .secondaryBackground,
                                           textStyle:
