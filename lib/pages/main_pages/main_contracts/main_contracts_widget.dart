@@ -146,320 +146,321 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
     );
   }
 
- @override
-Widget build(BuildContext context) {
-  return Scaffold(
-    backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-    body: Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.max,
-        children: [
-          // Espaçamento no topo
-          const SizedBox(height: 50.0),
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            // Espaçamento no topo
+            const SizedBox(height: 50.0),
 
-          // Cards Horizontais
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildHorizontalCard(
-                context,
-                icon: Icons.money_rounded,
-                title: 'Renda',
-                buttonLabel: 'Cadastrar',
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return Dialog(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16.0),
-                        ),
-                        elevation: 16.0,
-                        backgroundColor:
-                            FlutterFlowTheme.of(context).secondaryBackground,
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(
-                            maxHeight: 500,
-                            maxWidth: 400,
-                          ),
-                          child: CadastroRendaPage(),
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
-              const SizedBox(width: 10.0),
-              _buildHorizontalCard(
-                context,
-                icon: Icons.account_balance_wallet,
-                title: 'Despesa',
-                buttonLabel: 'Cadastrar',
-                onPressed: () {
-                  print('Card 2 pressionado');
-                },
-              ),
-            ],
-          ),
-
-          // Espaçamento entre os cards e o campo de pesquisa
-          const SizedBox(height: 20.0),
-
-          // Campo de pesquisa com botão de pesquisa
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  decoration: InputDecoration(
-                    hintText: 'Pesquisar...',
-                    hintStyle: TextStyle(color: Colors.grey),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey),
-                    ),
-                    prefixIcon: Icon(Icons.search, color: Colors.grey),
-                  ),
-                  onChanged: (query) {
-                    // Adicione a lógica de pesquisa aqui
-                    print('Pesquisando: $query');
-                  },
-                ),
-              ),
-              IconButton(
-                icon: Icon(Icons.search),
-                color: Colors.blue,
-                onPressed: () {
-                  // Adicione a lógica de pesquisa ao pressionar o botão
-                  print('Botão de pesquisa pressionado');
-                },
-              ),
-            ],
-          ),
-
-          // Espaçamento entre o campo de pesquisa e as abas
-          const SizedBox(height: 20.0),
-
-          // Abas e Conteúdo
-          Expanded(
-            child: Column(
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Abas
-                TabBar(
-                  labelColor: Colors.blue,
-                  unselectedLabelColor: Colors.grey,
-                  indicatorColor: Colors.blue,
-                  controller: _tabController,
-                  tabs: const [
-                    Tab(text: 'Todos'),
-                    Tab(text: 'Ativos'),
-                    Tab(text: 'Pagos'),
-                  ],
+                _buildHorizontalCard(
+                  context,
+                  icon: Icons.money_rounded,
+                  title: 'Renda',
+                  buttonLabel: 'Cadastrar',
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return Dialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16.0),
+                          ),
+                          elevation: 16.0,
+                          backgroundColor:
+                              FlutterFlowTheme.of(context).secondaryBackground,
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(
+                              maxHeight: 500,
+                              maxWidth: 400,
+                            ),
+                            child: CadastroRendaPage(),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                  cardWidth: MediaQuery.of(context).size.width *
+                      0.4, // Largura dinâmica
                 ),
-                // Conteúdo das Abas
-                Expanded(
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _buildListView([
-                        {
-                          'nome': 'João',
-                          'categoria': 'Alimentos',
-                          'pago': 'Sim',
-                          'valor': 120.00
-                        },
-                        {
-                          'nome': 'Maria',
-                          'categoria': 'Bebidas',
-                          'pago': 'Não',
-                          'valor': 80.50
-                        },
-                        {
-                          'nome': 'Carlos',
-                          'categoria': 'Tecnologia',
-                          'pago': 'Não',
-                          'valor': 230.75
-                        },
-                        {
-                          'nome': 'Ana',
-                          'categoria': 'Roupas',
-                          'pago': 'Sim',
-                          'valor': 150.00
-                        },
-                        {
-                          'nome': 'Idail',
-                          'categoria': 'Roupas',
-                          'pago': 'Sim',
-                          'valor': 150.00
-                        },
-                        {
-                          'nome': 'Matheus',
-                          'categoria': 'Roupas',
-                          'pago': 'Sim',
-                          'valor': 150.00
-                        },
-                        {
-                          'nome': 'Eliza',
-                          'categoria': 'Roupas',
-                          'pago': 'Sim',
-                          'valor': 150.00
-                        },
-                        {
-                          'nome': 'Caroline',
-                          'categoria': 'Roupas',
-                          'pago': 'Sim',
-                          'valor': 150.00
-                        },
-                        {
-                          'nome': 'Lucas',
-                          'categoria': 'Eletrônicos',
-                          'pago': 'Sim',
-                          'valor': 180.00
-                        },
-                        {
-                          'nome': 'Juliana',
-                          'categoria': 'Móveis',
-                          'pago': 'Não',
-                          'valor': 250.00
-                        },
-                      ], context),
-                      _buildListView([
-                        {
-                          'nome': 'Carlos',
-                          'categoria': 'Tecnologia',
-                          'pago': 'Não',
-                          'valor': 230.75
-                        },
-                        {
-                          'nome': 'Ana',
-                          'categoria': 'Roupas',
-                          'pago': 'Sim',
-                          'valor': 150.00
-                        },
-                        {
-                          'nome': 'Idail',
-                          'categoria': 'Roupas',
-                          'pago': 'Sim',
-                          'valor': 150.00
-                        },
-                        {
-                          'nome': 'Matheus',
-                          'categoria': 'Roupas',
-                          'pago': 'Sim',
-                          'valor': 150.00
-                        },
-                        {
-                          'nome': 'Eliza',
-                          'categoria': 'Roupas',
-                          'pago': 'Sim',
-                          'valor': 150.00
-                        },
-                        {
-                          'nome': 'Caroline',
-                          'categoria': 'Roupas',
-                          'pago': 'Sim',
-                          'valor': 150.00
-                        },
-                        {
-                          'nome': 'Lucas',
-                          'categoria': 'Eletrônicos',
-                          'pago': 'Sim',
-                          'valor': 180.00
-                        },
-                        {
-                          'nome': 'Juliana',
-                          'categoria': 'Móveis',
-                          'pago': 'Não',
-                          'valor': 250.00
-                        },
-                        {
-                          'nome': 'Pedro',
-                          'categoria': 'Saúde',
-                          'pago': 'Sim',
-                          'valor': 100.00
-                        },
-                        {
-                          'nome': 'Patricia',
-                          'categoria': 'Saúde',
-                          'pago': 'Sim',
-                          'valor': 120.00
-                        },
-                      ], context),
-                      _buildListView([
-                        {
-                          'nome': 'João',
-                          'categoria': 'Alimentos',
-                          'pago': 'Sim',
-                          'valor': 120.00
-                        },
-                        {
-                          'nome': 'Ana',
-                          'categoria': 'Roupas',
-                          'pago': 'Sim',
-                          'valor': 150.00
-                        },
-                        {
-                          'nome': 'Idail',
-                          'categoria': 'Roupas',
-                          'pago': 'Sim',
-                          'valor': 150.00
-                        },
-                        {
-                          'nome': 'Matheus',
-                          'categoria': 'Roupas',
-                          'pago': 'Sim',
-                          'valor': 150.00
-                        },
-                        {
-                          'nome': 'Eliza',
-                          'categoria': 'Roupas',
-                          'pago': 'Sim',
-                          'valor': 150.00
-                        },
-                        {
-                          'nome': 'Caroline',
-                          'categoria': 'Roupas',
-                          'pago': 'Sim',
-                          'valor': 150.00
-                        },
-                        {
-                          'nome': 'Lucas',
-                          'categoria': 'Eletrônicos',
-                          'pago': 'Sim',
-                          'valor': 180.00
-                        },
-                        {
-                          'nome': 'Juliana',
-                          'categoria': 'Móveis',
-                          'pago': 'Sim',
-                          'valor': 250.00
-                        },
-                        {
-                          'nome': 'Pedro',
-                          'categoria': 'Saúde',
-                          'pago': 'Sim',
-                          'valor': 100.00
-                        },
-                        {
-                          'nome': 'Patricia',
-                          'categoria': 'Saúde',
-                          'pago': 'Sim',
-                          'valor': 120.00
-                        },
-                      ], context),
-                    ],
-                  ),
+                const SizedBox(width: 10.0),
+                _buildHorizontalCard(
+                  context,
+                  icon: Icons.account_balance_wallet,
+                  title: 'Despesa',
+                  buttonLabel: 'Cadastrar',
+                  onPressed: () {
+                    print('Card 2 pressionado');
+                  },
+                  cardWidth: MediaQuery.of(context).size.width *
+                      0.4, // Largura dinâmica
                 ),
               ],
             ),
-          ),
-        ],
+
+            // Espaçamento entre os cards e o campo de pesquisa
+            const SizedBox(height: 20.0),
+
+            // Campo de pesquisa com botão de pesquisa
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Pesquisar...',
+                      hintStyle: TextStyle(color: Colors.grey),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey),
+                      ),
+                      prefixIcon: Icon(Icons.search, color: Colors.grey),
+                    ),
+                    onChanged: (query) {
+                      // Adicione a lógica de pesquisa aqui
+                      print('Pesquisando: $query');
+                    },
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.search),
+                  color: Colors.blue,
+                  onPressed: () {
+                    // Adicione a lógica de pesquisa ao pressionar o botão
+                    print('Botão de pesquisa pressionado');
+                  },
+                ),
+              ],
+            ),
+
+            // Espaçamento entre o campo de pesquisa e as abas
+            const SizedBox(height: 20.0),
+
+            // Abas e Conteúdo
+            Expanded(
+              child: Column(
+                children: [
+                  // Abas
+                  TabBar(
+                    labelColor: Colors.blue,
+                    unselectedLabelColor: Colors.grey,
+                    indicatorColor: Colors.blue,
+                    controller: _tabController,
+                    tabs: const [
+                      Tab(text: 'Todos'),
+                      Tab(text: 'Ativos'),
+                      Tab(text: 'Pagos'),
+                    ],
+                  ),
+                  // Conteúdo das Abas
+                  Expanded(
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: [
+                        _buildListView([
+                          {
+                            'nome': 'João',
+                            'categoria': 'Alimentos',
+                            'pago': 'Sim',
+                            'valor': 120.00
+                          },
+                          {
+                            'nome': 'Maria',
+                            'categoria': 'Bebidas',
+                            'pago': 'Não',
+                            'valor': 80.50
+                          },
+                          {
+                            'nome': 'Carlos',
+                            'categoria': 'Tecnologia',
+                            'pago': 'Não',
+                            'valor': 230.75
+                          },
+                          {
+                            'nome': 'Ana',
+                            'categoria': 'Roupas',
+                            'pago': 'Sim',
+                            'valor': 150.00
+                          },
+                          {
+                            'nome': 'Idail',
+                            'categoria': 'Roupas',
+                            'pago': 'Sim',
+                            'valor': 150.00
+                          },
+                          {
+                            'nome': 'Matheus',
+                            'categoria': 'Roupas',
+                            'pago': 'Sim',
+                            'valor': 150.00
+                          },
+                          {
+                            'nome': 'Eliza',
+                            'categoria': 'Roupas',
+                            'pago': 'Sim',
+                            'valor': 150.00
+                          },
+                          {
+                            'nome': 'Caroline',
+                            'categoria': 'Roupas',
+                            'pago': 'Sim',
+                            'valor': 150.00
+                          },
+                          {
+                            'nome': 'Lucas',
+                            'categoria': 'Eletrônicos',
+                            'pago': 'Sim',
+                            'valor': 180.00
+                          },
+                          {
+                            'nome': 'Juliana',
+                            'categoria': 'Móveis',
+                            'pago': 'Não',
+                            'valor': 250.00
+                          },
+                        ], context),
+                        _buildListView([
+                          {
+                            'nome': 'Carlos',
+                            'categoria': 'Tecnologia',
+                            'pago': 'Não',
+                            'valor': 230.75
+                          },
+                          {
+                            'nome': 'Ana',
+                            'categoria': 'Roupas',
+                            'pago': 'Sim',
+                            'valor': 150.00
+                          },
+                          {
+                            'nome': 'Idail',
+                            'categoria': 'Roupas',
+                            'pago': 'Sim',
+                            'valor': 150.00
+                          },
+                          {
+                            'nome': 'Matheus',
+                            'categoria': 'Roupas',
+                            'pago': 'Sim',
+                            'valor': 150.00
+                          },
+                          {
+                            'nome': 'Eliza',
+                            'categoria': 'Roupas',
+                            'pago': 'Sim',
+                            'valor': 150.00
+                          },
+                          {
+                            'nome': 'Caroline',
+                            'categoria': 'Roupas',
+                            'pago': 'Sim',
+                            'valor': 150.00
+                          },
+                          {
+                            'nome': 'Lucas',
+                            'categoria': 'Eletrônicos',
+                            'pago': 'Sim',
+                            'valor': 180.00
+                          },
+                          {
+                            'nome': 'Juliana',
+                            'categoria': 'Móveis',
+                            'pago': 'Não',
+                            'valor': 250.00
+                          },
+                          {
+                            'nome': 'Pedro',
+                            'categoria': 'Saúde',
+                            'pago': 'Sim',
+                            'valor': 100.00
+                          },
+                          {
+                            'nome': 'Patricia',
+                            'categoria': 'Saúde',
+                            'pago': 'Sim',
+                            'valor': 120.00
+                          },
+                        ], context),
+                        _buildListView([
+                          {
+                            'nome': 'João',
+                            'categoria': 'Alimentos',
+                            'pago': 'Sim',
+                            'valor': 120.00
+                          },
+                          {
+                            'nome': 'Ana',
+                            'categoria': 'Roupas',
+                            'pago': 'Sim',
+                            'valor': 150.00
+                          },
+                          {
+                            'nome': 'Idail',
+                            'categoria': 'Roupas',
+                            'pago': 'Sim',
+                            'valor': 150.00
+                          },
+                          {
+                            'nome': 'Matheus',
+                            'categoria': 'Roupas',
+                            'pago': 'Sim',
+                            'valor': 150.00
+                          },
+                          {
+                            'nome': 'Eliza',
+                            'categoria': 'Roupas',
+                            'pago': 'Sim',
+                            'valor': 150.00
+                          },
+                          {
+                            'nome': 'Caroline',
+                            'categoria': 'Roupas',
+                            'pago': 'Sim',
+                            'valor': 150.00
+                          },
+                          {
+                            'nome': 'Lucas',
+                            'categoria': 'Eletrônicos',
+                            'pago': 'Sim',
+                            'valor': 180.00
+                          },
+                          {
+                            'nome': 'Juliana',
+                            'categoria': 'Móveis',
+                            'pago': 'Sim',
+                            'valor': 250.00
+                          },
+                          {
+                            'nome': 'Pedro',
+                            'categoria': 'Saúde',
+                            'pago': 'Sim',
+                            'valor': 100.00
+                          },
+                          {
+                            'nome': 'Patricia',
+                            'categoria': 'Saúde',
+                            'pago': 'Sim',
+                            'valor': 120.00
+                          },
+                        ], context),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
-    ),
-  );
-}
-
-
+    );
+  }
 
   Widget _buildListView(
       List<Map<String, dynamic>> items, BuildContext context) {
@@ -605,6 +606,7 @@ Widget build(BuildContext context) {
     required String title,
     required String buttonLabel,
     required VoidCallback onPressed,
+    required double cardWidth,
   }) {
     return Card(
       elevation: 0.0, // Removendo sombra extra para seguir o estilo
@@ -612,14 +614,13 @@ Widget build(BuildContext context) {
         borderRadius: BorderRadius.circular(12.0),
       ),
       child: Container(
-        width: 210.0, // Largura fixa para os cards
+        width: cardWidth, // Define a largura do card dinamicamente
         constraints: const BoxConstraints(
           minHeight: 70.0,
           maxWidth: 300.0,
         ),
         decoration: BoxDecoration(
-          color: FlutterFlowTheme.of(context)
-              .secondaryBackground, // Cor de fundo dos cards fornecidos
+          color: FlutterFlowTheme.of(context).secondaryBackground,
           boxShadow: const [
             BoxShadow(
               blurRadius: 3.0,
@@ -629,8 +630,7 @@ Widget build(BuildContext context) {
           ],
           borderRadius: BorderRadius.circular(12.0),
           border: Border.all(
-            color: FlutterFlowTheme.of(context)
-                .alternate, // Bordas consistentes com o design
+            color: FlutterFlowTheme.of(context).alternate,
             width: 1.0,
           ),
         ),
@@ -643,12 +643,14 @@ Widget build(BuildContext context) {
             const SizedBox(height: 8.0),
             Text(
               title,
-              style: Theme.of(context).textTheme.headlineMedium,
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontSize: 19.0, // Tamanho da fonte ajustado,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16.0),
             SizedBox(
-              width: double.infinity, // Botão ocupa toda a largura do card
+              width: double.infinity,
               child: ElevatedButton(
                 onPressed: onPressed,
                 style: ElevatedButton.styleFrom(
