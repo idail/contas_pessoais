@@ -25,8 +25,15 @@ class MainContractsWidget extends StatefulWidget {
   final String? nome_usuario;
   final String? departamentos_gestor;
 
-  const MainContractsWidget({super.key, this.usuariocodigo, this.tipo_acesso, this.codigo_departamento_fornecedor , 
-  this.email_usuario , this.login_usuario , this.nome_usuario , this.departamentos_gestor});
+  const MainContractsWidget(
+      {super.key,
+      this.usuariocodigo,
+      this.tipo_acesso,
+      this.codigo_departamento_fornecedor,
+      this.email_usuario,
+      this.login_usuario,
+      this.nome_usuario,
+      this.departamentos_gestor});
 
   @override
   State<MainContractsWidget> createState() => _MainContractsWidgetState();
@@ -42,10 +49,16 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
   List<Map<String, dynamic>> pedidos = [];
   int currentPage = 0;
   String texto = '';
+
+  late TabController _tabController;
+
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => MainContractsModel());
+
+    _tabController = TabController(length: 3, vsync: this);
+
     // logFirebaseEvent('screen_view', parameters: {'screen_name': 'Main_Contracts'});
     animationsMap.addAll({
       // Animations...
@@ -136,22 +149,24 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
  @override
 Widget build(BuildContext context) {
   return Scaffold(
-    backgroundColor: FlutterFlowTheme.of(context).primaryBackground, // Definindo a cor de fundo
+    backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
     body: Padding(
-      padding: const EdgeInsets.all(50.0),
+      padding: const EdgeInsets.all(20.0),
       child: Column(
         mainAxisSize: MainAxisSize.max,
-        crossAxisAlignment: CrossAxisAlignment.start, // Alinha os itens à esquerda
         children: [
+          // Espaçamento no topo
+          const SizedBox(height: 50.0),
+
+          // Cards Horizontais
           Row(
-            mainAxisAlignment: MainAxisAlignment.start, // Mantém os cards alinhados à esquerda
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Card 1
               _buildHorizontalCard(
                 context,
-                icon: Icons.money,
+                icon: Icons.money_rounded,
                 title: 'Renda',
-                buttonLabel: 'Cadastrar', // Passando o botão
+                buttonLabel: 'Cadastrar',
                 onPressed: () {
                   showDialog(
                     context: context,
@@ -161,11 +176,12 @@ Widget build(BuildContext context) {
                           borderRadius: BorderRadius.circular(16.0),
                         ),
                         elevation: 16.0,
-                        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+                        backgroundColor:
+                            FlutterFlowTheme.of(context).secondaryBackground,
                         child: ConstrainedBox(
                           constraints: const BoxConstraints(
-                            maxHeight: 400,
-                            maxWidth: 300,
+                            maxHeight: 500,
+                            maxWidth: 400,
                           ),
                           child: CadastroRendaPage(),
                         ),
@@ -174,19 +190,269 @@ Widget build(BuildContext context) {
                   );
                 },
               ),
-              const SizedBox(width: 10.0), // Ajustando o espaçamento entre os cards
-              // Card 2
+              const SizedBox(width: 10.0),
               _buildHorizontalCard(
                 context,
                 icon: Icons.account_balance_wallet,
                 title: 'Despesa',
-                buttonLabel: 'Cadastrar', // Passando o botão
+                buttonLabel: 'Cadastrar',
                 onPressed: () {
                   print('Card 2 pressionado');
                 },
               ),
             ],
           ),
+
+          // Espaçamento entre os cards e o campo de pesquisa
+          const SizedBox(height: 20.0),
+
+          // Campo de pesquisa com botão de pesquisa
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  decoration: InputDecoration(
+                    hintText: 'Pesquisar...',
+                    hintStyle: TextStyle(color: Colors.grey),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey),
+                    ),
+                    prefixIcon: Icon(Icons.search, color: Colors.grey),
+                  ),
+                  onChanged: (query) {
+                    // Adicione a lógica de pesquisa aqui
+                    print('Pesquisando: $query');
+                  },
+                ),
+              ),
+              IconButton(
+                icon: Icon(Icons.search),
+                color: Colors.blue,
+                onPressed: () {
+                  // Adicione a lógica de pesquisa ao pressionar o botão
+                  print('Botão de pesquisa pressionado');
+                },
+              ),
+            ],
+          ),
+
+          // Espaçamento entre o campo de pesquisa e as abas
+          const SizedBox(height: 20.0),
+
+          // Abas e Conteúdo
+          Expanded(
+            child: Column(
+              children: [
+                // Abas
+                TabBar(
+                  labelColor: Colors.blue,
+                  unselectedLabelColor: Colors.grey,
+                  indicatorColor: Colors.blue,
+                  controller: _tabController,
+                  tabs: const [
+                    Tab(text: 'Todos'),
+                    Tab(text: 'Ativos'),
+                    Tab(text: 'Pagos'),
+                  ],
+                ),
+                // Conteúdo das Abas
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildListView([
+                        {
+                          'nome': 'João',
+                          'categoria': 'Alimentos',
+                          'pago': 'Sim',
+                          'valor': 120.00
+                        },
+                        {
+                          'nome': 'Maria',
+                          'categoria': 'Bebidas',
+                          'pago': 'Não',
+                          'valor': 80.50
+                        },
+                        {
+                          'nome': 'Carlos',
+                          'categoria': 'Tecnologia',
+                          'pago': 'Não',
+                          'valor': 230.75
+                        },
+                        {
+                          'nome': 'Ana',
+                          'categoria': 'Roupas',
+                          'pago': 'Sim',
+                          'valor': 150.00
+                        },
+                        {
+                          'nome': 'Idail',
+                          'categoria': 'Roupas',
+                          'pago': 'Sim',
+                          'valor': 150.00
+                        },
+                        {
+                          'nome': 'Matheus',
+                          'categoria': 'Roupas',
+                          'pago': 'Sim',
+                          'valor': 150.00
+                        },
+                        {
+                          'nome': 'Eliza',
+                          'categoria': 'Roupas',
+                          'pago': 'Sim',
+                          'valor': 150.00
+                        },
+                        {
+                          'nome': 'Caroline',
+                          'categoria': 'Roupas',
+                          'pago': 'Sim',
+                          'valor': 150.00
+                        },
+                        {
+                          'nome': 'Lucas',
+                          'categoria': 'Eletrônicos',
+                          'pago': 'Sim',
+                          'valor': 180.00
+                        },
+                        {
+                          'nome': 'Juliana',
+                          'categoria': 'Móveis',
+                          'pago': 'Não',
+                          'valor': 250.00
+                        },
+                      ], context),
+                      _buildListView([
+                        {
+                          'nome': 'Carlos',
+                          'categoria': 'Tecnologia',
+                          'pago': 'Não',
+                          'valor': 230.75
+                        },
+                        {
+                          'nome': 'Ana',
+                          'categoria': 'Roupas',
+                          'pago': 'Sim',
+                          'valor': 150.00
+                        },
+                        {
+                          'nome': 'Idail',
+                          'categoria': 'Roupas',
+                          'pago': 'Sim',
+                          'valor': 150.00
+                        },
+                        {
+                          'nome': 'Matheus',
+                          'categoria': 'Roupas',
+                          'pago': 'Sim',
+                          'valor': 150.00
+                        },
+                        {
+                          'nome': 'Eliza',
+                          'categoria': 'Roupas',
+                          'pago': 'Sim',
+                          'valor': 150.00
+                        },
+                        {
+                          'nome': 'Caroline',
+                          'categoria': 'Roupas',
+                          'pago': 'Sim',
+                          'valor': 150.00
+                        },
+                        {
+                          'nome': 'Lucas',
+                          'categoria': 'Eletrônicos',
+                          'pago': 'Sim',
+                          'valor': 180.00
+                        },
+                        {
+                          'nome': 'Juliana',
+                          'categoria': 'Móveis',
+                          'pago': 'Não',
+                          'valor': 250.00
+                        },
+                        {
+                          'nome': 'Pedro',
+                          'categoria': 'Saúde',
+                          'pago': 'Sim',
+                          'valor': 100.00
+                        },
+                        {
+                          'nome': 'Patricia',
+                          'categoria': 'Saúde',
+                          'pago': 'Sim',
+                          'valor': 120.00
+                        },
+                      ], context),
+                      _buildListView([
+                        {
+                          'nome': 'João',
+                          'categoria': 'Alimentos',
+                          'pago': 'Sim',
+                          'valor': 120.00
+                        },
+                        {
+                          'nome': 'Ana',
+                          'categoria': 'Roupas',
+                          'pago': 'Sim',
+                          'valor': 150.00
+                        },
+                        {
+                          'nome': 'Idail',
+                          'categoria': 'Roupas',
+                          'pago': 'Sim',
+                          'valor': 150.00
+                        },
+                        {
+                          'nome': 'Matheus',
+                          'categoria': 'Roupas',
+                          'pago': 'Sim',
+                          'valor': 150.00
+                        },
+                        {
+                          'nome': 'Eliza',
+                          'categoria': 'Roupas',
+                          'pago': 'Sim',
+                          'valor': 150.00
+                        },
+                        {
+                          'nome': 'Caroline',
+                          'categoria': 'Roupas',
+                          'pago': 'Sim',
+                          'valor': 150.00
+                        },
+                        {
+                          'nome': 'Lucas',
+                          'categoria': 'Eletrônicos',
+                          'pago': 'Sim',
+                          'valor': 180.00
+                        },
+                        {
+                          'nome': 'Juliana',
+                          'categoria': 'Móveis',
+                          'pago': 'Sim',
+                          'valor': 250.00
+                        },
+                        {
+                          'nome': 'Pedro',
+                          'categoria': 'Saúde',
+                          'pago': 'Sim',
+                          'valor': 100.00
+                        },
+                        {
+                          'nome': 'Patricia',
+                          'categoria': 'Saúde',
+                          'pago': 'Sim',
+                          'valor': 120.00
+                        },
+                      ], context),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     ),
@@ -194,104 +460,212 @@ Widget build(BuildContext context) {
 }
 
 
-Widget _buildHorizontalCard(
-  BuildContext context, {
-  required IconData icon,
-  required String title,
-  required String buttonLabel,
-  required VoidCallback onPressed,
-}) {
-  return Padding(
-    padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 8.0, 0.0), // Menor espaçamento entre os cards
-    child: AnimatedContainer(
-      duration: const Duration(milliseconds: 100),
-      curve: Curves.easeInOut,
-      constraints: const BoxConstraints(
-        minHeight: 100.0,
-        maxWidth: 200.0, // Ajustando a largura para 170.0
-      ),
-      decoration: BoxDecoration(
-        color: FlutterFlowTheme.of(context).secondaryBackground,
-        boxShadow: const [
-          BoxShadow(
-            blurRadius: 3.0,
-            color: Color(0x33000000),
-            offset: Offset(0.0, 1.0),
+
+  Widget _buildListView(
+      List<Map<String, dynamic>> items, BuildContext context) {
+    return ListView.builder(
+      itemCount: items.length,
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      itemBuilder: (context, index) {
+        final item = items[index];
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Container(
+            decoration: BoxDecoration(
+              color: FlutterFlowTheme.of(context)
+                  .primaryBackground, // Mesma cor do fundo
+              borderRadius: BorderRadius.circular(8.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  blurRadius: 6,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Informações do item à esquerda
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Nome: ${item['nome']}',
+                          style:
+                              FlutterFlowTheme.of(context).bodyText1.copyWith(
+                                    fontSize: 25.0,
+                                  ),
+                        ),
+                        Text(
+                          'Categoria: ${item['categoria']}',
+                          style: FlutterFlowTheme.of(context)
+                              .bodyText2
+                              .copyWith(fontSize: 25.0),
+                        ),
+                        Row(
+                          children: [
+                            Text(
+                              'Pago: ${item['pago']}',
+                              style: FlutterFlowTheme.of(context)
+                                  .bodyText2
+                                  .copyWith(fontSize: 25.0),
+                            ),
+                            SizedBox(
+                                width:
+                                    10.0), // Espaçamento entre o texto e o quadrado
+                            Container(
+                              width: 20.0,
+                              height: 20.0,
+                              decoration: BoxDecoration(
+                                color: item['pago'] == 'Sim'
+                                    ? Colors.green
+                                    : Colors.red,
+                                borderRadius: BorderRadius.circular(
+                                    4.0), // Deixa o quadrado com cantos arredondados
+                              ),
+                            ),
+                          ],
+                        ),
+                        Text(
+                          'Valor: R\$ ${item['valor'].toStringAsFixed(2)}',
+                          style: FlutterFlowTheme.of(context)
+                              .bodyText2
+                              .copyWith(fontSize: 25.0),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Botões à direita
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          print('Alterar pressionado');
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                        child: Text(
+                          'Alterar',
+                          style:
+                              FlutterFlowTheme.of(context).bodyText1.copyWith(
+                                    color: Colors.white,
+                                    fontSize: 18.0,
+                                  ),
+                        ),
+                      ),
+                      const SizedBox(
+                          height: 8.0), // Espaçamento entre os botões
+                      ElevatedButton(
+                        onPressed: () {
+                          print('Excluir pressionado');
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                        child: Text(
+                          'Excluir',
+                          style:
+                              FlutterFlowTheme.of(context).bodyText1.copyWith(
+                                    color: Colors.white,
+                                    fontSize: 18.0,
+                                  ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ),
-        ],
+        );
+      },
+    );
+  }
+
+  Widget _buildHorizontalCard(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String buttonLabel,
+    required VoidCallback onPressed,
+  }) {
+    return Card(
+      elevation: 0.0, // Removendo sombra extra para seguir o estilo
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12.0),
-        border: Border.all(
-          color: FlutterFlowTheme.of(context).alternate,
-          width: 1.0,
-        ),
       ),
-      child: Padding(
-        padding: const EdgeInsetsDirectional.fromSTEB(12.0, 12.0, 12.0, 12.0),
+      child: Container(
+        width: 210.0, // Largura fixa para os cards
+        constraints: const BoxConstraints(
+          minHeight: 70.0,
+          maxWidth: 300.0,
+        ),
+        decoration: BoxDecoration(
+          color: FlutterFlowTheme.of(context)
+              .secondaryBackground, // Cor de fundo dos cards fornecidos
+          boxShadow: const [
+            BoxShadow(
+              blurRadius: 3.0,
+              color: Color(0x33000000),
+              offset: Offset(0.0, 1.0),
+            ),
+          ],
+          borderRadius: BorderRadius.circular(12.0),
+          border: Border.all(
+            color: FlutterFlowTheme.of(context)
+                .alternate, // Bordas consistentes com o design
+            width: 1.0,
+          ),
+        ),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Ícone arredondado
-            Container(
-              width: 60.0,
-              height: 60.0,
-              decoration: BoxDecoration(
-                color: FlutterFlowTheme.of(context).primaryBackground,
-                shape: BoxShape.circle,
-              ),
-              alignment: const AlignmentDirectional(0.0, 0.0),
-              child: Card(
-                clipBehavior: Clip.antiAliasWithSaveLayer,
-                color: FlutterFlowTheme.of(context).primary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(40.0),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Icon(
-                    icon,
-                    color: Colors.white,
-                    size: 24.0,
-                  ),
-                ),
-              ),
-            ),
+            Icon(icon, size: 40.0, color: Colors.blue),
             const SizedBox(height: 8.0),
-            // Título do Card
             Text(
               title,
+              style: Theme.of(context).textTheme.headlineMedium,
               textAlign: TextAlign.center,
-              style: FlutterFlowTheme.of(context).labelMedium.override(
-                    fontFamily: 'Plus Jakarta Sans',
-                    fontSize: 16.0,
-                    letterSpacing: 0.0,
-                  ),
             ),
-            const SizedBox(height: 12.0),
-            // Botão Centralizado
-            ElevatedButton(
-              onPressed: onPressed,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: FlutterFlowTheme.of(context).primary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.0),
+            const SizedBox(height: 16.0),
+            SizedBox(
+              width: double.infinity, // Botão ocupa toda a largura do card
+              child: ElevatedButton(
+                onPressed: onPressed,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12.0),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
-              ),
-              child: Text(
-                buttonLabel,
-                style: FlutterFlowTheme.of(context).bodyMedium.override(
-                      fontFamily: 'Outfit',
-                      color: Colors.white,
-                      fontSize: 14.0,
-                    ),
+                child: Text(
+                  buttonLabel,
+                  style: const TextStyle(fontSize: 16.0),
+                ),
               ),
             ),
           ],
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 }

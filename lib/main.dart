@@ -180,7 +180,7 @@ class _NavBarPageState extends State<NavBarPage> {
                 size: 32.0,
               ),
               label: 
-                "Dashboard",
+                "Inicio",
               
               tooltip: '',
             ),
@@ -208,7 +208,7 @@ class _NavBarPageState extends State<NavBarPage> {
                 size: 32.0,
               ),
               label: 
-                "Pedidos",
+                "Gerenciar",
               
               tooltip: '',
             ),
@@ -221,7 +221,7 @@ class _NavBarPageState extends State<NavBarPage> {
                 Icons.map,
                 size: 24.0,
               ),
-              label: "Mapa",
+              label: "Consultas",
               tooltip: '',
             ),
             BottomNavigationBarItem(
