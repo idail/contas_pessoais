@@ -142,7 +142,7 @@ class _AuthCreateWidgetState extends State<AuthCreateWidget>
 
   Future<void> cadastrar() async{
     var uri = Uri.parse(
-        "http://192.168.100.46/contas_pessoais_php/api/Usuario.php");
+        "http://192.168.100.6/contas_pessoais_php/api/Usuario.php");
     // Extrair o nome da imagem
 
     String nomeImagem = "";

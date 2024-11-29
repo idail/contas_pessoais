@@ -348,7 +348,7 @@ class _AuthLoginWidgetState extends State<AuthLoginWidget>
     var recebeSenhaUsuario = senhatext.text;
 
     var uri = Uri.parse(
-        "http://192.168.100.46/contas_pessoais_php/api/Usuario.php?execucao=busca_usuario&recebe_login_usuario=$recebeUsuario&recebe_senha_usuario=$recebeSenhaUsuario");
+        "http://192.168.100.6/contas_pessoais_php/api/Usuario.php?execucao=busca_usuario&recebe_login_usuario=$recebeUsuario&recebe_senha_usuario=$recebeSenhaUsuario");
     var resposta = await http.get(uri, headers: {"Accept": "application/json"});
     
     print(resposta.body);
@@ -450,7 +450,11 @@ class _AuthLoginWidgetState extends State<AuthLoginWidget>
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: const Color.fromARGB(255, 0, 102, 180), // Cor de fundo azul bem fraco
+        //backgroundColor: const Color.fromARGB(255, 0, 102, 180), // Cor de fundo azul bem fraco
+        //backgroundColor: Colors, // Define o fundo como branco
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? Colors.black
+          : FlutterFlowTheme.of(context).primaryBackground,
         body: Container(
           width: double.infinity,
           height: double.infinity,
