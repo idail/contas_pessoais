@@ -58,7 +58,7 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
     print(codigoUsuario);
 
     var uri = Uri.parse(
-        "http://192.168.1.90/contas_pessoais_php/api/Usuario.php?execucao=busca_dados_usuario&recebe_codigo_usuario=$codigoUsuario");
+        "http://192.168.1.90/contas_pessoais_php/API/Usuario.php?execucao=busca_dados_usuario&recebe_codigo_usuario=$codigoUsuario");
 
     var resposta = await http.get(uri, headers: {"Accept": "application/json"});
 
@@ -202,7 +202,7 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
   Future<void> alterar_usuario() async {
     int? codigoUsuarioAlterar = widget.codigousuario;
 
-    String url = "http://192.168.100.46/contas_pessoais_php/api/Usuario.php";
+    String url = "https://idailneto.com.br/contas_pessoais/API/Usuario.php";
 
     // Dados a serem enviados no corpo da requisição
     var valores = jsonEncode({
