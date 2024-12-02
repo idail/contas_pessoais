@@ -58,7 +58,7 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
     print(codigoUsuario);
 
     var uri = Uri.parse(
-        "http://192.168.1.90/contas_pessoais_php/API/Usuario.php?execucao=busca_dados_usuario&recebe_codigo_usuario=$codigoUsuario");
+        "https://idailneto.com.br/contas_pessoais/API/Usuario.php?execucao=busca_dados_usuario&recebe_codigo_usuario=$codigoUsuario");
 
     var resposta = await http.get(uri, headers: {"Accept": "application/json"});
 

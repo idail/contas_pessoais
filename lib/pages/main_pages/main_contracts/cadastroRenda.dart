@@ -25,7 +25,7 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
   void submitForm() {
     if (_formKey.currentState!.validate()) {
       // Aqui você pode manipular os dados para enviar ao backend ou fazer outras ações.
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text('Cadastro realizado com sucesso!'),
       ));
     }
@@ -51,7 +51,7 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: TextFormField(
                     controller: nomeController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: "Nome",
                       prefixIcon: Icon(Icons.person),
                       border: OutlineInputBorder(),
