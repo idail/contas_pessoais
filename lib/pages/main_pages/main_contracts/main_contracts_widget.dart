@@ -179,7 +179,7 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
                               FlutterFlowTheme.of(context).secondaryBackground,
                           child: ConstrainedBox(
                             constraints: const BoxConstraints(
-                              maxHeight: 500,
+                              maxHeight: 580,
                               maxWidth: 400,
                             ),
                             child: CadastroRendaPage(),

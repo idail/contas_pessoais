@@ -348,7 +348,7 @@ class _AuthLoginWidgetState extends State<AuthLoginWidget>
     var recebeSenhaUsuario = senhatext.text;
 
     var uri = Uri.parse(
-        "http://192.168.100.6/contas_pessoais_php/api/Usuario.php?execucao=busca_usuario&recebe_login_usuario=$recebeUsuario&recebe_senha_usuario=$recebeSenhaUsuario");
+        "http://192.168.1.90/contas_pessoais_php/api/Usuario.php?execucao=busca_usuario&recebe_login_usuario=$recebeUsuario&recebe_senha_usuario=$recebeSenhaUsuario");
     var resposta = await http.get(uri, headers: {"Accept": "application/json"});
     
     print(resposta.body);
