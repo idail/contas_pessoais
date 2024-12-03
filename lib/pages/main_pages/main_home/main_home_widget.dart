@@ -12,7 +12,8 @@ import 'package:http/http.dart' as http;
 class MainHomeWidget extends StatefulWidget {
   final String? nomeusuario;
   final int? codigousuario;
-  MainHomeWidget({Key? key, this.nomeusuario, required this.codigousuario}) : super(key: key);
+  final String? senhausuario;
+  MainHomeWidget({Key? key, this.nomeusuario, required this.codigousuario , required this.senhausuario}) : super(key: key);
 
   @override
   State<MainHomeWidget> createState() => _MainHomeWidgetState();

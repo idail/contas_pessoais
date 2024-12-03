@@ -19,10 +19,12 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'main_profile_page_model.dart';
 export 'main_profile_page_model.dart';
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as path;
 
 class MainProfilePageWidget extends StatefulWidget {
   final int? codigousuario;
-  const MainProfilePageWidget({super.key, required this.codigousuario});
+  final String? senhausuario;
+  const MainProfilePageWidget({super.key, required this.codigousuario, required this.senhausuario});
 
   @override
   State<MainProfilePageWidget> createState() => _MainProfilePageWidgetState();
@@ -41,6 +43,10 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
   TextEditingController emailUsuarioEspecifico = TextEditingController();
   TextEditingController senhaUsuarioEspecifico = TextEditingController();
 
+  final FocusNode _senhaUsuarioFocusNode = FocusNode();
+
+  late String senhaInformada;
+
   bool _isPasswordVisible = false;
 
   var retornoUsuarioEspecifico;
@@ -49,7 +55,7 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
 
   late String imagem;
 
-  final String imagemPadraoPath =
+  String imagemPadraoPath =
       'assets/images/sem_foto.jpg'; // Caminho da imagem padrão
 
   Future<void> buscarDados() async {
@@ -123,12 +129,15 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
     });
   }
 
-  late String nomeImagem = "";
+  String nomeImagem = "";
+  File? imagemselecionada;
+
+  File? imagemRecebida;
 
   Future<void> selecaoImagem() async {
     try {
       // Selecionar a imagem usando o ImagePicker
-      final pickedImage =
+      final imagemRecebida =
           await ImagePicker().pickImage(source: ImageSource.gallery);
 
       // Obter o diretório para salvar o arquivo
@@ -146,11 +155,12 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
 
       File imagemLocal;
 
-      if (pickedImage == null) {
+      if (imagemRecebida == null) {
         // Caso o usuário cancele a seleção, a imagem padrão será exibida
 
         // Copie a imagem dos assets para o diretório
-        final ByteData data = await rootBundle.load('assets/images/sem_foto.jpg');
+        final ByteData data =
+            await rootBundle.load('assets/images/sem_foto.jpg');
         final File arquivo = File('${imagesDirectory.path}/sem_foto.jpg');
         await arquivo.writeAsBytes(data.buffer.asUint8List());
 
@@ -163,12 +173,12 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
         imagemLocal = arquivo;
       } else {
         // Caminho do arquivo para salvar
-        final fileName = pickedImage.name;
-        
+        final fileName = imagemRecebida.name;
+
         imagemLocal = File('${imagesDirectory.path}/$fileName');
 
         // Copiar o arquivo selecionado para o novo local
-        await File(pickedImage.path).copy(imagemLocal.path);
+        await File(imagemRecebida.path).copy(imagemLocal.path);
 
         // setState(() {
         //   imagemSelecionada = localImage;
@@ -204,13 +214,28 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
 
     String url = "https://idailneto.com.br/contas_pessoais/API/Usuario.php";
 
+    nomeImagem = "";
+
+    nomeImagem = imagemPadraoPath;
+    
+    //nomeImagem = path.basename(imagemrecebida!.path);
+
+    String recebeSenhaInformada;
+
+    if(senhaInformada != "")
+    {
+      recebeSenhaInformada = senhaInformada;
+    }else{
+      recebeSenhaInformada = widget.senhausuario!;
+    }
+
     // Dados a serem enviados no corpo da requisição
     var valores = jsonEncode({
       "codigo_usuario_alterar": codigoUsuarioAlterar,
       "nome_usuario_alterar": nomeUsuarioEspecifico.text,
       "login_usuario_alterar": loginUsuarioEspecifico.text,
       "email_usuario_alterar": emailUsuarioEspecifico.text,
-      "senha_usuario_alterar": senhaUsuarioEspecifico.text,
+      "senha_usuario_alterar": recebeSenhaInformada,
       "nome_imagem_usuario_alterar": nomeImagem,
     });
 
@@ -260,6 +285,25 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
 
     // logFirebaseEvent('screen_view',
     //     parameters: {'screen_name': 'Main_profilePage'});
+
+    // Listener para o FocusNode
+    _senhaUsuarioFocusNode.addListener(() {
+      if (!_senhaUsuarioFocusNode.hasFocus) {
+        // Aciona a ação ao perder o foco
+        print("Campo de senha perdeu o foco!");
+        // Exemplo de ação: validação ou outra lógica
+        if (senhaUsuarioEspecifico.text.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Senha não pode ser vazia!')),
+          );
+        }else{
+          setState((){
+            senhaInformada = senhaUsuarioEspecifico.text;
+          });
+        }
+      }
+    });
+
     animationsMap.addAll({
       'textOnPageLoadAnimation': AnimationInfo(
         trigger: AnimationTrigger.onPageLoad,
@@ -473,8 +517,18 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     GestureDetector(
-                                      onTap:
-                                          selecaoImagem, // Chama o método para alterar a imagem
+                                      onTap: () async {
+                                        await selecaoImagem();
+                                        if (imagemSelecionada != null) {
+                                          setState(() {
+                                            imagemPadraoPath = imagemSelecionada!
+                                                .path; // Atualiza o caminho se houver uma nova imagem
+                                            print(imagemPadraoPath);
+                                          });
+                                        } else {
+                                          print(imagemPadraoPath);
+                                        }
+                                      },
                                       child: Container(
                                         width: 100.0,
                                         height: 100.0,
@@ -908,6 +962,7 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                     ),
                                     child: TextFormField(
                                       controller: senhaUsuarioEspecifico,
+                                      focusNode: _senhaUsuarioFocusNode, // Adicionando o FocusNode
                                       autofocus: true,
                                       obscureText:
                                           !_isPasswordVisible, // Controla a visibilidade da senha
@@ -1009,6 +1064,7 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                     ),
                                   ),
                                 ),
+
                                 Padding(
                                   padding: const EdgeInsetsDirectional.fromSTEB(
                                       16.0, 12.0, 16.0, 0.0),

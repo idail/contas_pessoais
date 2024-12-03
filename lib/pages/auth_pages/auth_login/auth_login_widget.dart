@@ -387,6 +387,7 @@ class _AuthLoginWidgetState extends State<AuthLoginWidget>
       var pathParameters = <String, String>{
         "nomeusuario": nome_usuario,
         "usuario_codigo": codigo_usuario,
+        "senhausuario":recebeSenhaUsuario,
       };
 
       // Adiciona o parâmetro opcional somente se houver valor, garantindo que seja String

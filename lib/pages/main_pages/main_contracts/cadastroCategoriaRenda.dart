@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 
 class CadastroCategoriaRenda extends StatelessWidget {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController nomeController = TextEditingController();
+  final TextEditingController nomeCategoriaRenda = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
+      title: const Text(
         "Cadastro de Categoria",
         textAlign: TextAlign.center,
       ),
@@ -21,8 +21,8 @@ class CadastroCategoriaRenda extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: TextFormField(
-                controller: nomeController,
-                decoration: InputDecoration(
+                controller: nomeCategoriaRenda,
+                decoration: const InputDecoration(
                   labelText: "Nome",
                   prefixIcon: Icon(Icons.label),
                   border: OutlineInputBorder(),
@@ -44,10 +44,10 @@ class CadastroCategoriaRenda extends StatelessWidget {
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
                       // Fecha a modal retornando o nome da categoria
-                      Navigator.of(context).pop(nomeController.text);
+                      Navigator.of(context).pop(nomeCategoriaRenda.text);
                     }
                   },
-                  child: Text('Salvar'),
+                  child: const Text('Salvar'),
                 ),
               ),
             ),

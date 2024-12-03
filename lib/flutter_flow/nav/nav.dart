@@ -75,9 +75,9 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         ),
         FFRoute(
           name: 'Main_Home',
-          path: '/mainHome/:nomeusuario/:usuario_codigo',
+          path: '/mainHome/:nomeusuario/:usuario_codigo/:senhausuario',
           builder: (context, params) => NavBarPage(initialPage: 'Main_Home',nomeusuario:params.getParam("nomeusuario", ParamType.String),
-          usuario_codigo:params.getParam("usuario_codigo", ParamType.int),
+          usuario_codigo:params.getParam("usuario_codigo", ParamType.int),senhausuario:params.getParam("senhausuario", ParamType.String),
               ),
         ),
         FFRoute(
@@ -105,8 +105,9 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         ),
         FFRoute(
           name: 'Main_profilePage',
-          path: '/mainProfilePage/:codigousuario',
-          builder: (context, params) => NavBarPage(initialPage: 'Main_profilePage',usuario_codigo: params.getParam("usuario_codigo", ParamType.int)),
+          path: '/mainProfilePage/:codigousuario/:senhausuario',
+          builder: (context, params) => NavBarPage(initialPage: 'Main_profilePage',usuario_codigo: params.getParam("usuario_codigo", ParamType.int),
+          senhausuario:params.getParam("senhausuario", ParamType.String)),
         ),
         FFRoute(
           name: 'userDetails',

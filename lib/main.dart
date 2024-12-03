@@ -98,7 +98,7 @@ class _MyAppState extends State<MyApp> {
 }
 
 class NavBarPage extends StatefulWidget {
-  const NavBarPage({super.key, this.initialPage, this.page, this.tipoacesso, this.nomeusuario, this.usuario_codigo, 
+  const NavBarPage({super.key, this.initialPage, this.page, this.tipoacesso, this.nomeusuario, this.usuario_codigo, this.senhausuario,
   this.codigo_departamento_fornecedor, this.login_usuario , this.email_usuario, this.departamentos_gestor});
 
   final String? initialPage;
@@ -106,6 +106,7 @@ class NavBarPage extends StatefulWidget {
   final String? tipoacesso;
   final String? nomeusuario;
   final int? usuario_codigo;
+  final String? senhausuario;
   final String? codigo_departamento_fornecedor;
   final String? login_usuario;
   final String? email_usuario;
@@ -139,13 +140,13 @@ class _NavBarPageState extends State<NavBarPage> {
     // }
 
     final tabs = {
-      'Main_Home': MainHomeWidget(codigousuario: widget.usuario_codigo,nomeusuario: widget.nomeusuario,),
+      'Main_Home': MainHomeWidget(codigousuario: widget.usuario_codigo,nomeusuario: widget.nomeusuario,senhausuario: widget.senhausuario,),
       //'Main_customerList': const MainCustomerListWidget(),
       'Main_Contracts': MainContractsWidget(usuariocodigo: widget.usuario_codigo,tipo_acesso: widget.tipoacesso, 
       codigo_departamento_fornecedor: recebe_codigo_departamento_fornecedor,email_usuario: widget.email_usuario,login_usuario:widget.login_usuario , nome_usuario: widget.nomeusuario,
       departamentos_gestor:widget.departamentos_gestor),
       'Main_messages': const MainMessagesWidget(),
-      'Main_profilePage': MainProfilePageWidget(codigousuario: widget.usuario_codigo),
+      'Main_profilePage': MainProfilePageWidget(codigousuario: widget.usuario_codigo, senhausuario: widget.senhausuario),
     };
     final currentIndex = tabs.keys.toList().indexOf(_currentPageName);
 

@@ -41,7 +41,11 @@ class _AuthCreateWidgetState extends State<AuthCreateWidget>
   var confirmasenhausuariotxt = TextEditingController();
 
   File? imagemselecionada;
-  XFile? imagemrecebida;
+
+  File? imagemRecebida;
+
+
+  //XFile? imagemrecebida;
 
   String imagemPath = 'assets/images/sem_foto.jpg'; // Caminho padrão
 
@@ -49,7 +53,7 @@ class _AuthCreateWidgetState extends State<AuthCreateWidget>
 
   bool senhaVerificada = false;
 
-  File? _image;
+  File? caminhoImagemBanco;
 
   Future<void> selecaoImagem() async {
     // final picker = ImagePicker();
@@ -64,7 +68,7 @@ class _AuthCreateWidgetState extends State<AuthCreateWidget>
 
     try {
     // Selecionar a imagem usando o ImagePicker
-    final pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
+    var imagemRecebida = await ImagePicker().pickImage(source: ImageSource.gallery);
 
     // Obter o diretório para salvar o arquivo
     final appDir = await getApplicationDocumentsDirectory();
@@ -83,9 +87,9 @@ class _AuthCreateWidgetState extends State<AuthCreateWidget>
       imagesDirectory.createSync(recursive: true);
     }
 
-    File localImage;
+    File imagemLocal;
 
-    if (pickedImage == null) {
+    if (imagemRecebida == null) {
 
       // Copie a imagem dos assets para o diretório
       final ByteData data = await rootBundle.load('assets/images/sem_foto.jpg');
@@ -102,26 +106,29 @@ class _AuthCreateWidgetState extends State<AuthCreateWidget>
       //   await defaultImage.copy(defaultImageCopy.path);
       // }
 
-      localImage = arquivo;
+      imagemLocal = arquivo;
     } else {
       // Caminho do arquivo para salvar
-      final fileName = pickedImage.name;
+      final fileName = imagemRecebida.name;
       //localImage = File('${imagesDir.path}/$fileName');
       
-      localImage = File('${imagesDirectory.path}/$fileName');
+      imagemLocal = File('${imagesDirectory.path}/$fileName');
       // Copiar o arquivo selecionado para o novo local
-      await File(pickedImage.path).copy(localImage.path);
+
+      caminhoImagemBanco = imagemLocal;
+
+      await File(imagemRecebida.path).copy(imagemLocal.path);
     }
 
     // Atualizar a imagem selecionada
     setState(() {
-      imagemselecionada = localImage;
+      imagemselecionada = imagemLocal;
     });
 
     // Exibir o SnackBar com o local da imagem salva
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Imagem salva em: ${localImage.path}'),
+        content: Text('Imagem salva em: ${imagemLocal.path}'),
       ),
     );
   } catch (e) {
@@ -146,11 +153,12 @@ class _AuthCreateWidgetState extends State<AuthCreateWidget>
     // Extrair o nome da imagem
 
     String nomeImagem = "";
-    if(imagemrecebida != null){
-      nomeImagem = path.basename(imagemrecebida!.path);
+    if(caminhoImagemBanco != null){
+      nomeImagem = imagemPath;
     }else{
       nomeImagem = imagemPath;
     }
+    
 
     if(nomeusuariotxt.text.isEmpty){
       mostrarAlerta("Verificar preenchimento", "Favor preencher o nome do usuário");
