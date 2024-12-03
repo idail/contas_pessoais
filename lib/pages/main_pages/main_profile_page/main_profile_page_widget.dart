@@ -24,7 +24,8 @@ import 'package:path/path.dart' as path;
 class MainProfilePageWidget extends StatefulWidget {
   final int? codigousuario;
   final String? senhausuario;
-  const MainProfilePageWidget({super.key, required this.codigousuario, required this.senhausuario});
+  const MainProfilePageWidget(
+      {super.key, required this.codigousuario, required this.senhausuario});
 
   @override
   State<MainProfilePageWidget> createState() => _MainProfilePageWidgetState();
@@ -45,7 +46,7 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
 
   final FocusNode _senhaUsuarioFocusNode = FocusNode();
 
-  late String senhaInformada;
+  String senhaInformada = "";
 
   bool _isPasswordVisible = false;
 
@@ -61,16 +62,16 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
   Future<void> buscarDados() async {
     int? codigoUsuario = widget.codigousuario;
 
-    print(codigoUsuario);
+    //print(codigoUsuario);
 
     var uri = Uri.parse(
         "https://idailneto.com.br/contas_pessoais/API/Usuario.php?execucao=busca_dados_usuario&recebe_codigo_usuario=$codigoUsuario");
 
     var resposta = await http.get(uri, headers: {"Accept": "application/json"});
 
-    print(uri);
+    //print(uri);
 
-    print(resposta.body);
+    //print(resposta.body);
 
     retornoUsuarioEspecifico = jsonDecode(resposta.body);
 
@@ -90,6 +91,7 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
 
       setState(() {
         imagemSelecionada = File(imagem);
+        senhaInformada = widget.senhausuario!;
       });
     } else {
       // // Copie a imagem dos assets para o diretório
@@ -217,15 +219,14 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
     nomeImagem = "";
 
     nomeImagem = imagemPadraoPath;
-    
+
     //nomeImagem = path.basename(imagemrecebida!.path);
 
     String recebeSenhaInformada;
 
-    if(senhaInformada != "")
-    {
+    if (senhaInformada != "") {
       recebeSenhaInformada = senhaInformada;
-    }else{
+    } else {
       recebeSenhaInformada = widget.senhausuario!;
     }
 
@@ -266,7 +267,7 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
         // }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Falha ao conectar com a API.')),
+          const SnackBar(content: Text('Falha ao conectar com a API.')),
         );
       }
     } catch (e) {
@@ -294,10 +295,10 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
         // Exemplo de ação: validação ou outra lógica
         if (senhaUsuarioEspecifico.text.isEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Senha não pode ser vazia!')),
+            const SnackBar(content: Text('Senha não pode ser vazia!')),
           );
-        }else{
-          setState((){
+        } else {
+          setState(() {
             senhaInformada = senhaUsuarioEspecifico.text;
           });
         }
@@ -962,7 +963,8 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                     ),
                                     child: TextFormField(
                                       controller: senhaUsuarioEspecifico,
-                                      focusNode: _senhaUsuarioFocusNode, // Adicionando o FocusNode
+                                      focusNode:
+                                          _senhaUsuarioFocusNode, // Adicionando o FocusNode
                                       autofocus: true,
                                       obscureText:
                                           !_isPasswordVisible, // Controla a visibilidade da senha
@@ -1071,6 +1073,20 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                   child: ElevatedButton(
                                     onPressed: () async {
                                       alterar_usuario();
+
+                                      // Exibe o SnackBar após a alteração
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Registro alterado com sucesso!',
+                                            style:
+                                                TextStyle(color: Colors.white),
+                                          ),
+                                          backgroundColor: Colors.green,
+                                          duration: Duration(seconds: 3),
+                                        ),
+                                      );
                                     }
                                     // Adicione a lógica de edição aqui
                                     ,
