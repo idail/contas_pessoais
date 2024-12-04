@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:financas/pages/main_pages/main_contracts/cadastroCategoriaRenda.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class CadastroRendaPage extends StatefulWidget {
   @override
@@ -13,6 +15,9 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
   TextEditingController valorController = TextEditingController();
   TextEditingController pagoController = TextEditingController();
 
+  // Lista de categorias para o Dropdown
+  List<String> categorias = ["Selecione"];
+
   @override
   void dispose() {
     nomeController.dispose();
@@ -22,23 +27,56 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
     super.dispose();
   }
 
+  // Função para buscar as categorias da API
+  Future<void> buscarCategorias() async {
+    String apiUrl = 'https://idailneto.com.br/contas_pessoais/API/Categoria.php';
+    try {
+      final response = await http.get(Uri.parse(apiUrl));
+      if (response.statusCode == 200) {
+        final List<dynamic> categoriasData = json.decode(response.body);
+        setState(() {
+          categorias = [
+            "Selecione",
+            ...categoriasData.map((cat) => cat['nomeCategoria']).toList()
+          ];
+        });
+      } else {
+        throw Exception('Falha ao carregar categorias');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao carregar categorias: $e')),
+      );
+    }
+  }
+
+  // Função para enviar o formulário
   void submitForm() {
     if (_formKey.currentState!.validate()) {
-      // Aqui você pode manipular os dados para enviar ao backend ou fazer outras ações.
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text('Cadastro realizado com sucesso!'),
       ));
     }
   }
 
+  // Função para atualizar categorias após o cadastro de nova categoria
+  Future<void> atualizarCategorias() async {
+    await buscarCategorias();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    buscarCategorias();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Cadastro de Renda"),
+        title: const Text("Cadastro de Renda"),
       ),
       body: SingleChildScrollView(
-        // Adicione este widget
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Form(
@@ -46,7 +84,6 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Campo Nome
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: TextFormField(
@@ -64,8 +101,6 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
                     },
                   ),
                 ),
-
-                // Campo Categoria com Select List e botão "+"
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: Row(
@@ -77,18 +112,18 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
                             border: OutlineInputBorder(),
                             prefixIcon: Icon(Icons.category),
                           ),
-                          value: null,
-                          items: const [
-                            DropdownMenuItem(
-                              value: null,
-                              child: Text('Selecione'),
-                            ),
-                          ],
+                          value: categorias.isNotEmpty ? categorias[0] : null,
+                          items: categorias.map((String categoria) {
+                            return DropdownMenuItem<String>(
+                              value: categoria,
+                              child: Text(categoria),
+                            );
+                          }).toList(),
                           onChanged: (String? newValue) {
                             categoriaController.text = newValue ?? '';
                           },
                           validator: (value) {
-                            if (value == null || value.isEmpty) {
+                            if (value == null || value == "Selecione") {
                               return 'Por favor, selecione uma categoria.';
                             }
                             return null;
@@ -102,19 +137,21 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
                             context: context,
                             builder: (context) => CadastroCategoriaRenda(),
                           );
-
-                          if (resultado != null) {
-                            print("Categoria cadastrada: $resultado");
-                            // Atualize sua lista de categorias aqui
+                          if (resultado != null && resultado.isNotEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content:
+                                    Text('Categoria "$resultado" adicionada!'),
+                              ),
+                            );
+                            await atualizarCategorias();
                           }
                         },
-                        icon: Icon(Icons.add, color: Colors.blue),
+                        icon: const Icon(Icons.add, color: Colors.blue),
                       ),
                     ],
                   ),
                 ),
-
-                // Campo Valor
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: TextFormField(
@@ -136,8 +173,6 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
                     },
                   ),
                 ),
-
-                // Campo Pago
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: TextFormField(
@@ -156,13 +191,11 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
                     },
                   ),
                 ),
-
-                // Botão de Submissão
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
                   child: ElevatedButton(
                     onPressed: submitForm,
-                    child: Text('Cadastrar'),
+                    child: const Text('Cadastrar'),
                   ),
                 ),
               ],

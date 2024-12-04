@@ -1,8 +1,66 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 
 class CadastroCategoriaRenda extends StatelessWidget {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController nomeCategoriaRenda = TextEditingController();
+
+  var retornoCadastrarCategoriaRenda;
+
+  Future<String?> cadastrarCategoriaRenda(BuildContext context) async {
+    var uri =
+        Uri.parse("https://idailneto.com.br/contas_pessoais/API/Categoria.php");
+
+    print(nomeCategoriaRenda.text);
+
+    var valorCadastrarCategoriaRenda = jsonEncode({
+      "nome_categoria_renda": nomeCategoriaRenda.text,
+    });
+
+    try {
+      var respostaCadastrarCategoriaRenda = await http.post(
+        uri,
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+        },
+        body: valorCadastrarCategoriaRenda,
+      );
+
+      if(respostaCadastrarCategoriaRenda.statusCode == 200){
+        retornoCadastrarCategoriaRenda = jsonDecode(respostaCadastrarCategoriaRenda.body);
+
+        var valorCodigoCategoriaRenda = int.parse(retornoCadastrarCategoriaRenda);
+
+        return nomeCategoriaRenda.text;
+      }
+    } catch (e) {
+      print("Erro na requisição: $e");
+    }
+
+    return null; // Retorna null em caso de falha
+  }
+
+  // void mostrarAlerta(BuildContext context,String titulo, String mensagem) {
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: Text(titulo),
+  //         content: Text(mensagem),
+  //         actions: <Widget>[
+  //           TextButton(
+  //             child: const Text('OK'),
+  //             onPressed: () {
+  //               Navigator.of(context).pop();
+  //             },
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -41,10 +99,10 @@ class CadastroCategoriaRenda extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 16.0),
               child: Center(
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     if (_formKey.currentState!.validate()) {
-                      // Fecha a modal retornando o nome da categoria
-                      Navigator.of(context).pop(nomeCategoriaRenda.text);
+                      final resultado = await cadastrarCategoriaRenda(context);
+                      Navigator.of(context).pop(resultado); // Fecha a modal retornando o resultado
                     }
                   },
                   child: const Text('Salvar'),

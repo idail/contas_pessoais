@@ -537,7 +537,10 @@ class _AuthCreateWidgetState extends State<AuthCreateWidget>
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: const Color.fromARGB(255, 0, 102, 180),
+        //backgroundColor: const Color.fromARGB(255, 0, 102, 180),
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? Colors.black
+          : FlutterFlowTheme.of(context).primaryBackground,
         body: Container(
           width: double.infinity,
           height: double.infinity,
