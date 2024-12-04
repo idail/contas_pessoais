@@ -29,7 +29,7 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
 
   // Função para buscar as categorias da API
   Future<void> buscarCategorias() async {
-    String apiUrl = 'https://idailneto.com.br/contas_pessoais/API/Categoria.php';
+    String apiUrl = 'https://idailneto.com.br/contas_pessoais/API/Categoria.php?execucao=busca_categorias';
     try {
       final response = await http.get(Uri.parse(apiUrl));
       if (response.statusCode == 200) {
