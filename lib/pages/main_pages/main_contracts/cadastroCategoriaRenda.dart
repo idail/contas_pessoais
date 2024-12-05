@@ -15,6 +15,7 @@ class CadastroCategoriaRenda extends StatelessWidget {
     print(nomeCategoriaRenda.text);
 
     var valorCadastrarCategoriaRenda = jsonEncode({
+      "execucao":"cadastrar_categoria_renda",
       "nome_categoria_renda": nomeCategoriaRenda.text,
     });
 

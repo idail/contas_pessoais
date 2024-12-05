@@ -204,6 +204,7 @@ class _AuthCreateWidgetState extends State<AuthCreateWidget>
               var pathParameters = <String, String>{
                 "nomeusuario": nomeusuariotxt.text,
                 "usuario_codigo": dados,
+                "senhausuario":senhausuariotxt.text,
               };
 
               context.pushNamed('Main_Home',pathParameters: pathParameters);

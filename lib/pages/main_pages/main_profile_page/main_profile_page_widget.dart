@@ -122,7 +122,7 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
       nomeUsuarioEspecifico.text = retornoUsuarioEspecifico["nome_usuario"];
       loginUsuarioEspecifico.text = retornoUsuarioEspecifico["login_usuario"];
       emailUsuarioEspecifico.text = retornoUsuarioEspecifico["email_usuario"];
-      senhaUsuarioEspecifico.text = retornoUsuarioEspecifico["senha_usuario"];
+      senhaUsuarioEspecifico.text = widget.senhausuario!;
 
       // if (retornoUsuarioEspecifico["imagem_usuario"] !=
       //     "assets/images/sem_foto.jpg") {
