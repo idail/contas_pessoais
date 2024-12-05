@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'package:financas/pages/main_pages/main_contracts/cadastroCategoriaRenda.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
 
 class CadastroRendaPage extends StatefulWidget {
   @override
@@ -83,7 +85,7 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
           body: valorCadastrarRenda,
         );
 
-        if(respostaCadastrarRenda.statusCode == 200){
+        if (respostaCadastrarRenda.statusCode == 200) {
           var retornoCadastrarRenda = jsonDecode(respostaCadastrarRenda.body);
 
           var valorCodigoRenda = int.parse(retornoCadastrarRenda);
@@ -198,15 +200,26 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
                     decoration: const InputDecoration(
                       labelText: "Valor",
                       prefixIcon: Icon(Icons.monetization_on),
+                      prefixText: "R\$ ", // Adiciona o prefixo R$
                       border: OutlineInputBorder(),
                     ),
-                    keyboardType: TextInputType.number,
+                    keyboardType:
+                        TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [
+                      FilteringTextInputFormatter
+                          .digitsOnly, // Permite apenas números
+                    ],
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Por favor, insira o valor.';
                       }
-                      if (double.tryParse(value) == null) {
-                        return 'Por favor, insira um valor válido.';
+
+                      // Remove formatação e valida como número
+                      final unformattedValue =
+                          value.replaceAll(RegExp(r'[^0-9]'), '');
+                      if (double.tryParse(unformattedValue) == null ||
+                          double.parse(unformattedValue) <= 0) {
+                        return 'Por favor, insira um valor válido maior que zero.';
                       }
                       return null;
                     },
@@ -246,7 +259,20 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
                       Expanded(
                         child: ElevatedButton(
                           onPressed: () async {
-                            cadastrarRenda();
+                            // Chama a função de cadastro
+                            await cadastrarRenda();
+
+                            // Exibe a Snackbar de sucesso
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Renda cadastrada com sucesso!',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                backgroundColor: Colors.green,
+                                duration: Duration(seconds: 3),
+                              ),
+                            );
                           },
                           child: const Text('Cadastrar'),
                         ),
