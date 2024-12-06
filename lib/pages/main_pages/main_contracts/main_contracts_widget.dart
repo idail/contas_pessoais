@@ -49,7 +49,7 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
   List<Map<String, dynamic>> pedidos = [];
   int currentPage = 0;
   String texto = '';
-
+  bool exibirSnackbar = false;
   late TabController _tabController;
 
   @override
@@ -167,6 +167,7 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
                   title: 'Renda',
                   buttonLabel: 'Cadastrar',
                   onPressed: () {
+                    // Exibe o diálogo de cadastro
                     showDialog(
                       context: context,
                       builder: (BuildContext context) {
@@ -186,8 +187,19 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
                           ),
                         );
                       },
-                    );
+                    ).then((value) {
+                      // Verifica a variável exibirSnackbar antes de exibir o Snackbar
+                      if (exibirSnackbar == false) {
+                        // ScaffoldMessenger.of(context).showSnackBar(
+                        //   SnackBar(
+                        //     content: Text('Renda cadastrada com sucesso!'),
+                        //     duration: const Duration(seconds: 3),
+                        //   ),
+                        // );
+                      }
+                    });
                   },
+
                   cardWidth: MediaQuery.of(context).size.width *
                       0.4, // Largura dinâmica
                 ),
@@ -644,8 +656,8 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
             Text(
               title,
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontSize: 19.0, // Tamanho da fonte ajustado,
-              ),
+                    fontSize: 19.0, // Tamanho da fonte ajustado,
+                  ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16.0),
