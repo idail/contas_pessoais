@@ -183,23 +183,17 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
                               maxHeight: 580,
                               maxWidth: 400,
                             ),
-                            child: CadastroRendaPage(),
+                            child: Builder(
+                              builder: (BuildContext modalContext) {
+                                // Passa o modalContext para o CadastroRendaPage
+                                return CadastroRendaPage(context: modalContext);
+                              },
+                            ),
                           ),
                         );
                       },
-                    ).then((value) {
-                      // Verifica a variável exibirSnackbar antes de exibir o Snackbar
-                      if (exibirSnackbar == false) {
-                        // ScaffoldMessenger.of(context).showSnackBar(
-                        //   SnackBar(
-                        //     content: Text('Renda cadastrada com sucesso!'),
-                        //     duration: const Duration(seconds: 3),
-                        //   ),
-                        // );
-                      }
-                    });
+                    );
                   },
-
                   cardWidth: MediaQuery.of(context).size.width *
                       0.4, // Largura dinâmica
                 ),

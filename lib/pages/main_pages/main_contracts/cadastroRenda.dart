@@ -6,6 +6,10 @@ import 'package:http/http.dart' as http;
 //import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
 
 class CadastroRendaPage extends StatefulWidget {
+  final BuildContext context; // Novo parâmetro
+  @override
+  const CadastroRendaPage({Key? key, required this.context}) : super(key: key);
+
   @override
   _CadastroRendaPageState createState() => _CadastroRendaPageState();
 }
@@ -61,13 +65,8 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
     }
   }
 
-  // Função para enviar o formulário
-  Future<int?> cadastrarRenda() async {
+  Future<void> cadastrarRenda() async {
     if (_formKey.currentState!.validate()) {
-      // ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-      //   content: Text('Cadastro realizado com sucesso!'),
-      // ));
-
       var uri = Uri.parse(
           "https://idailneto.com.br/contas_pessoais/API/Categoria.php");
 
@@ -92,25 +91,32 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
         if (respostaCadastrarRenda.statusCode == 200) {
           var retornoCadastrarRenda = jsonDecode(respostaCadastrarRenda.body);
 
-          var valorCodigoRenda = int.parse(retornoCadastrarRenda);
-
-          // setState(() {
-          //   exibirSnackbar = true; // Define que o Snackbar deve ser exibido
-          // });
-
-          return valorCodigoRenda;
+          // Exibe a mensagem de sucesso
+          exibirMensagem();
         }
       } catch (e) {
         print("Erro na requisição: $e");
       }
-
-      return null;
     }
   }
 
   // Função para atualizar categorias após o cadastro de nova categoria
   Future<void> atualizarCategorias() async {
     await buscarCategorias();
+  }
+
+  // Exibir mensagem de sucesso e ocultar após 4 segundos
+  Future<void> exibirMensagem() async {
+    setState(() {
+      exibirMensagemSucesso = true;
+    });
+
+    // Atraso de 4 segundos
+    await Future.delayed(const Duration(seconds: 4));
+
+    setState(() {
+      exibirMensagemSucesso = false;
+    });
   }
 
   @override
@@ -120,172 +126,173 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
   }
 
   //static bool exibirSnackbar = false; // Variável de controle para o Snackbar
-
+  // Variável para controlar a exibição da mensagem
+  bool exibirMensagemSucesso = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Cadastro de Renda"),
       ),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Campo Nome
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: TextFormField(
-                        controller: nomeRenda,
-                        decoration: const InputDecoration(
-                          labelText: "Nome",
-                          prefixIcon: Icon(Icons.account_balance_wallet),
-                          border: OutlineInputBorder(),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Por favor, insira o nome.';
-                          }
-                          return null;
-                        },
-                      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Campo Nome
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: TextFormField(
+                    controller: nomeRenda,
+                    decoration: const InputDecoration(
+                      labelText: "Nome",
+                      prefixIcon: Icon(Icons.account_balance_wallet),
+                      border: OutlineInputBorder(),
                     ),
-                    // Campo Categoria
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: DropdownButtonFormField<String>(
-                              decoration: const InputDecoration(
-                                labelText: "Categoria",
-                                border: OutlineInputBorder(),
-                                prefixIcon: Icon(Icons.calendar_today),
-                              ),
-                              value:
-                                  categorias.isNotEmpty ? categorias[0] : null,
-                              items: categorias.map((String categoria) {
-                                return DropdownMenuItem<String>(
-                                  value: categoria,
-                                  child: Text(categoria),
-                                );
-                              }).toList(),
-                              onChanged: (String? newValue) {
-                                categoriaRenda.text = newValue ?? '';
-                              },
-                              validator: (value) {
-                                if (value == null || value == "Selecione") {
-                                  return 'Por favor, selecione uma categoria.';
-                                }
-                                return null;
-                              },
-                            ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor, insira o nome.';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                // Campo Categoria
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          decoration: const InputDecoration(
+                            labelText: "Categoria",
+                            border: OutlineInputBorder(),
+                            prefixIcon: Icon(Icons.calendar_today),
                           ),
-                          const SizedBox(width: 8.0),
-                          IconButton(
-                            onPressed: () async {
-                              final resultado = await showDialog<String>(
-                                context: context,
-                                builder: (context) => CadastroCategoriaRenda(),
-                              );
-                              if (resultado != null && resultado.isNotEmpty) {
-                                setState(() {
-                                  categorias.add(resultado);
-                                });
-                                await atualizarCategorias();
-                              }
-                            },
-                            icon: const Icon(Icons.add, color: Colors.blue),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Campo Valor
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: TextFormField(
-                        controller: valorRenda,
-                        decoration: const InputDecoration(
-                          labelText: "Valor",
-                          prefixIcon: Icon(Icons.monetization_on),
-                          prefixText: "R\$ ",
-                          border: OutlineInputBorder(),
+                          value: categorias.isNotEmpty ? categorias[0] : null,
+                          items: categorias.map((String categoria) {
+                            return DropdownMenuItem<String>(
+                              value: categoria,
+                              child: Text(categoria),
+                            );
+                          }).toList(),
+                          onChanged: (String? newValue) {
+                            categoriaRenda.text = newValue ?? '';
+                          },
+                          validator: (value) {
+                            if (value == null || value == "Selecione") {
+                              return 'Por favor, selecione uma categoria.';
+                            }
+                            return null;
+                          },
                         ),
-                        keyboardType:
-                            const TextInputType.numberWithOptions(decimal: true),
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                        ],
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Por favor, insira o valor.';
-                          }
-                          final unformattedValue =
-                              value.replaceAll(RegExp(r'[^0-9]'), '');
-                          if (double.tryParse(unformattedValue) == null ||
-                              double.parse(unformattedValue) <= 0) {
-                            return 'Por favor, insira um valor válido maior que zero.';
-                          }
-                          return null;
-                        },
                       ),
-                    ),
-                    // Campo Pago
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: DropdownButtonFormField<String>(
-                        decoration: const InputDecoration(
-                          labelText: "Pago",
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.check_circle),
-                        ),
-                        value:
-                            pagoRenda.text.isNotEmpty ? pagoRenda.text : null,
-                        items: ['Sim', 'Não'].map((String option) {
-                          return DropdownMenuItem<String>(
-                            value: option,
-                            child: Text(option),
+                      const SizedBox(width: 8.0),
+                      IconButton(
+                        onPressed: () async {
+                          final resultado = await showDialog<String>(
+                            context: context,
+                            builder: (context) => CadastroCategoriaRenda(),
                           );
-                        }).toList(),
-                        onChanged: (String? newValue) {
-                          pagoRenda.text = newValue ?? '';
-                        },
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Por favor, informe se foi pago.';
+                          if (resultado != null && resultado.isNotEmpty) {
+                            setState(() {
+                              categorias.add(resultado);
+                            });
+                            await atualizarCategorias();
                           }
-                          return null;
                         },
+                        icon: const Icon(Icons.add, color: Colors.blue),
                       ),
+                    ],
+                  ),
+                ),
+                // Campo Valor
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: TextFormField(
+                    controller: valorRenda,
+                    decoration: const InputDecoration(
+                      labelText: "Valor",
+                      prefixIcon: Icon(Icons.monetization_on),
+                      prefixText: "R\$ ",
+                      border: OutlineInputBorder(),
                     ),
-                    // Botões de Ação
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
-                      child: Row(
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                    ],
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor, insira o valor.';
+                      }
+                      final unformattedValue =
+                          value.replaceAll(RegExp(r'[^0-9]'), '');
+                      if (double.tryParse(unformattedValue) == null ||
+                          double.parse(unformattedValue) <= 0) {
+                        return 'Por favor, insira um valor válido maior que zero.';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                // Campo Pago
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(
+                      labelText: "Pago",
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.check_circle),
+                    ),
+                    value: pagoRenda.text.isNotEmpty ? pagoRenda.text : null,
+                    items: ['Sim', 'Não'].map((String option) {
+                      return DropdownMenuItem<String>(
+                        value: option,
+                        child: Text(option),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      pagoRenda.text = newValue ?? '';
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor, informe se foi pago.';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                // Botões de Ação
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  child: Column(
+                    children: [
+                      // Botões de Ação
+                      Row(
                         children: [
                           // Botão Cadastrar
                           Expanded(
                             child: ElevatedButton(
                               onPressed: () async {
-                                if (_formKey.currentState!.validate()) {
-                                  await cadastrarRenda();
-                                  setState(() {
-                                    exibirSnackbar = true;
-                                  });
-                                  Future.delayed(
-                                    const Duration(seconds: 3),
-                                    () {
-                                      setState(() {
-                                        exibirSnackbar = false;
-                                      });
-                                    },
-                                  );
-                                }
+                                await cadastrarRenda();
+
+                                // Exibir SnackBar com a mensagem de sucesso
+                                // ScaffoldMessenger.of(widget.context)
+                                //     .showSnackBar(
+                                //   const SnackBar(
+                                //     content: Text(
+                                //       'Renda cadastrada com sucesso!',
+                                //       style: TextStyle(
+                                //           fontWeight: FontWeight.bold),
+                                //     ),
+                                //     backgroundColor: Colors.green,
+                                //     duration: Duration(seconds: 3),
+                                //   ),
+                                // );
                               },
                               child: const Text('Cadastrar'),
                             ),
@@ -299,6 +306,9 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
                                 valorRenda.clear();
                                 pagoRenda.clear();
                                 categoriaRenda.clear();
+                                setState(() {
+                                  exibirMensagemSucesso = false;
+                                });
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.grey,
@@ -308,25 +318,37 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
                           ),
                         ],
                       ),
-                    ),
-                  ],
-                ),
-              ),
+
+                      //Exibir mensagem de sucesso abaixo dos botões, condicionalmente
+                      if (exibirMensagemSucesso)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 16.0),
+                          child: Container(
+                            width: double
+                                .infinity, // Garante que o Container ocupe toda a largura
+                            padding: const EdgeInsets.all(16.0),
+                            decoration: BoxDecoration(
+                              color: Colors.green,
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            child: const Text(
+                              'Renda cadastrada com sucesso!',
+                              textAlign: TextAlign
+                                  .center, // Centraliza o texto na largura do container
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                )
+              ],
             ),
           ),
-          if (exibirSnackbar)
-            const Align(
-              alignment: Alignment.bottomCenter,
-              child: SnackBar(
-                content: Text(
-                  'Renda cadastrada com sucesso!',
-                  style: TextStyle(color: Colors.white),
-                ),
-                backgroundColor: Colors.green,
-                duration: Duration(seconds: 3),
-              ),
-            ),
-        ],
+        ),
       ),
     );
   }
