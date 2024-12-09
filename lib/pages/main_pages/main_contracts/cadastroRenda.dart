@@ -280,6 +280,8 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
                               onPressed: () async {
                                 await cadastrarRenda();
 
+                                
+
                                 // Exibir SnackBar com a mensagem de sucesso
                                 // ScaffoldMessenger.of(widget.context)
                                 //     .showSnackBar(
