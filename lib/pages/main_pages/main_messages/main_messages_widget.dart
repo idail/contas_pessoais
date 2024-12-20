@@ -1,3 +1,7 @@
+import 'dart:convert';
+
+import 'package:financas/pages/main_pages/main_contracts/cadastroDespesa.dart';
+
 import '/components/web_nav/web_nav_widget.dart';
 import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
@@ -10,6 +14,7 @@ import 'main_messages_model.dart';
 export 'main_messages_model.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart' as http;
 
 class MainMessagesWidget extends StatefulWidget {
   const MainMessagesWidget({super.key});
@@ -25,6 +30,7 @@ class _MainMessagesWidgetState extends State<MainMessagesWidget>
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   final animationsMap = <String, AnimationInfo>{};
+  late TabController _tabDespesas;
 
   @override
   void initState() {
@@ -40,6 +46,8 @@ class _MainMessagesWidgetState extends State<MainMessagesWidget>
 
     _model.textController2 ??= TextEditingController();
     _model.textFieldFocusNode2 ??= FocusNode();
+
+    _tabDespesas = TabController(length: 3, vsync: this);
 
     animationsMap.addAll({
       'textOnPageLoadAnimation1': AnimationInfo(
@@ -122,51 +130,600 @@ class _MainMessagesWidgetState extends State<MainMessagesWidget>
     });
   }
 
+  // @override
+  // Widget build(BuildContext context) {
+  //   return GestureDetector(
+  //     onTap: () => FocusScope.of(context).unfocus(),
+  //     child: Scaffold(
+  //       key: scaffoldKey,
+  //       backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+  //       appBar: !util.isWeb
+  //           ? AppBar(
+  //               backgroundColor: FlutterFlowTheme.of(context).primary,
+  //               automaticallyImplyLeading: false,
+  //               title: Text(
+  //                 util.FFLocalizations.of(context).getText(
+  //                   'ym579y79' /* Dashboard */,
+  //                 ),
+  //                 style: FlutterFlowTheme.of(context).displaySmall.override(
+  //                       fontFamily: 'Outfit',
+  //                       color: Colors.white,
+  //                       letterSpacing: 0.0,
+  //                     ),
+  //               ).animateOnPageLoad(animationsMap['textOnPageLoadAnimation2']!),
+  //               actions: const [],
+  //               centerTitle: false,
+  //               elevation: 0.0,
+  //             )
+  //           : null,
+  //       body: Column(children: [
+  //         Expanded(
+  //           child: GoogleMap(
+  //             onMapCreated: (controller) => _controladorMapa = controller,
+  //             initialCameraPosition: CameraPosition(
+  //               target: _pontoA, // Centralizando o mapa no ponto A
+  //               zoom: 14,
+  //             ),
+  //             markers: {
+  //               Marker(markerId: const MarkerId('pontoA'), position: _pontoA),
+  //               Marker(markerId: const MarkerId('pontoB'), position: _pontoB),
+  //             },
+  //           ),
+  //         ),
+  //         Padding(
+  //           padding: const EdgeInsets.all(16.0),
+  //           child: Text('Distância: $_distancia', style: const TextStyle(fontSize: 20)),
+  //         ),
+  //       ],
+  //       ),
+  //     ),
+  //   );
+  // }
+
+  Future<List<Map<String, dynamic>>> rendas() async {
+    final String apiUrl =
+        'https://idailneto.com.br/contas_pessoais/API/Renda.php?execucao=busca_rendas'; // Substitua pela URL da sua API
+    try {
+      final response = await http.get(Uri.parse(apiUrl));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body) as List;
+        return data.map((item) => Map<String, dynamic>.from(item)).toList();
+      } else {
+        throw Exception('Erro ao buscar dados: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Erro ao conectar-se à API: $e');
+    }
+  }
+
+  List<Map<String, dynamic>> filterData(
+      List<Map<String, dynamic>> data, String filter) {
+    if (filter == 'Todos') {
+      return data; // Retorna todos os itens
+    } else if (filter == 'Ativos') {
+      return data
+          .where((item) => item['pago_renda'] == 'Não')
+          .toList(); // Filtra ativos (não pagos)
+    } else if (filter == 'Pagos') {
+      return data
+          .where((item) => item['pago_renda'] == 'Sim')
+          .toList(); // Filtra pagos
+    } else {
+      return []; // Caso não haja filtro correspondente
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      child: Scaffold(
-        key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-        appBar: !util.isWeb
-            ? AppBar(
-                backgroundColor: FlutterFlowTheme.of(context).primary,
-                automaticallyImplyLeading: false,
-                title: Text(
-                  util.FFLocalizations.of(context).getText(
-                    'ym579y79' /* Dashboard */,
-                  ),
-                  style: FlutterFlowTheme.of(context).displaySmall.override(
-                        fontFamily: 'Outfit',
-                        color: Colors.white,
-                        letterSpacing: 0.0,
+    return Scaffold(
+      backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            // Espaçamento no topo
+            const SizedBox(height: 50.0),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // _buildHorizontalCard(
+                //   context,
+                //   icon: Icons.money_rounded,
+                //   title: 'Renda',
+                //   buttonLabel: 'Cadastrar',
+                //   onPressed: () {
+                //     // Exibe o diálogo de cadastro
+                //     showDialog(
+                //       context: context,
+                //       builder: (BuildContext context) {
+                //         return Dialog(
+                //           shape: RoundedRectangleBorder(
+                //             borderRadius: BorderRadius.circular(16.0),
+                //           ),
+                //           elevation: 16.0,
+                //           backgroundColor:
+                //               FlutterFlowTheme.of(context).secondaryBackground,
+                //           child: ConstrainedBox(
+                //             constraints: const BoxConstraints(
+                //               maxHeight: 580,
+                //               maxWidth: 400,
+                //             ),
+                //             child: Builder(
+                //               builder: (BuildContext modalContext) {
+                //                 // Passa o modalContext para o CadastroRendaPage
+                //                 return CadastroDespesaPage(
+                //                   context: modalContext,
+                //                   // A função de callback agora será chamada após o fechamento do diálogo
+                //                 );
+                //               },
+                //             ),
+                //           ),
+                //         );
+                //       },
+                //     ).then((_) {
+                //       // Aqui, a função rendas() será chamada quando o diálogo for fechado
+                //       setState(() {
+                //         rendas();
+                //       });
+                //     });
+                //   },
+                //   cardWidth: MediaQuery.of(context).size.width *
+                //       0.4, // Largura dinâmica
+                // ),
+
+
+                const SizedBox(width: 10.0),
+                _buildHorizontalCard(
+                  context,
+                  icon: Icons.account_balance_wallet,
+                  title: 'Despesa',
+                  buttonLabel: 'Cadastrar',
+                  onPressed: () {
+                    // Exibe o diálogo de cadastro
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return Dialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16.0),
+                          ),
+                          elevation: 16.0,
+                          backgroundColor:
+                              FlutterFlowTheme.of(context).secondaryBackground,
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(
+                              maxHeight: 580,
+                              maxWidth: 400,
+                            ),
+                            child: Builder(
+                              builder: (BuildContext modalContext) {
+                                // Passa o modalContext para o CadastroRendaPage
+                                return CadastroDespesaPage(
+                                  context: modalContext,
+                                  // A função de callback agora será chamada após o fechamento do diálogo
+                                );
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                    ).then((_) {
+                      // Aqui, a função rendas() será chamada quando o diálogo for fechado
+                      setState(() {
+                        rendas();
+                      });
+                    });
+                  },
+                  cardWidth: MediaQuery.of(context).size.width *
+                      0.4, // Largura dinâmica
+                ),
+              ],
+            ),
+
+            // Espaçamento entre os cards e o campo de pesquisa
+            const SizedBox(height: 20.0),
+
+            // // Campo de pesquisa com botão de pesquisa
+            // Row(
+            //   children: [
+            //     Expanded(
+            //       child: TextField(
+            //         decoration: InputDecoration(
+            //           hintText: 'Pesquisar renda...',
+            //           hintStyle: TextStyle(color: Colors.grey),
+            //           border: OutlineInputBorder(
+            //             borderRadius: BorderRadius.circular(12),
+            //             borderSide: BorderSide(color: Colors.grey),
+            //           ),
+            //           prefixIcon: Icon(Icons.search, color: Colors.grey),
+            //         ),
+            //         onChanged: (query) {
+            //           // Adicione a lógica de pesquisa aqui
+            //           print('Pesquisando: $query');
+            //         },
+            //       ),
+            //     ),
+            //     IconButton(
+            //       icon: Icon(Icons.search),
+            //       color: Colors.blue,
+            //       onPressed: () {
+            //         // Adicione a lógica de pesquisa ao pressionar o botão
+            //         print('Botão de pesquisa pressionado');
+            //       },
+            //     ),
+            //   ],
+            // ),
+
+            // Espaçamento entre o campo de pesquisa e as abas
+            const SizedBox(height: 20.0),
+
+            // Flexible(
+            //   flex: 2, // Aumente o valor para expandir mais altura
+            //   child: RefreshIndicator(
+            //     onRefresh: () async {
+            //       // Chama a função rendas() ao arrastar para baixo
+            //       print("puxou");
+            //       setState(() {
+            //         // Aqui você pode chamar o método que realiza a atualização dos dados
+            //       });
+            //     },
+            //     child: FutureBuilder<List<Map<String, dynamic>>>(
+            //       future: rendas(), // Carrega os dados com a função rendas
+            //       builder: (context, snapshot) {
+            //         if (snapshot.connectionState == ConnectionState.waiting) {
+            //           return const Center(child: CircularProgressIndicator());
+            //         } else if (snapshot.hasError) {
+            //           return Center(child: Text('Erro: ${snapshot.error}'));
+            //         } else if (snapshot.hasData) {
+            //           final data = snapshot.data!;
+            //           return Column(
+            //             children: [
+            //               TabBar(
+            //                 labelColor: Colors.blue,
+            //                 unselectedLabelColor: Colors.grey,
+            //                 indicatorColor: Colors.blue,
+            //                 controller: _tabController,
+            //                 tabs: const [
+            //                   Tab(text: 'Todos'),
+            //                   Tab(text: 'Ativos'),
+            //                   Tab(text: 'Pagos'),
+            //                 ],
+            //               ),
+            //               Expanded(
+            //                 child: TabBarView(
+            //                   controller: _tabController,
+            //                   children: [
+            //                     _buildListView(
+            //                         filterData(data, 'Todos'), context),
+            //                     _buildListView(
+            //                         filterData(data, 'Ativos'), context),
+            //                     _buildListView(
+            //                         filterData(data, 'Pagos'), context),
+            //                   ],
+            //                 ),
+            //               ),
+            //             ],
+            //           );
+            //         } else {
+            //           return const Center(
+            //               child: Text('Nenhum dado encontrado.'));
+            //         }
+            //       },
+            //     ),
+            //   ),
+            // ),
+
+            // Espaçamento entre o campo de pesquisa e as abas
+            const SizedBox(height: 20.0),
+
+            // Campo de pesquisa com botão de pesquisa
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Pesquisar despesa...',
+                      hintStyle: TextStyle(color: Colors.grey),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey),
                       ),
-                ).animateOnPageLoad(animationsMap['textOnPageLoadAnimation2']!),
-                actions: const [],
-                centerTitle: false,
-                elevation: 0.0,
-              )
-            : null,
-        body: Column(children: [
-          Expanded(
-            child: GoogleMap(
-              onMapCreated: (controller) => _controladorMapa = controller,
-              initialCameraPosition: CameraPosition(
-                target: _pontoA, // Centralizando o mapa no ponto A
-                zoom: 14,
+                      prefixIcon: Icon(Icons.search, color: Colors.grey),
+                    ),
+                    onChanged: (query) {
+                      // Adicione a lógica de pesquisa aqui
+                      print('Pesquisando: $query');
+                    },
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.search),
+                  color: Colors.blue,
+                  onPressed: () {
+                    // Adicione a lógica de pesquisa ao pressionar o botão
+                    print('Botão de pesquisa pressionado');
+                  },
+                ),
+              ],
+            ),
+
+            // Use o RefreshIndicator para ativar o pull-to-refresh
+            Flexible(
+              flex: 2, // Aumente o valor para expandir mais altura
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  // Chama a função rendas() ao arrastar para baixo
+                  print("puxou");
+                  // Refresca o FutureBuilder chamando rendas() novamente
+                  setState(() {
+                    // Aqui você pode chamar o método que realiza a atualização dos dados
+                  });
+                },
+                child: FutureBuilder<List<Map<String, dynamic>>>(
+                  future: rendas(), // Carrega os dados com a função rendas
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      return Center(child: Text('Erro: ${snapshot.error}'));
+                    } else if (snapshot.hasData) {
+                      final data = snapshot.data!;
+                      return Column(
+                        children: [
+                          TabBar(
+                            labelColor: Colors.blue,
+                            unselectedLabelColor: Colors.grey,
+                            indicatorColor: Colors.blue,
+                            controller: _tabDespesas,
+                            tabs: const [
+                              Tab(text: 'Todos'),
+                              Tab(text: 'Ativos'),
+                              Tab(text: 'Pagos'),
+                            ],
+                          ),
+                          Expanded(
+                            child: TabBarView(
+                              controller: _tabDespesas,
+                              children: [
+                                _buildListView(
+                                    filterData(data, 'Todos'), context),
+                                _buildListView(
+                                    filterData(data, 'Ativos'), context),
+                                _buildListView(
+                                    filterData(data, 'Pagos'), context),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
+                    } else {
+                      return const Center(
+                          child: Text('Nenhum dado encontrado.'));
+                    }
+                  },
+                ),
               ),
-              markers: {
-                Marker(markerId: const MarkerId('pontoA'), position: _pontoA),
-                Marker(markerId: const MarkerId('pontoB'), position: _pontoB),
-              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildListView(
+      List<Map<String, dynamic>> items, BuildContext context) {
+    return ListView.builder(
+      itemCount: items.length,
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      itemBuilder: (context, index) {
+        final item = items[index];
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Container(
+            width: double
+                .infinity, // Garante que o container ocupe toda a largura da tela
+            decoration: BoxDecoration(
+              color: Theme.of(context).scaffoldBackgroundColor, // Fundo do card
+              borderRadius: BorderRadius.circular(8.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Informações do item à esquerda
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Nome: ${item['nome_renda']}',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(
+                                  fontSize:
+                                      20), // Aumentando o tamanho da fonte
+                        ),
+                        Text(
+                          'Categoria: ${item['categoria_renda']}',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(
+                                  fontSize:
+                                      16), // Aumentando o tamanho da fonte
+                        ),
+                        Row(
+                          children: [
+                            Text(
+                              'Pago: ${item['pago_renda']}',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                      fontSize:
+                                          16), // Aumentando o tamanho da fonte
+                            ),
+                            const SizedBox(width: 10.0),
+                            Container(
+                              width: 20.0,
+                              height: 20.0,
+                              decoration: BoxDecoration(
+                                color: item['pago_renda'] == 'Sim'
+                                    ? Colors.green
+                                    : Colors.red,
+                                borderRadius: BorderRadius.circular(4.0),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Text(
+                          'Valor: R\$ ${item['valor_renda'].toStringAsFixed(2)}',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(
+                                  fontSize:
+                                      16), // Aumentando o tamanho da fonte
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Botões à direita
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          var codigoRenda = item['codigo_renda'];
+                          print("Alterar pressionado $codigoRenda");
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                        child: Text(
+                          'Alterar',
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelLarge
+                              ?.copyWith(color: Colors.white),
+                        ),
+                      ),
+                      const SizedBox(height: 8.0),
+                      ElevatedButton(
+                        onPressed: () {
+                          var codigoRenda = item['codigo_renda'];
+                          print("Excluir pressionado $codigoRenda");
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                        child: Text(
+                          'Excluir',
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelLarge
+                              ?.copyWith(color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text('Distância: $_distancia', style: const TextStyle(fontSize: 20)),
+        );
+      },
+    );
+  }
+
+  Widget _buildHorizontalCard(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String buttonLabel,
+    required VoidCallback onPressed,
+    required double cardWidth,
+  }) {
+    return Card(
+      elevation: 0.0, // Removendo sombra extra para seguir o estilo
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      child: Container(
+        width: cardWidth, // Define a largura do card dinamicamente
+        constraints: const BoxConstraints(
+          minHeight: 70.0,
+          maxWidth: 300.0,
+        ),
+        decoration: BoxDecoration(
+          color: FlutterFlowTheme.of(context).secondaryBackground,
+          boxShadow: const [
+            BoxShadow(
+              blurRadius: 3.0,
+              color: Color(0x33000000),
+              offset: Offset(0.0, 1.0),
+            ),
+          ],
+          borderRadius: BorderRadius.circular(12.0),
+          border: Border.all(
+            color: FlutterFlowTheme.of(context).alternate,
+            width: 1.0,
           ),
-        ],
+        ),
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(icon, size: 40.0, color: Colors.blue),
+            const SizedBox(height: 8.0),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontSize: 19.0, // Tamanho da fonte ajustado,
+                  ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16.0),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: onPressed,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12.0),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
+                child: Text(
+                  buttonLabel,
+                  style: const TextStyle(fontSize: 16.0),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -118,11 +118,11 @@ class NavBarPage extends StatefulWidget {
   _NavBarPageState createState() => _NavBarPageState();
 }
 
-/// This is the private State class that goes with NavBarPage.
 class _NavBarPageState extends State<NavBarPage> {
   String _currentPageName = 'Main_Home';
   late Widget? _currentPage;
   var recebe_codigo_departamento_fornecedor = 0;
+
   @override
   void initState() {
     super.initState();
@@ -132,27 +132,48 @@ class _NavBarPageState extends State<NavBarPage> {
 
   @override
   Widget build(BuildContext context) {
-
-    // if(widget.codigo_departamento_fornecedor == "nada"){
-    //   recebe_codigo_departamento_fornecedor = 0;
-    // }
-    // else{
-    //   var recebe_valor_codigo_departamento_fornecedor = widget.codigo_departamento_fornecedor;
-    //   recebe_codigo_departamento_fornecedor = int.parse(recebe_valor_codigo_departamento_fornecedor!);
-    // }
-
     final tabs = {
-      'Main_Home': MainHomeWidget(codigousuario: widget.usuario_codigo,nomeusuario: widget.nomeusuario,senhausuario: widget.senhausuario,),
-      //'Main_customerList': const MainCustomerListWidget(),
-      'Main_Contracts': MainContractsWidget(usuariocodigo: widget.usuario_codigo,tipo_acesso: widget.tipoacesso, 
-      codigo_departamento_fornecedor: recebe_codigo_departamento_fornecedor,email_usuario: widget.email_usuario,login_usuario:widget.login_usuario , nome_usuario: widget.nomeusuario,
-      departamentos_gestor:widget.departamentos_gestor),
+      'Main_Home': MainHomeWidget(codigousuario: widget.usuario_codigo, nomeusuario: widget.nomeusuario, senhausuario: widget.senhausuario),
+      'Main_Contracts': MainContractsWidget(usuariocodigo: widget.usuario_codigo, tipo_acesso: widget.tipoacesso, codigo_departamento_fornecedor: recebe_codigo_departamento_fornecedor, email_usuario: widget.email_usuario, login_usuario: widget.login_usuario, nome_usuario: widget.nomeusuario, departamentos_gestor: widget.departamentos_gestor),
       'Main_messages': const MainMessagesWidget(),
       'Main_profilePage': MainProfilePageWidget(codigousuario: widget.usuario_codigo, senhausuario: widget.senhausuario),
     };
+
     final currentIndex = tabs.keys.toList().indexOf(_currentPageName);
 
     return Scaffold(
+      // Adicionando o Drawer aqui para aparecer em todas as telas
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: FlutterFlowTheme.of(context).primary,
+              ),
+              child: Text(
+                FFLocalizations.of(context).getText('menuTitle' /* Menu */),
+                style: const TextStyle(color: Colors.white, fontSize: 24),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                children: [
+                  const Icon(Icons.help, color: Colors.black),
+                  const SizedBox(width: 8),
+                  Text(
+                    FFLocalizations.of(context).getText('menuHelp' /* Ajuda */),
+                    style: const TextStyle(fontSize: 16, color: Colors.black),
+                  ),
+                ],
+              ),
+            ),
+            // Adicione outros itens do Drawer aqui, se necessário
+          ],
+        ),
+      ),
+      // Corpo da tela com a navegação entre as páginas
       body: _currentPage ?? tabs[_currentPageName],
       bottomNavigationBar: Visibility(
         visible: responsiveVisibility(
@@ -174,71 +195,25 @@ class _NavBarPageState extends State<NavBarPage> {
           type: BottomNavigationBarType.fixed,
           items: const <BottomNavigationBarItem>[
             BottomNavigationBarItem(
-              icon: Icon(
-                Icons.dashboard_outlined,
-                size: 24.0,
-              ),
-              activeIcon: Icon(
-                Icons.dashboard_rounded,
-                size: 32.0,
-              ),
-              label: 
-                "Inicio",
-              
-              tooltip: '',
-            ),
-            // BottomNavigationBarItem(
-            //   icon: const Icon(
-            //     Icons.supervised_user_circle_outlined,
-            //     size: 24.0,
-            //   ),
-            //   activeIcon: const Icon(
-            //     Icons.supervised_user_circle_sharp,
-            //     size: 32.0,
-            //   ),
-            //   label: FFLocalizations.of(context).getText(
-            //     '3ourv2w9' /* __ */,
-            //   ),
-            //   tooltip: '',
-            // ),
-            BottomNavigationBarItem(
-              icon: Icon(
-                Icons.receipt,
-                size: 24.0,
-              ),
-              activeIcon: Icon(
-                Icons.receipt,
-                size: 32.0,
-              ),
-              label: 
-                "Gerenciar",
-              
-              tooltip: '',
+              icon: Icon(Icons.dashboard_outlined, size: 24.0),
+              activeIcon: Icon(Icons.dashboard_rounded, size: 32.0),
+              label: "Inicio",
             ),
             BottomNavigationBarItem(
-              icon: Icon(
-                Icons.map,
-                size: 24.0,
-              ),
-              activeIcon: Icon(
-                Icons.map,
-                size: 24.0,
-              ),
-              label: "Consultas",
-              tooltip: '',
+              icon: Icon(Icons.receipt, size: 24.0),
+              activeIcon: Icon(Icons.receipt, size: 32.0),
+              label: "Renda",
             ),
             BottomNavigationBarItem(
-              icon: Icon(
-                Icons.account_circle_outlined,
-                size: 24.0,
-              ),
-              activeIcon: Icon(
-                Icons.account_circle,
-                size: 32.0,
-              ),
+              icon: Icon(Icons.account_balance_wallet, size: 24.0),
+              activeIcon: Icon(Icons.account_balance_wallet, size: 24.0),
+              label: "Despesa",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.account_circle_outlined, size: 24.0),
+              activeIcon: Icon(Icons.account_circle, size: 32.0),
               label: "Perfil",
-              tooltip: '',
-            )
+            ),
           ],
         ),
       ),

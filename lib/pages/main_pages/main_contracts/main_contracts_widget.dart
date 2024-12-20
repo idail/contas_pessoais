@@ -51,7 +51,6 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
   String texto = '';
   bool exibirSnackbar = false;
   late TabController _tabController;
-  late TabController _tabDespesas;
 
   late Future<List<Map<String, dynamic>>> _todasRendas;
   List<Map<String, dynamic>> _pagos = [];
@@ -65,7 +64,6 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
     _model = createModel(context, () => MainContractsModel());
 
     _tabController = TabController(length: 3, vsync: this);
-    _tabDespesas = TabController(length: 3, vsync: this);
 
     // logFirebaseEvent('screen_view', parameters: {'screen_name': 'Main_Contracts'});
     animationsMap.addAll({
@@ -269,17 +267,17 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
                       0.4, // Largura dinâmica
                 ),
                 const SizedBox(width: 10.0),
-                _buildHorizontalCard(
-                  context,
-                  icon: Icons.account_balance_wallet,
-                  title: 'Despesa',
-                  buttonLabel: 'Cadastrar',
-                  onPressed: () {
-                    print('Card 2 pressionado');
-                  },
-                  cardWidth: MediaQuery.of(context).size.width *
-                      0.4, // Largura dinâmica
-                ),
+                // _buildHorizontalCard(
+                //   context,
+                //   icon: Icons.account_balance_wallet,
+                //   title: 'Despesa',
+                //   buttonLabel: 'Cadastrar',
+                //   onPressed: () {
+                //     print('Card 2 pressionado');
+                //   },
+                //   cardWidth: MediaQuery.of(context).size.width *
+                //       0.4, // Largura dinâmica
+                // ),
               ],
             ),
 
@@ -379,94 +377,94 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
             // Espaçamento entre o campo de pesquisa e as abas
             const SizedBox(height: 20.0),
 
-            // Campo de pesquisa com botão de pesquisa
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Pesquisar despesa...',
-                      hintStyle: TextStyle(color: Colors.grey),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.grey),
-                      ),
-                      prefixIcon: Icon(Icons.search, color: Colors.grey),
-                    ),
-                    onChanged: (query) {
-                      // Adicione a lógica de pesquisa aqui
-                      print('Pesquisando: $query');
-                    },
-                  ),
-                ),
-                IconButton(
-                  icon: Icon(Icons.search),
-                  color: Colors.blue,
-                  onPressed: () {
-                    // Adicione a lógica de pesquisa ao pressionar o botão
-                    print('Botão de pesquisa pressionado');
-                  },
-                ),
-              ],
-            ),
+            // // Campo de pesquisa com botão de pesquisa
+            // Row(
+            //   children: [
+            //     Expanded(
+            //       child: TextField(
+            //         decoration: InputDecoration(
+            //           hintText: 'Pesquisar despesa...',
+            //           hintStyle: TextStyle(color: Colors.grey),
+            //           border: OutlineInputBorder(
+            //             borderRadius: BorderRadius.circular(12),
+            //             borderSide: BorderSide(color: Colors.grey),
+            //           ),
+            //           prefixIcon: Icon(Icons.search, color: Colors.grey),
+            //         ),
+            //         onChanged: (query) {
+            //           // Adicione a lógica de pesquisa aqui
+            //           print('Pesquisando: $query');
+            //         },
+            //       ),
+            //     ),
+            //     IconButton(
+            //       icon: Icon(Icons.search),
+            //       color: Colors.blue,
+            //       onPressed: () {
+            //         // Adicione a lógica de pesquisa ao pressionar o botão
+            //         print('Botão de pesquisa pressionado');
+            //       },
+            //     ),
+            //   ],
+            // ),
 
             // Use o RefreshIndicator para ativar o pull-to-refresh
-            Flexible(
-              flex: 2, // Aumente o valor para expandir mais altura
-              child: RefreshIndicator(
-                onRefresh: () async {
-                  // Chama a função rendas() ao arrastar para baixo
-                  print("puxou");
-                  // Refresca o FutureBuilder chamando rendas() novamente
-                  setState(() {
-                    // Aqui você pode chamar o método que realiza a atualização dos dados
-                  });
-                },
-                child: FutureBuilder<List<Map<String, dynamic>>>(
-                  future: rendas(), // Carrega os dados com a função rendas
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (snapshot.hasError) {
-                      return Center(child: Text('Erro: ${snapshot.error}'));
-                    } else if (snapshot.hasData) {
-                      final data = snapshot.data!;
-                      return Column(
-                        children: [
-                          TabBar(
-                            labelColor: Colors.blue,
-                            unselectedLabelColor: Colors.grey,
-                            indicatorColor: Colors.blue,
-                            controller: _tabDespesas,
-                            tabs: const [
-                              Tab(text: 'Todos'),
-                              Tab(text: 'Ativos'),
-                              Tab(text: 'Pagos'),
-                            ],
-                          ),
-                          Expanded(
-                            child: TabBarView(
-                              controller: _tabDespesas,
-                              children: [
-                                _buildListView(
-                                    filterData(data, 'Todos'), context),
-                                _buildListView(
-                                    filterData(data, 'Ativos'), context),
-                                _buildListView(
-                                    filterData(data, 'Pagos'), context),
-                              ],
-                            ),
-                          ),
-                        ],
-                      );
-                    } else {
-                      return const Center(
-                          child: Text('Nenhum dado encontrado.'));
-                    }
-                  },
-                ),
-              ),
-            ),
+            // Flexible(
+            //   flex: 2, // Aumente o valor para expandir mais altura
+            //   child: RefreshIndicator(
+            //     onRefresh: () async {
+            //       // Chama a função rendas() ao arrastar para baixo
+            //       print("puxou");
+            //       // Refresca o FutureBuilder chamando rendas() novamente
+            //       setState(() {
+            //         // Aqui você pode chamar o método que realiza a atualização dos dados
+            //       });
+            //     },
+            //     child: FutureBuilder<List<Map<String, dynamic>>>(
+            //       future: rendas(), // Carrega os dados com a função rendas
+            //       builder: (context, snapshot) {
+            //         if (snapshot.connectionState == ConnectionState.waiting) {
+            //           return const Center(child: CircularProgressIndicator());
+            //         } else if (snapshot.hasError) {
+            //           return Center(child: Text('Erro: ${snapshot.error}'));
+            //         } else if (snapshot.hasData) {
+            //           final data = snapshot.data!;
+            //           return Column(
+            //             children: [
+            //               TabBar(
+            //                 labelColor: Colors.blue,
+            //                 unselectedLabelColor: Colors.grey,
+            //                 indicatorColor: Colors.blue,
+            //                 controller: _tabDespesas,
+            //                 tabs: const [
+            //                   Tab(text: 'Todos'),
+            //                   Tab(text: 'Ativos'),
+            //                   Tab(text: 'Pagos'),
+            //                 ],
+            //               ),
+            //               Expanded(
+            //                 child: TabBarView(
+            //                   controller: _tabDespesas,
+            //                   children: [
+            //                     _buildListView(
+            //                         filterData(data, 'Todos'), context),
+            //                     _buildListView(
+            //                         filterData(data, 'Ativos'), context),
+            //                     _buildListView(
+            //                         filterData(data, 'Pagos'), context),
+            //                   ],
+            //                 ),
+            //               ),
+            //             ],
+            //           );
+            //         } else {
+            //           return const Center(
+            //               child: Text('Nenhum dado encontrado.'));
+            //         }
+            //       },
+            //     ),
+            //   ),
+            // ),
           ],
         ),
       ),
