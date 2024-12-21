@@ -1005,7 +1005,7 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
                   children: [
                     // Olá, nome da pessoa logada
                     Text(
-                    'Olá, ${widget.nomeusuario ?? "Usuário"}', // Aqui, acessamos o nome do usuário diretamente
+                    'Olá , ${widget.nomeusuario ?? "Usuário"}', // Aqui, acessamos o nome do usuário diretamente
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 20,
