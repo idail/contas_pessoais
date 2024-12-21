@@ -135,8 +135,8 @@ class _NavBarPageState extends State<NavBarPage> {
     final tabs = {
       'Main_Home': MainHomeWidget(codigousuario: widget.usuario_codigo, nomeusuario: widget.nomeusuario, senhausuario: widget.senhausuario),
       'Main_Contracts': MainContractsWidget(usuariocodigo: widget.usuario_codigo, tipo_acesso: widget.tipoacesso, codigo_departamento_fornecedor: recebe_codigo_departamento_fornecedor, email_usuario: widget.email_usuario, login_usuario: widget.login_usuario, nome_usuario: widget.nomeusuario, departamentos_gestor: widget.departamentos_gestor),
-      'Main_messages': const MainMessagesWidget(),
-      'Main_profilePage': MainProfilePageWidget(codigousuario: widget.usuario_codigo, senhausuario: widget.senhausuario),
+      'Main_messages': MainMessagesWidget(nomeusuario: widget.nomeusuario),
+      'Main_profilePage': MainProfilePageWidget(codigousuario: widget.usuario_codigo, senhausuario: widget.senhausuario, nomeusuario: widget.nomeusuario),
     };
 
     final currentIndex = tabs.keys.toList().indexOf(_currentPageName);

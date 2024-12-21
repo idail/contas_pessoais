@@ -132,7 +132,7 @@ class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Cadastro de Renda"),
+        title: const Text("Cadastro de Despesa"),
       ),
       body: SingleChildScrollView(
         child: Padding(

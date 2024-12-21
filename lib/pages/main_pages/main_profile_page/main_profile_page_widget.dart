@@ -24,8 +24,12 @@ import 'package:path/path.dart' as path;
 class MainProfilePageWidget extends StatefulWidget {
   final int? codigousuario;
   final String? senhausuario;
-  const MainProfilePageWidget(
-      {super.key, required this.codigousuario, required this.senhausuario});
+  String? nomeusuario;
+  MainProfilePageWidget(
+      {super.key,
+      required this.codigousuario,
+      required this.senhausuario,
+      required this.nomeusuario});
 
   @override
   State<MainProfilePageWidget> createState() => _MainProfilePageWidgetState();
@@ -384,66 +388,88 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
       key: scaffoldKey,
       backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
       appBar: !isWeb
-            ? AppBar(
-                backgroundColor: FlutterFlowTheme.of(context).primary,
-                automaticallyImplyLeading: false,
-                // Título da appBar removido
-                // title: Text(
-                //   FFLocalizations.of(context)
-                //       .getText('y24lcr13' /* Dashboard */),
-                //   style: FlutterFlowTheme.of(context).displaySmall.override(
-                //         fontFamily: 'Outfit',
-                //         color: Colors.white,
-                //         letterSpacing: 0.0,
-                //       ),
-                // ).animateOnPageLoad(
-                //     animationsMap['textOnPageLoadAnimation20']!),
-                centerTitle: false,
-                elevation: 0.0,
-                // Mantendo apenas o botão de abrir o menu (Drawer)
-                leading: IconButton(
-                  icon: const Icon(Icons.menu, color: Colors.white),
-                  onPressed: () {
-                    scaffoldKey.currentState!.openDrawer();
-                  },
-                ),
-              )
-            : null,
-        drawer: Drawer(
-          child: ListView(
-            padding: EdgeInsets.zero,
+          ? AppBar(
+              backgroundColor: FlutterFlowTheme.of(context).primary,
+              automaticallyImplyLeading: false,
+              // Título da appBar removido
+              // title: Text(
+              //   FFLocalizations.of(context)
+              //       .getText('y24lcr13' /* Dashboard */),
+              //   style: FlutterFlowTheme.of(context).displaySmall.override(
+              //         fontFamily: 'Outfit',
+              //         color: Colors.white,
+              //         letterSpacing: 0.0,
+              //       ),
+              // ).animateOnPageLoad(
+              //     animationsMap['textOnPageLoadAnimation20']!),
+              centerTitle: false,
+              elevation: 0.0,
+              // Mantendo apenas o botão de abrir o menu (Drawer)
+              leading: IconButton(
+                icon: const Icon(Icons.menu, color: Colors.white),
+                onPressed: () {
+                  scaffoldKey.currentState!.openDrawer();
+                },
+              ),
+            )
+          : null,
+      drawer: Drawer(
+  child: ListView(
+    padding: EdgeInsets.zero,
+    children: [
+      // Cabeçalho com o nome da pessoa logada
+      DrawerHeader(
+        decoration: BoxDecoration(
+          color: FlutterFlowTheme.of(context).primary,
+        ),
+        child: Center( // Centraliza o conteúdo no centro do DrawerHeader
+          child: Text(
+            'Olá, ${widget.nomeusuario ?? "Usuário"}',
+            textAlign: TextAlign.center, // Garante alinhamento central do texto
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+            ),
+          ),
+        ),
+      ),
+
+      // Botão de ajuda com ícone centralizado e texto abaixo
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: ListTile(
+          onTap: () {
+            // Ação quando o item for clicado
+            print("Ajuda clicada");
+          },
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 16.0,
+          ),
+          title: const Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              DrawerHeader(
-                decoration: BoxDecoration(
-                  color: FlutterFlowTheme.of(context).primary,
-                ),
-                child: Text(
-                  FFLocalizations.of(context).getText('menuTitle' /* Menu */),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                  ),
-                ),
+              Icon(
+                Icons.help_rounded,
+                size: 32.0,
+                color: Colors.blue,
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Row(
-                  children: [
-                    const Icon(Icons.help, color: Colors.black),
-                    const SizedBox(
-                        width: 8), // Espaçamento entre o ícone e o texto
-                    Text(
-                      FFLocalizations.of(context)
-                          .getText('menuHelp' /* Ajuda */),
-                      style: const TextStyle(fontSize: 16, color: Colors.black),
-                    ),
-                  ],
-                ),
+              SizedBox(
+                height: 8.0,
               ),
-              // Aqui você pode adicionar mais itens do menu
+              Text(
+                "Informar erro, sugestões",
+                style: TextStyle(fontSize: 16, color: Colors.black),
+              ),
             ],
           ),
         ),
+      ),
+
+      // Aqui você pode adicionar mais itens do menu
+    ],
+  ),
+),
+
       body: Column(
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.start,

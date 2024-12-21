@@ -1000,20 +1000,17 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
                 decoration: BoxDecoration(
                   color: FlutterFlowTheme.of(context).primary,
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Olá, nome da pessoa logada
-                    Text(
-                    'Olá , ${widget.nomeusuario ?? "Usuário"}', // Aqui, acessamos o nome do usuário diretamente
-                    style: TextStyle(
+                child: Center(
+                  // Centraliza o conteúdo no centro do DrawerHeader
+                  child: Text(
+                    'Olá, ${widget.nomeusuario ?? "Usuário"}',
+                    textAlign: TextAlign
+                        .center, // Garante alinhamento central do texto
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 20,
                     ),
                   ),
-                    SizedBox(
-                        height: 8), // Espaçamento entre o nome e o próximo item
-                  ],
                 ),
               ),
 
@@ -1026,20 +1023,21 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
                     print("Ajuda clicada");
                   },
                   contentPadding: const EdgeInsets.symmetric(
-                      vertical: 16.0), // Espaçamento para centralizar o ícone
+                    vertical: 16.0,
+                  ),
                   title: const Column(
-                    mainAxisAlignment: MainAxisAlignment
-                        .center, // Centraliza o conteúdo verticalmente
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
-                        Icons.help_rounded, // Ícone de ajuda
-                        size: 32.0, // Tamanho do ícone
-                        color: Colors.blue, // Cor do ícone
+                        Icons.help_rounded,
+                        size: 32.0,
+                        color: Colors.blue,
                       ),
                       SizedBox(
-                          height: 8.0), // Espaçamento entre o ícone e o texto
+                        height: 8.0,
+                      ),
                       Text(
-                        "Informar Erro", // Texto abaixo do ícone
+                        "Informar erro, sugestões",
                         style: TextStyle(fontSize: 16, color: Colors.black),
                       ),
                     ],
