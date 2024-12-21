@@ -383,6 +383,67 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
     return Scaffold(
       key: scaffoldKey,
       backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+      appBar: !isWeb
+            ? AppBar(
+                backgroundColor: FlutterFlowTheme.of(context).primary,
+                automaticallyImplyLeading: false,
+                // Título da appBar removido
+                // title: Text(
+                //   FFLocalizations.of(context)
+                //       .getText('y24lcr13' /* Dashboard */),
+                //   style: FlutterFlowTheme.of(context).displaySmall.override(
+                //         fontFamily: 'Outfit',
+                //         color: Colors.white,
+                //         letterSpacing: 0.0,
+                //       ),
+                // ).animateOnPageLoad(
+                //     animationsMap['textOnPageLoadAnimation20']!),
+                centerTitle: false,
+                elevation: 0.0,
+                // Mantendo apenas o botão de abrir o menu (Drawer)
+                leading: IconButton(
+                  icon: const Icon(Icons.menu, color: Colors.white),
+                  onPressed: () {
+                    scaffoldKey.currentState!.openDrawer();
+                  },
+                ),
+              )
+            : null,
+        drawer: Drawer(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              DrawerHeader(
+                decoration: BoxDecoration(
+                  color: FlutterFlowTheme.of(context).primary,
+                ),
+                child: Text(
+                  FFLocalizations.of(context).getText('menuTitle' /* Menu */),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Row(
+                  children: [
+                    const Icon(Icons.help, color: Colors.black),
+                    const SizedBox(
+                        width: 8), // Espaçamento entre o ícone e o texto
+                    Text(
+                      FFLocalizations.of(context)
+                          .getText('menuHelp' /* Ajuda */),
+                      style: const TextStyle(fontSize: 16, color: Colors.black),
+                    ),
+                  ],
+                ),
+              ),
+              // Aqui você pode adicionar mais itens do menu
+            ],
+          ),
+        ),
       body: Column(
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.start,

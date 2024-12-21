@@ -13,9 +13,11 @@ class MainHomeWidget extends StatefulWidget {
   final String? nomeusuario;
   final int? codigousuario;
   final String? senhausuario;
+
+  String? recebeNomeUsuario = "";
   MainHomeWidget(
       {Key? key,
-      this.nomeusuario,
+      required this.nomeusuario,
       required this.codigousuario,
       required this.senhausuario})
       : super(key: key);
@@ -32,11 +34,15 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
 
   final animationsMap = <String, AnimationInfo>{};
 
+  //var recebeNomeUsuario = "";
+
   @override
   void initState() {
     super.initState();
 
     print(widget.nomeusuario);
+
+    widget.recebeNomeUsuario = widget.nomeusuario!;
 
     //String recebe = "${widget.tipoacesso} - ${widget.nomeusuario}";
 
@@ -958,22 +964,25 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
       child: Scaffold(
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        // Comentando a appBar com o título "Dashboard"
         appBar: !isWeb
             ? AppBar(
                 backgroundColor: FlutterFlowTheme.of(context).primary,
                 automaticallyImplyLeading: false,
-                title: Text(
-                  FFLocalizations.of(context)
-                      .getText('y24lcr13' /* Dashboard */),
-                  style: FlutterFlowTheme.of(context).displaySmall.override(
-                        fontFamily: 'Outfit',
-                        color: Colors.white,
-                        letterSpacing: 0.0,
-                      ),
-                ).animateOnPageLoad(
-                    animationsMap['textOnPageLoadAnimation20']!),
+                // Título da appBar removido
+                // title: Text(
+                //   FFLocalizations.of(context)
+                //       .getText('y24lcr13' /* Dashboard */),
+                //   style: FlutterFlowTheme.of(context).displaySmall.override(
+                //         fontFamily: 'Outfit',
+                //         color: Colors.white,
+                //         letterSpacing: 0.0,
+                //       ),
+                // ).animateOnPageLoad(
+                //     animationsMap['textOnPageLoadAnimation20']!),
                 centerTitle: false,
                 elevation: 0.0,
+                // Mantendo apenas o botão de abrir o menu (Drawer)
                 leading: IconButton(
                   icon: const Icon(Icons.menu, color: Colors.white),
                   onPressed: () {
@@ -986,37 +995,63 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
           child: ListView(
             padding: EdgeInsets.zero,
             children: [
+              // Cabeçalho com o nome da pessoa logada
               DrawerHeader(
                 decoration: BoxDecoration(
                   color: FlutterFlowTheme.of(context).primary,
                 ),
-                child: Text(
-                  FFLocalizations.of(context).getText('menuTitle' /* Menu */),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.help, color: Colors.black),
-                    const SizedBox(
-                        width: 8), // Espaçamento entre o ícone e o texto
+                    // Olá, nome da pessoa logada
                     Text(
-                      FFLocalizations.of(context)
-                          .getText('menuHelp' /* Ajuda */),
-                      style: const TextStyle(fontSize: 16, color: Colors.black),
+                    'Olá, ${widget.nomeusuario ?? "Usuário"}', // Aqui, acessamos o nome do usuário diretamente
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
                     ),
+                  ),
+                    SizedBox(
+                        height: 8), // Espaçamento entre o nome e o próximo item
                   ],
                 ),
               ),
+
+              // Botão de ajuda com ícone centralizado e texto abaixo
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: ListTile(
+                  onTap: () {
+                    // Ação quando o item for clicado
+                    print("Ajuda clicada");
+                  },
+                  contentPadding: const EdgeInsets.symmetric(
+                      vertical: 16.0), // Espaçamento para centralizar o ícone
+                  title: const Column(
+                    mainAxisAlignment: MainAxisAlignment
+                        .center, // Centraliza o conteúdo verticalmente
+                    children: [
+                      Icon(
+                        Icons.help_rounded, // Ícone de ajuda
+                        size: 32.0, // Tamanho do ícone
+                        color: Colors.blue, // Cor do ícone
+                      ),
+                      SizedBox(
+                          height: 8.0), // Espaçamento entre o ícone e o texto
+                      Text(
+                        "Informar Erro", // Texto abaixo do ícone
+                        style: TextStyle(fontSize: 16, color: Colors.black),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
               // Aqui você pode adicionar mais itens do menu
             ],
           ),
         ),
+
         body: Column(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1206,10 +1241,9 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
                                                     ).animateOnPageLoad(
                                                         animationsMap[
                                                             'containerOnPageLoadAnimation2']!),
-                                                    Padding(
+                                                    const Padding(
                                                       padding:
-                                                          const EdgeInsets.all(
-                                                              12.0),
+                                                          EdgeInsets.all(12.0),
                                                       child: Column(
                                                         mainAxisSize:
                                                             MainAxisSize.max,
@@ -1350,10 +1384,9 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
                                                     ).animateOnPageLoad(
                                                         animationsMap[
                                                             'containerOnPageLoadAnimation4']!),
-                                                    Padding(
+                                                    const Padding(
                                                       padding:
-                                                          const EdgeInsets.all(
-                                                              12.0),
+                                                          EdgeInsets.all(12.0),
                                                       child: Column(
                                                         mainAxisSize:
                                                             MainAxisSize.max,
@@ -1492,10 +1525,9 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
                                                     ).animateOnPageLoad(
                                                         animationsMap[
                                                             'containerOnPageLoadAnimation6']!),
-                                                    Padding(
+                                                    const Padding(
                                                       padding:
-                                                          const EdgeInsets.all(
-                                                              12.0),
+                                                          EdgeInsets.all(12.0),
                                                       child: Column(
                                                         mainAxisSize:
                                                             MainAxisSize.max,

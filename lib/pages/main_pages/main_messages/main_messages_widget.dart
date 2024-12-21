@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:financas/flutter_flow/flutter_flow_util.dart';
+import 'package:financas/flutter_flow/internationalization.dart';
 import 'package:financas/pages/main_pages/main_contracts/cadastroDespesa.dart';
 
 import '/components/web_nav/web_nav_widget.dart';
@@ -37,7 +39,7 @@ class _MainMessagesWidgetState extends State<MainMessagesWidget>
     super.initState();
     _model = util.createModel(context, () => MainMessagesModel());
 
-    _calcularDistancia(); // Calcula a distância assim que a tela é carregada
+    //_calcularDistancia(); // Calcula a distância assim que a tela é carregada
 
     // util.logFirebaseEvent('screen_view',
     //     parameters: {'screen_name': 'Main_messages'});
@@ -104,8 +106,8 @@ class _MainMessagesWidgetState extends State<MainMessagesWidget>
   GoogleMapController? _controladorMapa;
 
   // Pontos específicos das duas localidades
-  final LatLng _pontoA = const LatLng(-9.972413115315575, -67.80791574242686); // Rua 14 de Julho, 5141
-  final LatLng _pontoB = const LatLng(-9.951368295032635, -67.82165171759154); // Av. Afonso Pena, 4909
+  // final LatLng _pontoA = const LatLng(-9.972413115315575, -67.80791574242686); // Rua 14 de Julho, 5141
+  // final LatLng _pontoB = const LatLng(-9.951368295032635, -67.82165171759154); // Av. Afonso Pena, 4909
 
   // Variável para armazenar a distância calculada
   String _distancia = "0 km";
@@ -117,18 +119,18 @@ class _MainMessagesWidgetState extends State<MainMessagesWidget>
     super.dispose();
   }
 
-  void _calcularDistancia() {
-    final distanciaEmMetros = Geolocator.distanceBetween(
-      _pontoA.latitude,
-      _pontoA.longitude,
-      _pontoB.latitude,
-      _pontoB.longitude,
-    );
+  // void _calcularDistancia() {
+  //   final distanciaEmMetros = Geolocator.distanceBetween(
+  //     _pontoA.latitude,
+  //     _pontoA.longitude,
+  //     _pontoB.latitude,
+  //     _pontoB.longitude,
+  //   );
 
-    setState(() {
-      _distancia = (distanciaEmMetros / 1000).toStringAsFixed(2) + " km";
-    });
-  }
+  //   setState(() {
+  //     _distancia = (distanciaEmMetros / 1000).toStringAsFixed(2) + " km";
+  //   });
+  // }
 
   // @override
   // Widget build(BuildContext context) {
@@ -217,7 +219,69 @@ class _MainMessagesWidgetState extends State<MainMessagesWidget>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: scaffoldKey,
       backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+       appBar: !isWeb
+            ? AppBar(
+                backgroundColor: FlutterFlowTheme.of(context).primary,
+                automaticallyImplyLeading: false,
+                // Título da appBar removido
+                // title: Text(
+                //   FFLocalizations.of(context)
+                //       .getText('y24lcr13' /* Dashboard */),
+                //   style: FlutterFlowTheme.of(context).displaySmall.override(
+                //         fontFamily: 'Outfit',
+                //         color: Colors.white,
+                //         letterSpacing: 0.0,
+                //       ),
+                // ).animateOnPageLoad(
+                //     animationsMap['textOnPageLoadAnimation20']!),
+                centerTitle: false,
+                elevation: 0.0,
+                // Mantendo apenas o botão de abrir o menu (Drawer)
+                leading: IconButton(
+                  icon: const Icon(Icons.menu, color: Colors.white),
+                  onPressed: () {
+                    scaffoldKey.currentState!.openDrawer();
+                  },
+                ),
+              )
+            : null,
+        drawer: Drawer(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              DrawerHeader(
+                decoration: BoxDecoration(
+                  color: FlutterFlowTheme.of(context).primary,
+                ),
+                child: Text(
+                  FFLocalizations.of(context).getText('menuTitle' /* Menu */),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Row(
+                  children: [
+                    const Icon(Icons.help, color: Colors.black),
+                    const SizedBox(
+                        width: 8), // Espaçamento entre o ícone e o texto
+                    Text(
+                      FFLocalizations.of(context)
+                          .getText('menuHelp' /* Ajuda */),
+                      style: const TextStyle(fontSize: 16, color: Colors.black),
+                    ),
+                  ],
+                ),
+              ),
+              // Aqui você pode adicionar mais itens do menu
+            ],
+          ),
+        ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
