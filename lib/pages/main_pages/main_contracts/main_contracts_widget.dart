@@ -335,6 +335,12 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
                                   // Passa o modalContext para o CadastroRendaPage
                                   return CadastroRendaPage(
                                     context: modalContext,
+                                    nomerenda:"",
+                                    categoriarenda: "",
+                                    valorrenda: 0,
+                                    pagorenda: "",
+                                    codigorenda: 0,
+                                    execucao: "cadastrar_renda",
                                     // A função de callback agora será chamada após o fechamento do diálogo
                                   );
                                 },
@@ -547,130 +553,199 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
     );
   }
 
-  Widget _buildListView(List<Map<String, dynamic>> items, BuildContext context) {
-  return ListView.builder(
-    itemCount: items.length,
-    padding: const EdgeInsets.symmetric(vertical: 8.0),
-    itemBuilder: (context, index) {
-      final item = items[index];
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-        child: Container(
-          width: double.infinity, // Garante que o container ocupe toda a largura da tela
-          decoration: BoxDecoration(
-            color: Theme.of(context).scaffoldBackgroundColor, // Fundo do card
-            borderRadius: BorderRadius.circular(8.0),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Informações do item à esquerda
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildListView(
+      List<Map<String, dynamic>> items, BuildContext context) {
+    return ListView.builder(
+      itemCount: items.length,
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      itemBuilder: (context, index) {
+        final item = items[index];
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Container(
+            width: double
+                .infinity, // Garante que o container ocupe toda a largura da tela
+            decoration: BoxDecoration(
+              color: Theme.of(context).scaffoldBackgroundColor, // Fundo do card
+              borderRadius: BorderRadius.circular(8.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Informações do item à esquerda
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Nome: ${item['nome_renda']}',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(fontSize: 20),
+                            ),
+                            const SizedBox(
+                                height:
+                                    12.0), // Espaçamento entre Nome e Categoria
+                            Text(
+                              'Categoria: ${item['categoria_renda']}',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(fontSize: 20),
+                            ),
+                            const SizedBox(
+                                height:
+                                    12.0), // Espaçamento entre Categoria e Valor
+                            Text(
+                              'Valor: R\$ ${item['valor_renda'].toStringAsFixed(2)}',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(fontSize: 20),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Botões à direita
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text(
-                            'Nome: ${item['nome_renda']}',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 20),
+                          ElevatedButton(
+                            onPressed: () {
+                              var nomeRenda = item['nome_renda'];
+                              var categoriaRenda = item['categoria_renda'];
+                              int valorRenda = item['valor_renda'];
+                              var pagoRenda = item['pago_renda'];
+                              var codigoRenda = item["codigo_renda"];
+
+                              print(valorRenda.toString());
+
+                              // Exibe o diálogo de cadastro
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return Dialog(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16.0),
+                                    ),
+                                    elevation: 16.0,
+                                    backgroundColor:
+                                        FlutterFlowTheme.of(context)
+                                            .secondaryBackground,
+                                    child: ConstrainedBox(
+                                      constraints: const BoxConstraints(
+                                        maxHeight: 580,
+                                        maxWidth: 400,
+                                      ),
+                                      child: Builder(
+                                        builder: (BuildContext modalContext) {
+                                          return CadastroRendaPage(
+                                            context: modalContext,
+                                            // Passando os parâmetros para a página de cadastro
+                                            nomerenda: nomeRenda,
+                                            categoriarenda: categoriaRenda,
+                                            valorrenda: valorRenda,
+                                            pagorenda: pagoRenda,
+                                            codigorenda: codigoRenda,
+                                            execucao:"alterar_renda"
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ).then((_) {
+                                // A função 'rendas()' será chamada após o fechamento do modal
+                                setState(() {
+                                  rendas();
+                                });
+                              });
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 10),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                            ),
+                            child: Text(
+                              'Alterar',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelLarge
+                                  ?.copyWith(color: Colors.white),
+                            ),
                           ),
-                          const SizedBox(height: 12.0), // Espaçamento entre Nome e Categoria
-                          Text(
-                            'Categoria: ${item['categoria_renda']}',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 20),
-                          ),
-                          const SizedBox(height: 12.0), // Espaçamento entre Categoria e Valor
-                          Text(
-                            'Valor: R\$ ${item['valor_renda'].toStringAsFixed(2)}',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 20),
+                          const SizedBox(height: 8.0),
+                          ElevatedButton(
+                            onPressed: () {
+                              var codigoRenda = item['codigo_renda'];
+                              print("Excluir pressionado $codigoRenda");
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 10),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                            ),
+                            child: Text(
+                              'Excluir',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelLarge
+                                  ?.copyWith(color: Colors.white),
+                            ),
                           ),
                         ],
                       ),
-                    ),
-                    // Botões à direita
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            var codigoRenda = item['codigo_renda'];
-                            print("Alterar pressionado $codigoRenda");
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                          ),
-                          child: Text(
-                            'Alterar',
-                            style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Colors.white),
-                          ),
-                        ),
-                        const SizedBox(height: 8.0),
-                        ElevatedButton(
-                          onPressed: () {
-                            var codigoRenda = item['codigo_renda'];
-                            print("Excluir pressionado $codigoRenda");
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                          ),
-                          child: Text(
-                            'Excluir',
-                            style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Colors.white),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              // Quadrado de "Pago/Não Pago" como último item ocupando a largura total
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0), // Ajuste do espaçamento
-                child: Container(
-                  width: double.infinity, // Garante que o item ocupe toda a largura
-                  padding: const EdgeInsets.symmetric(vertical: 12.0), // Espaçamento interno
-                  color: item['pago_renda'] == 'Sim' ? Colors.green : Colors.red,
-                  child: Center(
-                    child: Text(
-                      item['pago_renda'] == 'Sim' ? 'Pago' : 'Não Pago',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontSize: 16,
-                            color: Colors.white,
-                          ),
+                // Quadrado de "Pago/Não Pago" como último item ocupando a largura total
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12.0, vertical: 8.0), // Ajuste do espaçamento
+                  child: Container(
+                    width: double
+                        .infinity, // Garante que o item ocupe toda a largura
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 12.0), // Espaçamento interno
+                    color:
+                        item['pago_renda'] == 'Sim' ? Colors.green : Colors.red,
+                    child: Center(
+                      child: Text(
+                        item['pago_renda'] == 'Sim' ? 'Pago' : 'Não Pago',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              fontSize: 16,
+                              color: Colors.white,
+                            ),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      );
-    },
-  );
-}
-
-
-
-
+        );
+      },
+    );
+  }
 
   Widget _buildHorizontalCard(
     BuildContext context, {

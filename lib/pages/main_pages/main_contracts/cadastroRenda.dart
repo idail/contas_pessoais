@@ -7,8 +7,17 @@ import 'package:http/http.dart' as http;
 
 class CadastroRendaPage extends StatefulWidget {
   final BuildContext context; // Novo parâmetro
+
+  String? nomerenda;
+  String? categoriarenda;
+  int? valorrenda;
+  String? pagorenda;
+  int? codigorenda;
+  String? execucao;
+
+
   @override
-  const CadastroRendaPage({Key? key, required this.context}) : super(key: key);
+  CadastroRendaPage({Key? key, required this.context, required this.nomerenda, required this.categoriarenda, required this.valorrenda, required this.pagorenda, required this.codigorenda, required this.execucao}) : super(key: key);
 
   @override
   _CadastroRendaPageState createState() => _CadastroRendaPageState();
@@ -278,7 +287,13 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
                           Expanded(
                             child: ElevatedButton(
                               onPressed: () async {
-                                await cadastrarRenda();
+
+                                if(widget.execucao == "cadastrar_renda")
+                                {
+                                  await cadastrarRenda();
+                                }else{
+
+                                }
 
                                 
 
@@ -296,7 +311,7 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
                                 //   ),
                                 // );
                               },
-                              child: const Text('Cadastrar'),
+                              child: const Text('Gravar'),
                             ),
                           ),
                           const SizedBox(width: 8.0),
