@@ -15,9 +15,17 @@ class CadastroRendaPage extends StatefulWidget {
   int? codigorenda;
   String? execucao;
 
-
   @override
-  CadastroRendaPage({Key? key, required this.context, required this.nomerenda, required this.categoriarenda, required this.valorrenda, required this.pagorenda, required this.codigorenda, required this.execucao}) : super(key: key);
+  CadastroRendaPage(
+      {Key? key,
+      required this.context,
+      required this.nomerenda,
+      required this.categoriarenda,
+      required this.valorrenda,
+      required this.pagorenda,
+      required this.codigorenda,
+      required this.execucao})
+      : super(key: key);
 
   @override
   _CadastroRendaPageState createState() => _CadastroRendaPageState();
@@ -35,6 +43,8 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
 
   //bool exibirSnackbar = false;
   //static bool exibirSnackbar = false;
+
+  String? categoriaSelecionada;
 
   bool exibirSnackbar = false;
   @override
@@ -54,7 +64,6 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
       if (response.statusCode == 200) {
         final List<dynamic> categoriasData = json.decode(response.body);
 
-        print(categoriasData); // Para verificar a estrutura da resposta
         setState(() {
           categorias = [
             "Selecione",
@@ -63,6 +72,13 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
                 .toList(),
           ];
         });
+
+        if (widget.execucao == "alterar_renda" &&
+            categorias.contains(widget.categoriarenda)) {
+          categoriaSelecionada = widget.categoriarenda;
+        } else if (widget.execucao == "cadastrar_renda") {
+          categoriaSelecionada = "Selecione";
+        }
       } else {
         throw Exception('Falha ao carregar categorias');
       }
@@ -74,15 +90,27 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
     }
   }
 
+  void carregarDadosIniciais() {
+    buscarCategorias().then((_) {
+      if (widget.execucao == "alterar_renda") {
+        setState(() {
+          nomeRenda.text = widget.nomerenda ?? "";
+          valorRenda.text = widget.valorrenda?.toString() ?? "";
+          pagoRenda.text = widget.pagorenda ?? "";
+        });
+      }
+    });
+  }
+
   Future<void> cadastrarRenda() async {
     if (_formKey.currentState!.validate()) {
       var uri = Uri.parse(
-          "https://idailneto.com.br/contas_pessoais/API/Categoria.php");
+          "https://idailneto.com.br/contas_pessoais/API/Renda.php");
 
       var valorCadastrarRenda = jsonEncode({
         "execucao": "cadastrar_renda",
         "nome_renda": nomeRenda.text,
-        "categoria_renda": categoriaRenda.text,
+        "categoria_renda": categoriaSelecionada,
         "valor_renda": valorRenda.text,
         "pago_renda": pagoRenda.text,
       });
@@ -109,6 +137,10 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
     }
   }
 
+  Future<void> alterarRenda() async{
+
+  }
+
   // Função para atualizar categorias após o cadastro de nova categoria
   Future<void> atualizarCategorias() async {
     await buscarCategorias();
@@ -131,7 +163,7 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
   @override
   void initState() {
     super.initState();
-    buscarCategorias();
+    carregarDadosIniciais(); // Chama o método assíncrono sem await
   }
 
   //static bool exibirSnackbar = false; // Variável de controle para o Snackbar
@@ -141,7 +173,9 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Cadastro de Renda"),
+        title: Text(widget.execucao == 'cadastrar_renda'
+            ? 'Cadastro de Renda'
+            : 'Alterar Renda'),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -179,9 +213,9 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
                           decoration: const InputDecoration(
                             labelText: "Categoria",
                             border: OutlineInputBorder(),
-                            prefixIcon: Icon(Icons.calendar_today),
+                            prefixIcon: Icon(Icons.category),
                           ),
-                          value: categorias.isNotEmpty ? categorias[0] : null,
+                          value: categoriaSelecionada,
                           items: categorias.map((String categoria) {
                             return DropdownMenuItem<String>(
                               value: categoria,
@@ -189,7 +223,9 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
                             );
                           }).toList(),
                           onChanged: (String? newValue) {
-                            categoriaRenda.text = newValue ?? '';
+                            setState(() {
+                              categoriaSelecionada = newValue;
+                            });
                           },
                           validator: (value) {
                             if (value == null || value == "Selecione") {
@@ -209,6 +245,7 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
                           if (resultado != null && resultado.isNotEmpty) {
                             setState(() {
                               categorias.add(resultado);
+                              categoriaSelecionada = resultado;
                             });
                             await atualizarCategorias();
                           }
@@ -287,15 +324,11 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
                           Expanded(
                             child: ElevatedButton(
                               onPressed: () async {
-
-                                if(widget.execucao == "cadastrar_renda")
-                                {
+                                if (widget.execucao == "cadastrar_renda") {
                                   await cadastrarRenda();
-                                }else{
-
+                                } else {
+                                  await alterarRenda();
                                 }
-
-                                
 
                                 // Exibir SnackBar com a mensagem de sucesso
                                 // ScaffoldMessenger.of(widget.context)
