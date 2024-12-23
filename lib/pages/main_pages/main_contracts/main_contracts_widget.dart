@@ -123,6 +123,44 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
     }
   }
 
+  Future<void> deletarRenda(int codigoRenda) async {
+    var uri =
+        Uri.parse("https://idailneto.com.br/contas_pessoais/API/Renda.php");
+
+    var valorExcluirRenda =
+        jsonEncode({"execucao": "excluir_renda", "codigo_renda": codigoRenda});
+
+    try {
+      var respostaDeletarRenda = await http.delete(
+        uri,
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+        },
+        body: valorExcluirRenda,
+      );
+
+      if (respostaDeletarRenda.statusCode == 200) {
+
+        print(respostaDeletarRenda.body);
+
+        var retornoDeletarRenda = jsonDecode(respostaDeletarRenda.body);
+
+        // Exibe a mensagem de sucesso
+        exibirMensagem();
+
+        setState(() {
+          rendas();
+        });
+      } else {
+        print(
+            "Erro na requisição DELETE: ${respostaDeletarRenda.statusCode} - ${respostaDeletarRenda.reasonPhrase}");
+      }
+    } catch (e) {
+      print("Erro na requisição: $e");
+    }
+  }
+
   List<Map<String, dynamic>> filterData(
       List<Map<String, dynamic>> data, String filter) {
     if (filter == 'Todos') {
@@ -335,7 +373,7 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
                                   // Passa o modalContext para o CadastroRendaPage
                                   return CadastroRendaPage(
                                     context: modalContext,
-                                    nomerenda:"",
+                                    nomerenda: "",
                                     categoriarenda: "",
                                     valorrenda: 0,
                                     pagorenda: "",
@@ -653,15 +691,14 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
                                       child: Builder(
                                         builder: (BuildContext modalContext) {
                                           return CadastroRendaPage(
-                                            context: modalContext,
-                                            // Passando os parâmetros para a página de cadastro
-                                            nomerenda: nomeRenda,
-                                            categoriarenda: categoriaRenda,
-                                            valorrenda: valorRenda,
-                                            pagorenda: pagoRenda,
-                                            codigorenda: codigoRenda,
-                                            execucao:"alterar_renda"
-                                          );
+                                              context: modalContext,
+                                              // Passando os parâmetros para a página de cadastro
+                                              nomerenda: nomeRenda,
+                                              categoriarenda: categoriaRenda,
+                                              valorrenda: valorRenda,
+                                              pagorenda: pagoRenda,
+                                              codigorenda: codigoRenda,
+                                              execucao: "alterar_renda");
                                         },
                                       ),
                                     ),
@@ -694,7 +731,7 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
                           ElevatedButton(
                             onPressed: () {
                               var codigoRenda = item['codigo_renda'];
-                              print("Excluir pressionado $codigoRenda");
+                              deletarRenda(codigoRenda);
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.red,
@@ -815,6 +852,12 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
           ],
         ),
       ),
+    );
+  }
+
+  void exibirMensagem() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Renda excluída com sucesso")),
     );
   }
 }

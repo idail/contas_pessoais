@@ -47,6 +47,8 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
   String? categoriaSelecionada;
 
   bool exibirSnackbar = false;
+
+  late String mensagemSucesso;
   @override
   void dispose() {
     nomeRenda.dispose();
@@ -64,14 +66,16 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
       if (response.statusCode == 200) {
         final List<dynamic> categoriasData = json.decode(response.body);
 
-        setState(() {
-          categorias = [
-            "Selecione",
-            ...categoriasData
-                .map((cat) => cat['nome_categoria'] ?? 'Sem Nome')
-                .toList(),
-          ];
-        });
+        if (mounted) {
+          setState(() {
+            categorias = [
+              "Selecione",
+              ...categoriasData
+                  .map((cat) => cat['nome_categoria'] ?? 'Sem Nome')
+                  .toList(),
+            ];
+          });
+        }
 
         if (widget.execucao == "alterar_renda" &&
             categorias.contains(widget.categoriarenda)) {
@@ -83,10 +87,11 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
         throw Exception('Falha ao carregar categorias');
       }
     } catch (e) {
-      print(e);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao carregar categorias: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao carregar categorias: $e')),
+        );
+      }
     }
   }
 
@@ -148,7 +153,7 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
         "categoria_renda": categoriaSelecionada,
         "valor_renda": valorRenda.text,
         "pago_renda": pagoRenda.text,
-        "codigo_renda":widget.codigorenda
+        "codigo_renda": widget.codigorenda
       });
 
       try {
@@ -179,17 +184,20 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
   }
 
   // Exibir mensagem de sucesso e ocultar após 4 segundos
+  // Exibir mensagem de sucesso e ocultar após 4 segundos
   Future<void> exibirMensagem() async {
     setState(() {
-      exibirMensagemSucesso = true;
+      exibirMensagemSucesso = true; // Mostra a mensagem
     });
 
-    // Atraso de 4 segundos
+    // Oculta a mensagem após 4 segundos
     await Future.delayed(const Duration(seconds: 4));
 
-    setState(() {
-      exibirMensagemSucesso = false;
-    });
+    if (mounted) {
+      setState(() {
+        exibirMensagemSucesso = false; // Oculta a mensagem
+      });
+    }
   }
 
   @override
@@ -352,29 +360,29 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
                       // Botões de Ação
                       Row(
                         children: [
-                          // Botão Cadastrar
+                          // Botão Gravar
                           Expanded(
                             child: ElevatedButton(
                               onPressed: () async {
                                 if (widget.execucao == "cadastrar_renda") {
                                   await cadastrarRenda();
-                                } else {
+                                  if (mounted) {
+                                    setState(() {
+                                      mensagemSucesso =
+                                          "Renda cadastrada com sucesso!";
+                                      exibirMensagemSucesso = true;
+                                    });
+                                  }
+                                } else if (widget.execucao == "alterar_renda") {
                                   await alterarRenda();
+                                  if (mounted) {
+                                    setState(() {
+                                      mensagemSucesso =
+                                          "Renda alterada com sucesso!";
+                                      exibirMensagemSucesso = true;
+                                    });
+                                  }
                                 }
-
-                                // Exibir SnackBar com a mensagem de sucesso
-                                // ScaffoldMessenger.of(widget.context)
-                                //     .showSnackBar(
-                                //   const SnackBar(
-                                //     content: Text(
-                                //       'Renda cadastrada com sucesso!',
-                                //       style: TextStyle(
-                                //           fontWeight: FontWeight.bold),
-                                //     ),
-                                //     backgroundColor: Colors.green,
-                                //     duration: Duration(seconds: 3),
-                                //   ),
-                                // );
                               },
                               child: const Text('Gravar'),
                             ),
@@ -388,9 +396,11 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
                                 valorRenda.clear();
                                 pagoRenda.clear();
                                 categoriaRenda.clear();
-                                setState(() {
-                                  exibirMensagemSucesso = false;
-                                });
+                                if (mounted) {
+                                  setState(() {
+                                    exibirMensagemSucesso = false;
+                                  });
+                                }
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.grey,
@@ -401,7 +411,7 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
                         ],
                       ),
 
-                      //Exibir mensagem de sucesso abaixo dos botões, condicionalmente
+                      // Exibir mensagem de sucesso abaixo dos botões, condicionalmente
                       if (exibirMensagemSucesso)
                         Padding(
                           padding: const EdgeInsets.only(top: 16.0),
@@ -413,11 +423,11 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
                               color: Colors.green,
                               borderRadius: BorderRadius.circular(8.0),
                             ),
-                            child: const Text(
-                              'Renda cadastrada com sucesso!',
+                            child: Text(
+                              mensagemSucesso, // Exibe a mensagem dinâmica
                               textAlign: TextAlign
                                   .center, // Centraliza o texto na largura do container
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -426,7 +436,7 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
                         ),
                     ],
                   ),
-                )
+                ),
               ],
             ),
           ),
