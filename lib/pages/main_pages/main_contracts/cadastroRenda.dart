@@ -104,11 +104,11 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
 
   Future<void> cadastrarRenda() async {
     if (_formKey.currentState!.validate()) {
-      var uri = Uri.parse(
-          "https://idailneto.com.br/contas_pessoais/API/Renda.php");
+      var uri =
+          Uri.parse("https://idailneto.com.br/contas_pessoais/API/Renda.php");
 
       var valorCadastrarRenda = jsonEncode({
-        "execucao": "cadastrar_renda",
+        "execucao": widget.execucao,
         "nome_renda": nomeRenda.text,
         "categoria_renda": categoriaSelecionada,
         "valor_renda": valorRenda.text,
@@ -137,8 +137,40 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
     }
   }
 
-  Future<void> alterarRenda() async{
+  Future<void> alterarRenda() async {
+    if (_formKey.currentState!.validate()) {
+      var uri =
+          Uri.parse("https://idailneto.com.br/contas_pessoais/API/Renda.php");
 
+      var valorCadastrarRenda = jsonEncode({
+        "execucao": widget.execucao,
+        "nome_renda": nomeRenda.text,
+        "categoria_renda": categoriaSelecionada,
+        "valor_renda": valorRenda.text,
+        "pago_renda": pagoRenda.text,
+        "codigo_renda":widget.codigorenda
+      });
+
+      try {
+        var respostaCadastrarRenda = await http.post(
+          uri,
+          headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+          },
+          body: valorCadastrarRenda,
+        );
+
+        if (respostaCadastrarRenda.statusCode == 200) {
+          var retornoCadastrarRenda = jsonDecode(respostaCadastrarRenda.body);
+
+          // Exibe a mensagem de sucesso
+          exibirMensagem();
+        }
+      } catch (e) {
+        print("Erro na requisição: $e");
+      }
+    }
   }
 
   // Função para atualizar categorias após o cadastro de nova categoria
