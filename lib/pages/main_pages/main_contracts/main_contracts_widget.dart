@@ -55,6 +55,7 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
   late Future<List<Map<String, dynamic>>> _todasRendas;
   List<Map<String, dynamic>> _pagos = [];
   List<Map<String, dynamic>> _naoPagos = [];
+  TextEditingController filtroRenda = new TextEditingController();
 
   @override
   void initState() {
@@ -107,10 +108,22 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
   // }
 
   Future<List<Map<String, dynamic>>> rendas() async {
-    final String apiUrl =
+    String opcao =
+        filtroRenda.text.trim().isEmpty ? "todos" : "busca_nome_renda";
+
+    const String uriBuscaRenda =
         'https://idailneto.com.br/contas_pessoais/API/Renda.php?execucao=busca_rendas'; // Substitua pela URL da sua API
     try {
-      final response = await http.get(Uri.parse(apiUrl));
+
+      // Criando a URI com query parameters
+      final uri = Uri.parse(uriBuscaRenda).replace(queryParameters: {
+        "execucao": "busca_rendas",
+        "opcao": opcao,
+        "filtro": filtroRenda.text.trim(),
+      });
+
+      // Fazendo a requisição GET
+      final response = await http.get(uri);
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as List;
@@ -123,7 +136,7 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
     }
   }
 
-  Future<void> deletarRenda(int codigoRenda) async {
+  Future<void> deletarRenda(BuildContext contexto, int codigoRenda) async {
     var uri =
         Uri.parse("https://idailneto.com.br/contas_pessoais/API/Renda.php");
 
@@ -141,13 +154,12 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
       );
 
       if (respostaDeletarRenda.statusCode == 200) {
-
         print(respostaDeletarRenda.body);
 
         var retornoDeletarRenda = jsonDecode(respostaDeletarRenda.body);
 
         // Exibe a mensagem de sucesso
-        exibirMensagem();
+        exibirMensagem(context);
 
         setState(() {
           rendas();
@@ -409,14 +421,15 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
               children: [
                 Expanded(
                   child: TextField(
+                    controller: filtroRenda,
                     decoration: InputDecoration(
                       hintText: 'Pesquisar renda...',
-                      hintStyle: TextStyle(color: Colors.grey),
+                      hintStyle: const TextStyle(color: Colors.grey),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.grey),
+                        borderSide: const BorderSide(color: Colors.grey),
                       ),
-                      prefixIcon: Icon(Icons.search, color: Colors.grey),
+                      //prefixIcon: const Icon(Icons.search, color: Colors.grey),
                     ),
                     onChanged: (query) {
                       // Adicione a lógica de pesquisa aqui
@@ -425,11 +438,12 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.search),
+                  icon: const Icon(Icons.search),
                   color: Colors.blue,
                   onPressed: () {
                     // Adicione a lógica de pesquisa ao pressionar o botão
-                    print('Botão de pesquisa pressionado');
+                    //print('Botão de pesquisa pressionado');
+                    rendas();
                   },
                 ),
               ],
@@ -731,7 +745,7 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
                           ElevatedButton(
                             onPressed: () {
                               var codigoRenda = item['codigo_renda'];
-                              deletarRenda(codigoRenda);
+                              deletarRenda(context, codigoRenda);
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.red,
@@ -855,9 +869,17 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
     );
   }
 
-  void exibirMensagem() {
+  void exibirMensagem(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Renda excluída com sucesso")),
+      const SnackBar(
+        content: Center(
+          child: Text(
+            "Renda excluída com sucesso",
+            textAlign: TextAlign.center, // Garante o alinhamento centralizado
+          ),
+        ),
+        backgroundColor: Colors.green, // Define o fundo como verde
+      ),
     );
   }
 }
