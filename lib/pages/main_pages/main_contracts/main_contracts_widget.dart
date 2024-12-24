@@ -46,16 +46,19 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
   final animationsMap = <String, AnimationInfo>{};
 
   // Variáveis para armazenar os pedidos e o estado da paginação
-  List<Map<String, dynamic>> pedidos = [];
+  //List<Map<String, dynamic>> pedidos = [];
   int currentPage = 0;
   String texto = '';
   bool exibirSnackbar = false;
   late TabController _tabController;
 
+  List<Map<String, dynamic>> items = [];
+
   late Future<List<Map<String, dynamic>>> _todasRendas;
   List<Map<String, dynamic>> _pagos = [];
   List<Map<String, dynamic>> _naoPagos = [];
   TextEditingController filtroRenda = new TextEditingController();
+  List<Map<String, dynamic>> listarendas = [];
 
   @override
   void initState() {
@@ -112,8 +115,11 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
         filtroRenda.text.trim().isEmpty ? "todos" : "busca_nome_renda";
 
     const String uriBuscaRenda =
-        'https://idailneto.com.br/contas_pessoais/API/Renda.php?execucao=busca_rendas'; // Substitua pela URL da sua API
+        'https://idailneto.com.br/contas_pessoais/API/Renda.php';
+
     try {
+      // Limpa a lista antes de realizar a requisição
+      listarendas.clear();
 
       // Criando a URI com query parameters
       final uri = Uri.parse(uriBuscaRenda).replace(queryParameters: {
@@ -127,7 +133,11 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as List;
-        return data.map((item) => Map<String, dynamic>.from(item)).toList();
+
+        // Atualiza a lista `listarendas` com os novos dados
+        listarendas =
+            data.map((item) => Map<String, dynamic>.from(item)).toList();
+        return listarendas;
       } else {
         throw Exception('Erro ao buscar dados: ${response.statusCode}');
       }
@@ -462,6 +472,50 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
                     // Aqui você pode chamar o método que realiza a atualização dos dados
                   });
                 },
+                // child: FutureBuilder<List<Map<String, dynamic>>>(
+                //   future: rendas(), // Carrega os dados com a função rendas
+                //   builder: (context, snapshot) {
+                //     if (snapshot.connectionState == ConnectionState.waiting) {
+                //       return const Center(child: CircularProgressIndicator());
+                //     } else if (snapshot.hasError) {
+                //       return Center(child: Text('Erro: ${snapshot.error}'));
+                //     } else if (snapshot.hasData) {
+                //       final data = snapshot.data!;
+                //       return Column(
+                //         children: [
+                //           TabBar(
+                //             labelColor: Colors.blue,
+                //             unselectedLabelColor: Colors.grey,
+                //             indicatorColor: Colors.blue,
+                //             controller: _tabController,
+                //             tabs: const [
+                //               Tab(text: 'Todos'),
+                //               Tab(text: 'Ativos'),
+                //               Tab(text: 'Pagos'),
+                //             ],
+                //           ),
+                //           Expanded(
+                //             child: TabBarView(
+                //               controller: _tabController,
+                //               children: [
+                //                 _buildListView(
+                //                     filterData(data, 'Todos'), context),
+                //                 _buildListView(
+                //                     filterData(data, 'Ativos'), context),
+                //                 _buildListView(
+                //                     filterData(data, 'Pagos'), context),
+                //               ],
+                //             ),
+                //           ),
+                //         ],
+                //       );
+                //     } else {
+                //       return const Center(
+                //           child: Text('Nenhum dado encontrado.'));
+                //     }
+                //   },
+                // ),
+
                 child: FutureBuilder<List<Map<String, dynamic>>>(
                   future: rendas(), // Carrega os dados com a função rendas
                   builder: (context, snapshot) {
@@ -470,7 +524,7 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
                     } else if (snapshot.hasError) {
                       return Center(child: Text('Erro: ${snapshot.error}'));
                     } else if (snapshot.hasData) {
-                      final data = snapshot.data!;
+                      // Usa a lista `listarendas` para exibir os dados
                       return Column(
                         children: [
                           TabBar(
@@ -489,11 +543,11 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
                               controller: _tabController,
                               children: [
                                 _buildListView(
-                                    filterData(data, 'Todos'), context),
+                                    filterData(listarendas, 'Todos'), context),
                                 _buildListView(
-                                    filterData(data, 'Ativos'), context),
+                                    filterData(listarendas, 'Ativos'), context),
                                 _buildListView(
-                                    filterData(data, 'Pagos'), context),
+                                    filterData(listarendas, 'Pagos'), context),
                               ],
                             ),
                           ),
@@ -501,7 +555,8 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
                       );
                     } else {
                       return const Center(
-                          child: Text('Nenhum dado encontrado.'));
+                        child: Text('Nenhum dado encontrado.'),
+                      );
                     }
                   },
                 ),
@@ -606,196 +661,194 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
   }
 
   Widget _buildListView(
-      List<Map<String, dynamic>> items, BuildContext context) {
-    return ListView.builder(
-      itemCount: items.length,
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      itemBuilder: (context, index) {
-        final item = items[index];
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-          child: Container(
-            width: double
-                .infinity, // Garante que o container ocupe toda a largura da tela
-            decoration: BoxDecoration(
-              color: Theme.of(context).scaffoldBackgroundColor, // Fundo do card
-              borderRadius: BorderRadius.circular(8.0),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Row(
+    List<Map<String, dynamic>> items,
+    BuildContext context,
+  ) {
+    return items.isNotEmpty
+        ? ListView.builder(
+            itemCount: items.length,
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            itemBuilder: (context, index) {
+              final item = items[index];
+              return Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).scaffoldBackgroundColor,
+                    borderRadius: BorderRadius.circular(8.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.1),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Informações do item à esquerda
-                      Expanded(
-                        child: Column(
+                      Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'Nome: ${item['nome_renda']}',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.copyWith(fontSize: 20),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Nome: ${item['nome_renda']}',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(fontSize: 20),
+                                  ),
+                                  const SizedBox(height: 12.0),
+                                  Text(
+                                    'Categoria: ${item['categoria_renda']}',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(fontSize: 20),
+                                  ),
+                                  const SizedBox(height: 12.0),
+                                  Text(
+                                    'Valor: R\$ ${item['valor_renda'].toStringAsFixed(2)}',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(fontSize: 20),
+                                  ),
+                                ],
+                              ),
                             ),
-                            const SizedBox(
-                                height:
-                                    12.0), // Espaçamento entre Nome e Categoria
-                            Text(
-                              'Categoria: ${item['categoria_renda']}',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.copyWith(fontSize: 20),
-                            ),
-                            const SizedBox(
-                                height:
-                                    12.0), // Espaçamento entre Categoria e Valor
-                            Text(
-                              'Valor: R\$ ${item['valor_renda'].toStringAsFixed(2)}',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.copyWith(fontSize: 20),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Botões à direita
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          ElevatedButton(
-                            onPressed: () {
-                              var nomeRenda = item['nome_renda'];
-                              var categoriaRenda = item['categoria_renda'];
-                              int valorRenda = item['valor_renda'];
-                              var pagoRenda = item['pago_renda'];
-                              var codigoRenda = item["codigo_renda"];
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                ElevatedButton(
+                                  onPressed: () {
+                                    var nomeRenda = item['nome_renda'];
+                                    var categoriaRenda =
+                                        item['categoria_renda'];
+                                    int valorRenda = item['valor_renda'];
+                                    var pagoRenda = item['pago_renda'];
+                                    var codigoRenda = item["codigo_renda"];
 
-                              print(valorRenda.toString());
-
-                              // Exibe o diálogo de cadastro
-                              showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return Dialog(
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16.0),
-                                    ),
-                                    elevation: 16.0,
-                                    backgroundColor:
-                                        FlutterFlowTheme.of(context)
-                                            .secondaryBackground,
-                                    child: ConstrainedBox(
-                                      constraints: const BoxConstraints(
-                                        maxHeight: 580,
-                                        maxWidth: 400,
-                                      ),
-                                      child: Builder(
-                                        builder: (BuildContext modalContext) {
-                                          return CadastroRendaPage(
-                                              context: modalContext,
-                                              // Passando os parâmetros para a página de cadastro
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return Dialog(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(16.0),
+                                          ),
+                                          elevation: 16.0,
+                                          backgroundColor: Theme.of(context)
+                                              .scaffoldBackgroundColor,
+                                          child: ConstrainedBox(
+                                            constraints: const BoxConstraints(
+                                              maxHeight: 580,
+                                              maxWidth: 400,
+                                            ),
+                                            child: CadastroRendaPage(
+                                              context: context,
                                               nomerenda: nomeRenda,
                                               categoriarenda: categoriaRenda,
                                               valorrenda: valorRenda,
                                               pagorenda: pagoRenda,
                                               codigorenda: codigoRenda,
-                                              execucao: "alterar_renda");
-                                        },
-                                      ),
+                                              execucao: "alterar_renda",
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ).then((_) {
+                                      rendas();
+                                    });
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blue,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 20, vertical: 10),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8.0),
                                     ),
-                                  );
-                                },
-                              ).then((_) {
-                                // A função 'rendas()' será chamada após o fechamento do modal
-                                setState(() {
-                                  rendas();
-                                });
-                              });
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 10),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
+                                  ),
+                                  child: Text(
+                                    'Alterar',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelLarge
+                                        ?.copyWith(color: Colors.white),
+                                  ),
+                                ),
+                                const SizedBox(height: 8.0),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    var codigoRenda = item['codigo_renda'];
+                                    deletarRenda(context, codigoRenda);
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 20, vertical: 10),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8.0),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'Excluir',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelLarge
+                                        ?.copyWith(color: Colors.white),
+                                  ),
+                                ),
+                              ],
                             ),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12.0, vertical: 8.0),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 12.0),
+                          color: item['pago_renda'] == 'Sim'
+                              ? Colors.green
+                              : Colors.red,
+                          child: Center(
                             child: Text(
-                              'Alterar',
+                              item['pago_renda'] == 'Sim' ? 'Pago' : 'Não Pago',
                               style: Theme.of(context)
                                   .textTheme
-                                  .labelLarge
-                                  ?.copyWith(color: Colors.white),
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                  ),
                             ),
                           ),
-                          const SizedBox(height: 8.0),
-                          ElevatedButton(
-                            onPressed: () {
-                              var codigoRenda = item['codigo_renda'];
-                              deletarRenda(context, codigoRenda);
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 10),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
-                            ),
-                            child: Text(
-                              'Excluir',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .labelLarge
-                                  ?.copyWith(color: Colors.white),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ],
                   ),
                 ),
-                // Quadrado de "Pago/Não Pago" como último item ocupando a largura total
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12.0, vertical: 8.0), // Ajuste do espaçamento
-                  child: Container(
-                    width: double
-                        .infinity, // Garante que o item ocupe toda a largura
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 12.0), // Espaçamento interno
-                    color:
-                        item['pago_renda'] == 'Sim' ? Colors.green : Colors.red,
-                    child: Center(
-                      child: Text(
-                        item['pago_renda'] == 'Sim' ? 'Pago' : 'Não Pago',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              fontSize: 16,
-                              color: Colors.white,
-                            ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+              );
+            },
+          )
+        : Center(
+            child: Text(
+              'Nenhum item encontrado.',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(fontSize: 18),
             ),
-          ),
-        );
-      },
-    );
+          );
   }
 
   Widget _buildHorizontalCard(
