@@ -59,12 +59,13 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
   List<Map<String, dynamic>> _naoPagos = [];
   TextEditingController filtroRenda = new TextEditingController();
   List<Map<String, dynamic>> listarendas = [];
+  late Future<List<Map<String, dynamic>>> _futureRendas;
 
   @override
   void initState() {
     super.initState();
 
-    rendas();
+    _futureRendas = rendas(); // Inicializa o Future com todos os dados.
     _model = createModel(context, () => MainContractsModel());
 
     _tabController = TabController(length: 3, vsync: this);
@@ -89,24 +90,39 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
     super.dispose();
   }
 
-  // Future<List<Map<String, dynamic>>> buscaRendas() async {
-  //   var resposta =
-  //       await http.get(Uri.parse("https://idailneto.com.br/contas_pessoais/API/Renda.php?execucao=busca_rendas"));
+  // Future<List<Map<String, dynamic>>> rendas() async {
+  //   String opcao =
+  //       filtroRenda.text.trim().isEmpty ? "todos" : "busca_nome_renda";
 
-  //   if (resposta.statusCode == 200) {
-  //     final List<dynamic> rendasJson = json.decode(resposta.body);
-  //     final List<Map<String, dynamic>> rendas =
-  //         List<Map<String, dynamic>>.from(
-  //       rendasJson.map((renda) => Map<String, dynamic>.from(renda)),
-  //     );
+  //   const String uriBuscaRenda =
+  //       'https://idailneto.com.br/contas_pessoais/API/Renda.php';
 
-  //     // Separar os pedidos pagos e não pagos
-  //     _pagos = rendas.where((renda) => renda['pago_renda'] == 'Sim').toList();
-  //     _naoPagos = rendas.where((renda) => renda['pago_renda'] == 'Não').toList();
+  //   try {
+  //     // Limpa a lista antes de realizar a requisição
+  //     listarendas.clear();
 
-  //     return rendas;
-  //   } else {
-  //     throw Exception('Falha ao carregar pedidos');
+  //     // Criando a URI com query parameters
+  //     final uri = Uri.parse(uriBuscaRenda).replace(queryParameters: {
+  //       "execucao": "busca_rendas",
+  //       "opcao": opcao,
+  //       "filtro": filtroRenda.text.trim(),
+  //     });
+
+  //     // Fazendo a requisição GET
+  //     final response = await http.get(uri);
+
+  //     if (response.statusCode == 200) {
+  //       final data = json.decode(response.body) as List;
+
+  //       // Atualiza a lista `listarendas` com os novos dados
+  //       listarendas =
+  //           data.map((item) => Map<String, dynamic>.from(item)).toList();
+  //       return listarendas;
+  //     } else {
+  //       throw Exception('Erro ao buscar dados: ${response.statusCode}');
+  //     }
+  //   } catch (e) {
+  //     throw Exception('Erro ao conectar-se à API: $e');
   //   }
   // }
 
@@ -118,32 +134,29 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
         'https://idailneto.com.br/contas_pessoais/API/Renda.php';
 
     try {
-      // Limpa a lista antes de realizar a requisição
-      listarendas.clear();
-
-      // Criando a URI com query parameters
       final uri = Uri.parse(uriBuscaRenda).replace(queryParameters: {
         "execucao": "busca_rendas",
         "opcao": opcao,
         "filtro": filtroRenda.text.trim(),
       });
 
-      // Fazendo a requisição GET
       final response = await http.get(uri);
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as List;
-
-        // Atualiza a lista `listarendas` com os novos dados
-        listarendas =
-            data.map((item) => Map<String, dynamic>.from(item)).toList();
-        return listarendas;
+        return data.map((item) => Map<String, dynamic>.from(item)).toList();
       } else {
         throw Exception('Erro ao buscar dados: ${response.statusCode}');
       }
     } catch (e) {
       throw Exception('Erro ao conectar-se à API: $e');
     }
+  }
+
+  void _buscarRendas() {
+    setState(() {
+      _futureRendas = rendas(); // Atualiza o Future com os filtros aplicados.
+    });
   }
 
   Future<void> deletarRenda(BuildContext contexto, int codigoRenda) async {
@@ -186,12 +199,15 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
   List<Map<String, dynamic>> filterData(
       List<Map<String, dynamic>> data, String filter) {
     if (filter == 'Todos') {
+      print(data);
       return data; // Retorna todos os itens
     } else if (filter == 'Ativos') {
+      print(data);
       return data
           .where((item) => item['pago_renda'] == 'Não')
           .toList(); // Filtra ativos (não pagos)
     } else if (filter == 'Pagos') {
+      print(data);
       return data
           .where((item) => item['pago_renda'] == 'Sim')
           .toList(); // Filtra pagos
@@ -199,53 +215,6 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
       return []; // Caso não haja filtro correspondente
     }
   }
-
-  // Função para carregar pedidos da API e atualizar o estado
-  // Future<void> loadPedidos() async {
-
-  //   if(widget.tipo_acesso == "gestor")
-  //   {
-  //     var uri = Uri.parse(
-  //       "http://192.168.15.200/np3beneficios_appphp/api/pedidos/busca_pedidos.php?codigo_usuario=${widget.usuariocodigo}&tipo_acesso=${widget.tipo_acesso}&departamentos=${widget.departamentos_gestor}");
-  //     var resposta = await http.get(uri, headers: {"Accept": "application/json"});
-  //     List<dynamic> data = json.decode(resposta.body);
-
-  //     setState(() {
-  //       pedidos = List<Map<String, dynamic>>.from(data);
-  //     });
-  //   }else{
-  //     var uri = Uri.parse(
-  //       "http://192.168.15.200/np3beneficios_appphp/api/pedidos/busca_pedidos.php?codigo_usuario=${widget.usuariocodigo}&tipo_acesso=${widget.tipo_acesso}&codigo_fornecedor_departamento=${widget.codigo_departamento_fornecedor}");
-  //     var resposta = await http.get(uri, headers: {"Accept": "application/json"});
-
-  //     List<dynamic> data = json.decode(resposta.body);
-
-  //     setState(() {
-  //         pedidos = List<Map<String, dynamic>>.from(data);
-  //     });
-  //   }
-  // }
-
-  // Future<void> LerPedido() async {
-  //   String code = await FlutterBarcodeScanner.scanBarcode(
-  //     "#FFFFFF",
-  //     "Cancelar",
-  //     false,
-  //     ScanMode.QR,
-  //   );
-
-  //   if (code != '-1') {
-  //     setState(() {
-  //       texto = code;
-  //       mostrarAlerta("Informação", texto);
-  //     });
-  //   } else {
-  //     setState(() {
-  //       texto = 'Leitura de QR Code cancelada';
-  //       print(texto);
-  //     });
-  //   }
-  // }
 
   void mostrarAlerta(String titulo, String mensagem) {
     showDialog(
@@ -453,7 +422,7 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
                   onPressed: () {
                     // Adicione a lógica de pesquisa ao pressionar o botão
                     //print('Botão de pesquisa pressionado');
-                    rendas();
+                    _buscarRendas();
                   },
                 ),
               ],
@@ -517,14 +486,13 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
                 // ),
 
                 child: FutureBuilder<List<Map<String, dynamic>>>(
-                  future: rendas(), // Carrega os dados com a função rendas
+                  future: _futureRendas, // Usa o Future atualizado.
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
                     } else if (snapshot.hasError) {
                       return Center(child: Text('Erro: ${snapshot.error}'));
-                    } else if (snapshot.hasData) {
-                      // Usa a lista `listarendas` para exibir os dados
+                    } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                       return Column(
                         children: [
                           TabBar(
@@ -543,11 +511,14 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
                               controller: _tabController,
                               children: [
                                 _buildListView(
-                                    filterData(listarendas, 'Todos'), context),
+                                    filterData(snapshot.data!, 'Todos'),
+                                    context),
                                 _buildListView(
-                                    filterData(listarendas, 'Ativos'), context),
+                                    filterData(snapshot.data!, 'Ativos'),
+                                    context),
                                 _buildListView(
-                                    filterData(listarendas, 'Pagos'), context),
+                                    filterData(snapshot.data!, 'Pagos'),
+                                    context),
                               ],
                             ),
                           ),
