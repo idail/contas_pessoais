@@ -35,11 +35,21 @@ class _MainMessagesWidgetState extends State<MainMessagesWidget>
   final animationsMap = <String, AnimationInfo>{};
   late TabController _tabDespesas;
 
+  List<Map<String, dynamic>> items = [];
+  late Future<List<Map<String, dynamic>>> _todasDespesas;
+  List<Map<String, dynamic>> _pagos = [];
+  List<Map<String, dynamic>> _naoPagos = [];
+  TextEditingController filtroDespesa = new TextEditingController();
+  List<Map<String, dynamic>> listarendas = [];
+  late Future<List<Map<String, dynamic>>> _futureDespesas;
+
   @override
   void initState() {
     super.initState();
 
     print(widget.nomeusuario);
+
+    _futureDespesas = despesas();
 
     _model = util.createModel(context, () => MainMessagesModel());
 
@@ -186,11 +196,21 @@ class _MainMessagesWidgetState extends State<MainMessagesWidget>
   //   );
   // }
 
-  Future<List<Map<String, dynamic>>> rendas() async {
-    final String apiUrl =
-        'https://idailneto.com.br/contas_pessoais/API/Renda.php?execucao=busca_rendas'; // Substitua pela URL da sua API
+  Future<List<Map<String, dynamic>>> despesas() async {
+    String opcao =
+        filtroDespesa.text.trim().isEmpty ? "todos" : "busca_nome_despesa";
+
+    const String uriBuscaRenda =
+        'https://idailneto.com.br/contas_pessoais/API/Despesa.php';
+
     try {
-      final response = await http.get(Uri.parse(apiUrl));
+      final uri = Uri.parse(uriBuscaRenda).replace(queryParameters: {
+        "execucao": "busca_despesas",
+        "opcao": opcao,
+        "filtro": filtroDespesa.text.trim(),
+      });
+
+      final response = await http.get(uri);
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as List;
@@ -203,17 +223,24 @@ class _MainMessagesWidgetState extends State<MainMessagesWidget>
     }
   }
 
+  void _buscarDespesas() {
+    setState(() {
+      _futureDespesas =
+          despesas(); // Atualiza o Future com os filtros aplicados.
+    });
+  }
+
   List<Map<String, dynamic>> filterData(
       List<Map<String, dynamic>> data, String filter) {
     if (filter == 'Todos') {
       return data; // Retorna todos os itens
     } else if (filter == 'Ativos') {
       return data
-          .where((item) => item['pago_renda'] == 'Não')
+          .where((item) => item['pago_despesa'] == 'Não')
           .toList(); // Filtra ativos (não pagos)
     } else if (filter == 'Pagos') {
       return data
-          .where((item) => item['pago_renda'] == 'Sim')
+          .where((item) => item['pago_despesa'] == 'Sim')
           .toList(); // Filtra pagos
     } else {
       return []; // Caso não haja filtro correspondente
@@ -348,6 +375,12 @@ class _MainMessagesWidgetState extends State<MainMessagesWidget>
                                   // Passa o modalContext para o CadastroDespesaPage
                                   return CadastroDespesaPage(
                                     context: modalContext,
+                                    nomedespesa: "",
+                                    categoriadespesa: "",
+                                    valordespesa: 0,
+                                    pagodespesa: "",
+                                    codigodespesa: 0,
+                                    execucao: "cadastrar_despesa",
                                     // A função de callback agora será chamada após o fechamento do diálogo
                                   );
                                 },
@@ -357,9 +390,7 @@ class _MainMessagesWidgetState extends State<MainMessagesWidget>
                         },
                       ).then((_) {
                         // Aqui, a função rendas() será chamada quando o diálogo for fechado
-                        setState(() {
-                          rendas();
-                        });
+                          _buscarDespesas();
                       });
                     },
                     cardWidth: MediaQuery.of(context)
@@ -471,6 +502,7 @@ class _MainMessagesWidgetState extends State<MainMessagesWidget>
               children: [
                 Expanded(
                   child: TextField(
+                    controller:filtroDespesa,
                     decoration: InputDecoration(
                       hintText: 'Pesquisar despesa...',
                       hintStyle: TextStyle(color: Colors.grey),
@@ -491,7 +523,8 @@ class _MainMessagesWidgetState extends State<MainMessagesWidget>
                   color: Colors.blue,
                   onPressed: () {
                     // Adicione a lógica de pesquisa ao pressionar o botão
-                    print('Botão de pesquisa pressionado');
+                    //print('Botão de pesquisa pressionado');
+                    _buscarDespesas();
                   },
                 ),
               ],
@@ -510,14 +543,13 @@ class _MainMessagesWidgetState extends State<MainMessagesWidget>
                   });
                 },
                 child: FutureBuilder<List<Map<String, dynamic>>>(
-                  future: rendas(), // Carrega os dados com a função rendas
+                  future: _futureDespesas, // Usa o Future atualizado.
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
                     } else if (snapshot.hasError) {
                       return Center(child: Text('Erro: ${snapshot.error}'));
-                    } else if (snapshot.hasData) {
-                      final data = snapshot.data!;
+                    } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                       return Column(
                         children: [
                           TabBar(
@@ -536,11 +568,14 @@ class _MainMessagesWidgetState extends State<MainMessagesWidget>
                               controller: _tabDespesas,
                               children: [
                                 _buildListView(
-                                    filterData(data, 'Todos'), context),
+                                    filterData(snapshot.data!, 'Todos'),
+                                    context),
                                 _buildListView(
-                                    filterData(data, 'Ativos'), context),
+                                    filterData(snapshot.data!, 'Ativos'),
+                                    context),
                                 _buildListView(
-                                    filterData(data, 'Pagos'), context),
+                                    filterData(snapshot.data!, 'Pagos'),
+                                    context),
                               ],
                             ),
                           ),
@@ -548,7 +583,8 @@ class _MainMessagesWidgetState extends State<MainMessagesWidget>
                       );
                     } else {
                       return const Center(
-                          child: Text('Nenhum dado encontrado.'));
+                        child: Text('Nenhum dado encontrado.'),
+                      );
                     }
                   },
                 ),
@@ -560,128 +596,197 @@ class _MainMessagesWidgetState extends State<MainMessagesWidget>
     );
   }
 
-  Widget _buildListView(List<Map<String, dynamic>> items, BuildContext context) {
-  return ListView.builder(
-    itemCount: items.length,
-    padding: const EdgeInsets.symmetric(vertical: 8.0),
-    itemBuilder: (context, index) {
-      final item = items[index];
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-        child: Container(
-          width: double.infinity, // Garante que o container ocupe toda a largura da tela
-          decoration: BoxDecoration(
-            color: Theme.of(context).scaffoldBackgroundColor, // Fundo do card
-            borderRadius: BorderRadius.circular(8.0),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Informações do item à esquerda
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Nome: ${item['nome_renda']}',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 20),
-                          ),
-                          const SizedBox(height: 12.0), // Espaçamento entre Nome e Categoria
-                          Text(
-                            'Categoria: ${item['categoria_renda']}',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 20),
-                          ),
-                          const SizedBox(height: 12.0), // Espaçamento entre Categoria e Valor
-                          Text(
-                            'Valor: R\$ ${item['valor_renda'].toStringAsFixed(2)}',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 20),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Botões à direita
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            var codigoRenda = item['codigo_renda'];
-                            print("Alterar pressionado $codigoRenda");
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                          ),
-                          child: Text(
-                            'Alterar',
-                            style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Colors.white),
-                          ),
-                        ),
-                        const SizedBox(height: 8.0),
-                        ElevatedButton(
-                          onPressed: () {
-                            var codigoRenda = item['codigo_renda'];
-                            print("Excluir pressionado $codigoRenda");
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                          ),
-                          child: Text(
-                            'Excluir',
-                            style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Colors.white),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              // Quadrado de "Pago/Não Pago" como último item ocupando a largura total
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4.0), // Reduz o espaçamento entre informativos e indicador
+  Widget _buildListView(
+    List<Map<String, dynamic>> items,
+    BuildContext context,
+  ) {
+    return items.isNotEmpty
+        ? ListView.builder(
+            itemCount: items.length,
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            itemBuilder: (context, index) {
+              final item = items[index];
+              return Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                 child: Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  color: item['pago_renda'] == 'Sim' ? Colors.green : Colors.red,
-                  child: Center(
-                    child: Text(
-                      item['pago_renda'] == 'Sim' ? 'Pago' : 'Não Pago',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontSize: 16,
-                            color: Colors.white,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).scaffoldBackgroundColor,
+                    borderRadius: BorderRadius.circular(8.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.1),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Nome: ${item['nome_despesa']}',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(fontSize: 20),
+                                  ),
+                                  const SizedBox(height: 12.0),
+                                  Text(
+                                    'Categoria: ${item['categoria_despesa']}',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(fontSize: 20),
+                                  ),
+                                  const SizedBox(height: 12.0),
+                                  Text(
+                                    'Valor: R\$ ${item['valor_despesa'].toStringAsFixed(2)}',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(fontSize: 20),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                ElevatedButton(
+                                  onPressed: () {
+                                    var nomeDespesa = item['nome_despesa'];
+                                    var categoriaDespesa =
+                                        item['categoria_despesa'];
+                                    int valorDespesa = item['valor_despesa'];
+                                    var pagoDespesa = item['pago_despesa'];
+                                    var codigoDespesa = item["codigo_despesa"];
+
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return Dialog(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(16.0),
+                                          ),
+                                          elevation: 16.0,
+                                          backgroundColor: Theme.of(context)
+                                              .scaffoldBackgroundColor,
+                                          child: ConstrainedBox(
+                                            constraints: const BoxConstraints(
+                                              maxHeight: 580,
+                                              maxWidth: 400,
+                                            ),
+                                            child: CadastroDespesaPage(
+                                              context: context,
+                                              nomedespesa: nomeDespesa,
+                                              categoriadespesa:
+                                                  categoriaDespesa,
+                                              valordespesa: valorDespesa,
+                                              pagodespesa: pagoDespesa,
+                                              codigodespesa: codigoDespesa,
+                                              execucao: "alterar_despesa",
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ).then((_) {
+                                      despesas();
+                                    });
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blue,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 20, vertical: 10),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8.0),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'Alterar',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelLarge
+                                        ?.copyWith(color: Colors.white),
+                                  ),
+                                ),
+                                const SizedBox(height: 8.0),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    var codigoRenda = item['codigo_renda'];
+                                    //deletarRenda(context, codigoRenda);
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 20, vertical: 10),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8.0),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'Excluir',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelLarge
+                                        ?.copyWith(color: Colors.white),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12.0, vertical: 8.0),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 12.0),
+                          color: item['pago_renda'] == 'Sim'
+                              ? Colors.green
+                              : Colors.red,
+                          child: Center(
+                            child: Text(
+                              item['pago_renda'] == 'Sim' ? 'Pago' : 'Não Pago',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                  ),
+                            ),
                           ),
-                    ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-            ],
-          ),
-        ),
-      );
-    },
-  );
-}
-
-
+              );
+            },
+          )
+        : Center(
+            child: Text(
+              'Nenhum item encontrado.',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(fontSize: 18),
+            ),
+          );
+  }
 
   Widget _buildHorizontalCard(
     BuildContext context, {

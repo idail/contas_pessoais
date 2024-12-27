@@ -7,8 +7,17 @@ import 'package:http/http.dart' as http;
 
 class CadastroDespesaPage extends StatefulWidget {
   final BuildContext context; // Novo parâmetro
+
+  String? nomedespesa;
+  String? categoriadespesa;
+  int? valordespesa;
+  String? pagodespesa;
+  int? codigodespesa;
+  String? execucao;
   @override
-  const CadastroDespesaPage({Key? key, required this.context}) : super(key: key);
+  CadastroDespesaPage({Key? key, required this.context , required this.nomedespesa, 
+  required this.categoriadespesa, required this.valordespesa, required this.pagodespesa,
+  required this.codigodespesa, required this.execucao}) : super(key: key);
 
   @override
   _CadastroDespesaPageState createState() => _CadastroDespesaPageState();
@@ -16,10 +25,10 @@ class CadastroDespesaPage extends StatefulWidget {
 
 class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  TextEditingController nomeRenda = TextEditingController();
-  TextEditingController categoriaRenda = TextEditingController();
-  TextEditingController valorRenda = TextEditingController();
-  TextEditingController pagoRenda = TextEditingController();
+  TextEditingController nomeDespesa = TextEditingController();
+  TextEditingController categoriaDespesa = TextEditingController();
+  TextEditingController valorDespesa = TextEditingController();
+  TextEditingController pagoDespesa = TextEditingController();
 
   // Lista de categorias para o Dropdown
   List<String> categorias = ["Selecione"];
@@ -30,10 +39,10 @@ class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
   bool exibirSnackbar = false;
   @override
   void dispose() {
-    nomeRenda.dispose();
-    categoriaRenda.dispose();
-    valorRenda.dispose();
-    pagoRenda.dispose();
+    nomeDespesa.dispose();
+    categoriaDespesa.dispose();
+    valorDespesa.dispose();
+    pagoDespesa.dispose();
     super.dispose();
   }
 
@@ -65,17 +74,17 @@ class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
     }
   }
 
-  Future<void> cadastrarRenda() async {
+  Future<void> cadastrarDespesa() async {
     if (_formKey.currentState!.validate()) {
       var uri = Uri.parse(
-          "https://idailneto.com.br/contas_pessoais/API/Categoria.php");
+          "https://idailneto.com.br/contas_pessoais/API/Despesa.php");
 
-      var valorCadastrarRenda = jsonEncode({
-        "execucao": "cadastrar_renda",
-        "nome_renda": nomeRenda.text,
-        "categoria_renda": categoriaRenda.text,
-        "valor_renda": valorRenda.text,
-        "pago_renda": pagoRenda.text,
+      var valorCadastrarDespesa = jsonEncode({
+        "execucao": "cadastrar_despesa",
+        "nome_despesa": nomeDespesa.text,
+        "categoria_despesa": categoriaDespesa.text,
+        "valor_despesa": valorDespesa.text,
+        "pago_despesa": pagoDespesa.text,
       });
 
       try {
@@ -85,7 +94,7 @@ class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
             "Accept": "application/json",
             "Content-Type": "application/json",
           },
-          body: valorCadastrarRenda,
+          body: valorCadastrarDespesa,
         );
 
         if (respostaCadastrarRenda.statusCode == 200) {
@@ -146,7 +155,7 @@ class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: TextFormField(
-                    controller: nomeRenda,
+                    controller: nomeDespesa,
                     decoration: const InputDecoration(
                       labelText: "Nome",
                       prefixIcon: Icon(Icons.account_balance_wallet),
@@ -180,7 +189,7 @@ class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
                             );
                           }).toList(),
                           onChanged: (String? newValue) {
-                            categoriaRenda.text = newValue ?? '';
+                            categoriaDespesa.text = newValue ?? '';
                           },
                           validator: (value) {
                             if (value == null || value == "Selecione") {
@@ -213,7 +222,7 @@ class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: TextFormField(
-                    controller: valorRenda,
+                    controller: valorDespesa,
                     decoration: const InputDecoration(
                       labelText: "Valor",
                       prefixIcon: Icon(Icons.monetization_on),
@@ -248,7 +257,7 @@ class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.check_circle),
                     ),
-                    value: pagoRenda.text.isNotEmpty ? pagoRenda.text : null,
+                    value: pagoDespesa.text.isNotEmpty ? pagoDespesa.text : null,
                     items: ['Sim', 'Não'].map((String option) {
                       return DropdownMenuItem<String>(
                         value: option,
@@ -256,7 +265,7 @@ class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
                       );
                     }).toList(),
                     onChanged: (String? newValue) {
-                      pagoRenda.text = newValue ?? '';
+                      pagoDespesa.text = newValue ?? '';
                     },
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -278,7 +287,7 @@ class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
                           Expanded(
                             child: ElevatedButton(
                               onPressed: () async {
-                                await cadastrarRenda();
+                                await cadastrarDespesa();
 
                                 
 
@@ -296,7 +305,7 @@ class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
                                 //   ),
                                 // );
                               },
-                              child: const Text('Cadastrar'),
+                              child: const Text('Gravar'),
                             ),
                           ),
                           const SizedBox(width: 8.0),
@@ -304,10 +313,10 @@ class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
                           Expanded(
                             child: ElevatedButton(
                               onPressed: () {
-                                nomeRenda.clear();
-                                valorRenda.clear();
-                                pagoRenda.clear();
-                                categoriaRenda.clear();
+                                nomeDespesa.clear();
+                                valorDespesa.clear();
+                                pagoDespesa.clear();
+                                categoriaDespesa.clear();
                                 setState(() {
                                   exibirMensagemSucesso = false;
                                 });
@@ -334,7 +343,7 @@ class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
                               borderRadius: BorderRadius.circular(8.0),
                             ),
                             child: const Text(
-                              'Renda cadastrada com sucesso!',
+                              'Despesa gravada com sucesso!',
                               textAlign: TextAlign
                                   .center, // Centraliza o texto na largura do container
                               style: TextStyle(
