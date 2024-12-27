@@ -36,7 +36,10 @@ class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
   //bool exibirSnackbar = false;
   //static bool exibirSnackbar = false;
 
+  String? categoriaSelecionada;
+
   bool exibirSnackbar = false;
+  late String mensagemSucesso;
   @override
   void dispose() {
     nomeDespesa.dispose();
@@ -54,15 +57,23 @@ class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
       if (response.statusCode == 200) {
         final List<dynamic> categoriasData = json.decode(response.body);
 
-        print(categoriasData); // Para verificar a estrutura da resposta
-        setState(() {
-          categorias = [
-            "Selecione",
-            ...categoriasData
-                .map((cat) => cat['nome_categoria'] ?? 'Sem Nome')
-                .toList(),
-          ];
-        });
+        if (mounted) {
+          setState(() {
+            categorias = [
+              "Selecione",
+              ...categoriasData
+                  .map((cat) => cat['nome_categoria'] ?? 'Sem Nome')
+                  .toList(),
+            ];
+          });
+        }
+
+        if (widget.execucao == "alterar_despesa" &&
+            categorias.contains(widget.categoriadespesa)) {
+          categoriaSelecionada = widget.categoriadespesa;
+        } else if (widget.execucao == "cadastrar_despesa") {
+          categoriaSelecionada = "Selecione";
+        }
       } else {
         throw Exception('Falha ao carregar categorias');
       }
@@ -74,6 +85,18 @@ class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
     }
   }
 
+  void carregarDadosIniciais() {
+    buscarCategorias().then((_) {
+      if (widget.execucao == "alterar_despesa") {
+        setState(() {
+          nomeDespesa.text = widget.nomedespesa ?? "";
+          valorDespesa.text = widget.valordespesa?.toString() ?? "";
+          pagoDespesa.text = widget.pagodespesa ?? "";
+        });
+      }
+    });
+  }
+
   Future<void> cadastrarDespesa() async {
     if (_formKey.currentState!.validate()) {
       var uri = Uri.parse(
@@ -82,7 +105,7 @@ class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
       var valorCadastrarDespesa = jsonEncode({
         "execucao": "cadastrar_despesa",
         "nome_despesa": nomeDespesa.text,
-        "categoria_despesa": categoriaDespesa.text,
+        "categoria_despesa": categoriaSelecionada,
         "valor_despesa": valorDespesa.text,
         "pago_despesa": pagoDespesa.text,
       });
@@ -99,6 +122,42 @@ class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
 
         if (respostaCadastrarRenda.statusCode == 200) {
           var retornoCadastrarRenda = jsonDecode(respostaCadastrarRenda.body);
+
+          // Exibe a mensagem de sucesso
+          exibirMensagem();
+        }
+      } catch (e) {
+        print("Erro na requisição: $e");
+      }
+    }
+  }
+
+  Future<void> alterarDespesa() async {
+    if (_formKey.currentState!.validate()) {
+      var uri =
+          Uri.parse("https://idailneto.com.br/contas_pessoais/API/Despesa.php");
+
+      var valorAlterarDespesa = jsonEncode({
+        "execucao": widget.execucao,
+        "nome_despesa": nomeDespesa.text,
+        "categoria_despesa": categoriaSelecionada,
+        "valor_despesa": valorDespesa.text,
+        "pago_despesa": pagoDespesa.text,
+        "codigo_despesa": widget.codigodespesa
+      });
+
+      try {
+        var respostaAlterarDespesa = await http.post(
+          uri,
+          headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+          },
+          body: valorAlterarDespesa,
+        );
+
+        if (respostaAlterarDespesa.statusCode == 200) {
+          var retornoAlterarDespesa = jsonDecode(respostaAlterarDespesa.body);
 
           // Exibe a mensagem de sucesso
           exibirMensagem();
@@ -131,7 +190,7 @@ class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
   @override
   void initState() {
     super.initState();
-    buscarCategorias();
+    carregarDadosIniciais();
   }
 
   //static bool exibirSnackbar = false; // Variável de controle para o Snackbar
@@ -141,7 +200,9 @@ class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Cadastro de Despesa"),
+        title: Text(widget.execucao == 'alterar_despesa'
+            ? 'Cadastro de Despesa'
+            : 'Alterar Despesa'),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -181,7 +242,7 @@ class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
                             border: OutlineInputBorder(),
                             prefixIcon: Icon(Icons.calendar_today),
                           ),
-                          value: categorias.isNotEmpty ? categorias[0] : null,
+                          value: categoriaSelecionada,
                           items: categorias.map((String categoria) {
                             return DropdownMenuItem<String>(
                               value: categoria,
@@ -189,7 +250,10 @@ class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
                             );
                           }).toList(),
                           onChanged: (String? newValue) {
-                            categoriaDespesa.text = newValue ?? '';
+                            //categoriaDespesa.text = newValue ?? '';
+                            setState(() {
+                              categoriaSelecionada = newValue;
+                            });
                           },
                           validator: (value) {
                             if (value == null || value == "Selecione") {
@@ -209,6 +273,7 @@ class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
                           if (resultado != null && resultado.isNotEmpty) {
                             setState(() {
                               categorias.add(resultado);
+                              categoriaSelecionada = resultado;
                             });
                             await atualizarCategorias();
                           }
@@ -287,7 +352,25 @@ class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
                           Expanded(
                             child: ElevatedButton(
                               onPressed: () async {
-                                await cadastrarDespesa();
+                                if (widget.execucao == "cadastrar_despesa") {
+                                  await cadastrarDespesa();
+                                  if (mounted) {
+                                    setState(() {
+                                      mensagemSucesso =
+                                          "Despesa cadastrada com sucesso!";
+                                      exibirMensagemSucesso = true;
+                                    });
+                                  }
+                                } else if (widget.execucao == "alterar_despesa") {
+                                  await alterarDespesa();
+                                  if (mounted) {
+                                    setState(() {
+                                      mensagemSucesso =
+                                          "Despesa alterada com sucesso!";
+                                      exibirMensagemSucesso = true;
+                                    });
+                                  }
+                                }
 
                                 
 

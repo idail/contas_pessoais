@@ -117,14 +117,14 @@ class _MainMessagesWidgetState extends State<MainMessagesWidget>
     WidgetsBinding.instance.addPostFrameCallback((_) => setState(() {}));
   }
 
-  GoogleMapController? _controladorMapa;
+  //GoogleMapController? _controladorMapa;
 
   // Pontos específicos das duas localidades
   // final LatLng _pontoA = const LatLng(-9.972413115315575, -67.80791574242686); // Rua 14 de Julho, 5141
   // final LatLng _pontoB = const LatLng(-9.951368295032635, -67.82165171759154); // Av. Afonso Pena, 4909
 
   // Variável para armazenar a distância calculada
-  String _distancia = "0 km";
+  //String _distancia = "0 km";
 
   @override
   void dispose() {
@@ -228,6 +228,43 @@ class _MainMessagesWidgetState extends State<MainMessagesWidget>
       _futureDespesas =
           despesas(); // Atualiza o Future com os filtros aplicados.
     });
+  }
+
+  Future<void> deletarDespesa(BuildContext contexto, int codigoDespesa) async {
+    var uri =
+        Uri.parse("https://idailneto.com.br/contas_pessoais/API/Despesa.php");
+
+    var valorExcluirDespesa =
+        jsonEncode({"execucao": "excluir_despesa", "codigo_despesa": codigoDespesa});
+
+    try {
+      var respostaDeletarDespesa = await http.delete(
+        uri,
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+        },
+        body: valorExcluirDespesa,
+      );
+
+      if (respostaDeletarDespesa.statusCode == 200) {
+        print(respostaDeletarDespesa.body);
+
+        var retornoDeletarDespesa = jsonDecode(respostaDeletarDespesa.body);
+
+        // Exibe a mensagem de sucesso
+        exibirMensagem(contexto);
+
+        setState(() {
+          _buscarDespesas();
+        });
+      } else {
+        print(
+            "Erro na requisição DELETE: ${respostaDeletarDespesa.statusCode} - ${respostaDeletarDespesa.reasonPhrase}");
+      }
+    } catch (e) {
+      print("Erro na requisição: $e");
+    }
   }
 
   List<Map<String, dynamic>> filterData(
@@ -724,8 +761,8 @@ class _MainMessagesWidgetState extends State<MainMessagesWidget>
                                 const SizedBox(height: 8.0),
                                 ElevatedButton(
                                   onPressed: () {
-                                    var codigoRenda = item['codigo_renda'];
-                                    //deletarRenda(context, codigoRenda);
+                                    var codigoDespesa = item['codigo_despesa'];
+                                    deletarDespesa(context, codigoDespesa);
                                   },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.red,
@@ -754,12 +791,12 @@ class _MainMessagesWidgetState extends State<MainMessagesWidget>
                         child: Container(
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(vertical: 12.0),
-                          color: item['pago_renda'] == 'Sim'
+                          color: item['pago_despesa'] == 'Sim'
                               ? Colors.green
                               : Colors.red,
                           child: Center(
                             child: Text(
-                              item['pago_renda'] == 'Sim' ? 'Pago' : 'Não Pago',
+                              item['pago_despesa'] == 'Sim' ? 'Pago' : 'Não Pago',
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyMedium
@@ -855,6 +892,20 @@ class _MainMessagesWidgetState extends State<MainMessagesWidget>
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void exibirMensagem(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Center(
+          child: Text(
+            "Despesa excluída com sucesso",
+            textAlign: TextAlign.center, // Garante o alinhamento centralizado
+          ),
+        ),
+        backgroundColor: Colors.green, // Define o fundo como verde
       ),
     );
   }
