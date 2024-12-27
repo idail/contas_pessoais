@@ -19,7 +19,6 @@ import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 class MainContractsWidget extends StatefulWidget {
   final String? tipo_acesso;
   final int? usuariocodigo;
-  final int? codigo_departamento_fornecedor;
   final String? email_usuario;
   final String? login_usuario;
   final String? nome_usuario;
@@ -29,7 +28,6 @@ class MainContractsWidget extends StatefulWidget {
       {super.key,
       this.usuariocodigo,
       this.tipo_acesso,
-      this.codigo_departamento_fornecedor,
       this.email_usuario,
       this.login_usuario,
       this.nome_usuario,
@@ -370,6 +368,7 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
                                     pagorenda: "",
                                     codigorenda: 0,
                                     execucao: "cadastrar_renda",
+                                    codigousuario: widget.usuariocodigo,
                                     // A função de callback agora será chamada após o fechamento do diálogo
                                   );
                                 },
@@ -731,6 +730,7 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
                                               pagorenda: pagoRenda,
                                               codigorenda: codigoRenda,
                                               execucao: "alterar_renda",
+                                              codigousuario: widget.usuariocodigo,
                                             ),
                                           ),
                                         );

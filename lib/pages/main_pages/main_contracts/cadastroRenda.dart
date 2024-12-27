@@ -14,6 +14,7 @@ class CadastroRendaPage extends StatefulWidget {
   String? pagorenda;
   int? codigorenda;
   String? execucao;
+  int? codigousuario;
 
   @override
   CadastroRendaPage(
@@ -24,7 +25,8 @@ class CadastroRendaPage extends StatefulWidget {
       required this.valorrenda,
       required this.pagorenda,
       required this.codigorenda,
-      required this.execucao})
+      required this.execucao,
+      required this.codigousuario})
       : super(key: key);
 
   @override
@@ -60,12 +62,44 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
 
   Future<void> buscarCategorias() async {
     String apiUrl =
-        'https://idailneto.com.br/contas_pessoais/API/Categoria.php?execucao=busca_categorias';
-    try {
-      final response = await http.get(Uri.parse(apiUrl));
-      if (response.statusCode == 200) {
-        final List<dynamic> categoriasData = json.decode(response.body);
+        'https://idailneto.com.br/contas_pessoais/API/Categoria.php';
 
+    try {
+      // Monta os parâmetros da requisição GET
+      final queryParameters = {
+        "codigo_usuario": widget.codigousuario.toString(),
+        "execucao": "busca_categorias_renda",
+      };
+
+      // Cria a URI com os parâmetros de consulta
+      final uri = Uri.parse(apiUrl).replace(queryParameters: queryParameters);
+
+      // Realiza a requisição GET
+      final response = await http.get(
+        uri,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      );
+
+      // Verifica o status da resposta
+      if (response.statusCode == 200) {
+        var retorno = jsonDecode(response.body);
+
+        // Trata o caso em que a API retorna "nada"
+        if (retorno == "nada") {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Nenhum registro localizado')),
+            );
+          }
+          return; // Interrompe a execução
+        }
+
+        // Continua o processamento normal se o retorno não for "nada"
+        final List<dynamic> categoriasData = retorno;
+
+        // Atualiza o estado com as categorias recebidas
         if (mounted) {
           setState(() {
             categorias = [
@@ -77,6 +111,7 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
           });
         }
 
+        // Define a categoria selecionada com base na execução
         if (widget.execucao == "alterar_renda" &&
             categorias.contains(widget.categoriarenda)) {
           categoriaSelecionada = widget.categoriarenda;
@@ -84,9 +119,13 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
           categoriaSelecionada = "Selecione";
         }
       } else {
+        // Log de erro para debugging
+        print('Erro na API: ${response.statusCode}, corpo: ${response.body}');
         throw Exception('Falha ao carregar categorias');
       }
     } catch (e) {
+      // Exibe o erro no SnackBar e log para debugging
+      print('Erro no método buscarCategorias: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Erro ao carregar categorias: $e')),
@@ -280,7 +319,10 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
                         onPressed: () async {
                           final resultado = await showDialog<String>(
                             context: context,
-                            builder: (context) => CadastroCategoriaRenda(),
+                            builder: (context) => CadastroCategoriaRenda(
+                              codigoUsuarioLogado: widget.codigousuario,
+                              tipo_cadastro: "renda",
+                            ),
                           );
                           if (resultado != null && resultado.isNotEmpty) {
                             setState(() {

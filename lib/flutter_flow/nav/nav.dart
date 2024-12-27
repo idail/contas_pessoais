@@ -92,14 +92,13 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           path: '/mainContracts/:tipoacesso/:nomeusuario/:usuario_codigo/:codigo_departamento_fornecedor/:login_usuario/:email_usuario/:departamentos_gestor',
           builder: (context, params) => NavBarPage(initialPage: 'Main_Contracts',tipoacesso: params.getParam("tipoacesso", ParamType.String),
           nomeusuario: params.getParam("nomeusuario", ParamType.String), usuario_codigo: params.getParam("usuario_codigo", ParamType.int),
-          codigo_departamento_fornecedor: params.getParam("codigo_departamento_fornecedor", ParamType.String),
           login_usuario: params.getParam("login_usuario", ParamType.String), email_usuario: params.getParam("email_usuario", ParamType.String),
-          departamentos_gestor: params.getParam("departamentos_gestor", ParamType.String)),
+          ),
         ),
         FFRoute(
           name: 'Main_messages',
-          path: '/mainMessages',
-          builder: (context, params) => NavBarPage(initialPage: 'Main_messages',nomeusuario: params.getParam("nomeusuario", ParamType.String)),
+          path: '/mainMessages/:nomeusuario/:codigousuario',
+          builder: (context, params) => NavBarPage(initialPage: 'Main_messages',nomeusuario: params.getParam("nomeusuario", ParamType.String),usuario_codigo:params.getParam("codigousuario", ParamType.int)),
         ),
         FFRoute(
           name: 'Main_profilePage',

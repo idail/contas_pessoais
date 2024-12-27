@@ -20,7 +20,8 @@ import 'package:http/http.dart' as http;
 
 class MainMessagesWidget extends StatefulWidget {
   String? nomeusuario;
-  MainMessagesWidget({super.key, required this.nomeusuario});
+  int? codigousuario;
+  MainMessagesWidget({super.key, required this.nomeusuario, required this.codigousuario});
 
   @override
   State<MainMessagesWidget> createState() => _MainMessagesWidgetState();
@@ -418,6 +419,7 @@ class _MainMessagesWidgetState extends State<MainMessagesWidget>
                                     pagodespesa: "",
                                     codigodespesa: 0,
                                     execucao: "cadastrar_despesa",
+                                    codigousuario: widget.codigousuario,
                                     // A função de callback agora será chamada após o fechamento do diálogo
                                   );
                                 },
@@ -734,12 +736,13 @@ class _MainMessagesWidgetState extends State<MainMessagesWidget>
                                               pagodespesa: pagoDespesa,
                                               codigodespesa: codigoDespesa,
                                               execucao: "alterar_despesa",
+                                              codigousuario: widget.codigousuario,
                                             ),
                                           ),
                                         );
                                       },
                                     ).then((_) {
-                                      despesas();
+                                      _buscarDespesas();
                                     });
                                   },
                                   style: ElevatedButton.styleFrom(

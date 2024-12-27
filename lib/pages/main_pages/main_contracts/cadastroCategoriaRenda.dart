@@ -4,43 +4,86 @@ import 'package:flutter/material.dart';
 
 class CadastroCategoriaRenda extends StatelessWidget {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController nomeCategoriaRenda = TextEditingController();
+  final TextEditingController nomeCategoria = TextEditingController();
+
+  int? codigoUsuarioLogado; // Código do usuário logado passado como parâmetro
+  String? tipo_cadastro;
 
   var retornoCadastrarCategoriaRenda;
 
-  Future<String?> cadastrarCategoriaRenda(BuildContext context) async {
+  CadastroCategoriaRenda(
+      {required this.codigoUsuarioLogado,
+      required this.tipo_cadastro}); // Construtor atualizado
+
+  Future<String?> cadastrarCategoria(BuildContext context) async {
     var uri =
         Uri.parse("https://idailneto.com.br/contas_pessoais/API/Categoria.php");
 
-    print(nomeCategoriaRenda.text);
+    //print(nomeCategoriaRenda.text);
 
-    var valorCadastrarCategoriaRenda = jsonEncode({
-      "execucao":"cadastrar_categoria_renda",
-      "nome_categoria_renda": nomeCategoriaRenda.text,
-    });
+    if (tipo_cadastro == "renda") {
+      var valorCadastrarCategoriaRenda = jsonEncode({
+        "execucao": "cadastrar_categoria_renda",
+        "nome_categoria_renda": nomeCategoria.text,
+        "codigo_usuario_renda": codigoUsuarioLogado,
+      });
 
-    try {
-      var respostaCadastrarCategoriaRenda = await http.post(
-        uri,
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-        },
-        body: valorCadastrarCategoriaRenda,
-      );
+      try {
+        var respostaCadastrarCategoriaRenda = await http.post(
+          uri,
+          headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+          },
+          body: valorCadastrarCategoriaRenda,
+        );
 
-      if(respostaCadastrarCategoriaRenda.statusCode == 200){
-        retornoCadastrarCategoriaRenda = jsonDecode(respostaCadastrarCategoriaRenda.body);
+        if (respostaCadastrarCategoriaRenda.statusCode == 200) {
+          retornoCadastrarCategoriaRenda =
+              jsonDecode(respostaCadastrarCategoriaRenda.body);
 
-        var valorCodigoCategoriaRenda = int.parse(retornoCadastrarCategoriaRenda);
+          var valorCodigoCategoriaRenda =
+              int.parse(retornoCadastrarCategoriaRenda);
 
-        return nomeCategoriaRenda.text;
+          return nomeCategoria.text;
+        }
+      } catch (e) {
+        print("Erro na requisição: $e");
       }
-    } catch (e) {
-      print("Erro na requisição: $e");
-    }
 
-    return null; // Retorna null em caso de falha
+      return null; // Retorna null em caso de falha
+    }else{
+      var valorCadastrarCategoriaRenda = jsonEncode({
+        "execucao": "cadastrar_categoria_despesa",
+        "nome_categoria_despesa": nomeCategoria.text,
+        "codigo_usuario_despesa": codigoUsuarioLogado,
+      });
+
+      try {
+        var respostaCadastrarCategoriaRenda = await http.post(
+          uri,
+          headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+          },
+          body: valorCadastrarCategoriaRenda,
+        );
+
+        if (respostaCadastrarCategoriaRenda.statusCode == 200) {
+          retornoCadastrarCategoriaRenda =
+              jsonDecode(respostaCadastrarCategoriaRenda.body);
+
+          var valorCodigoCategoriaRenda =
+              int.parse(retornoCadastrarCategoriaRenda);
+
+          return nomeCategoria.text;
+        }
+      } catch (e) {
+        print("Erro na requisição: $e");
+      }
+
+      return null; // Retorna null em caso de falha
+    }
   }
 
   // void mostrarAlerta(BuildContext context,String titulo, String mensagem) {
@@ -80,7 +123,7 @@ class CadastroCategoriaRenda extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: TextFormField(
-                controller: nomeCategoriaRenda,
+                controller: nomeCategoria,
                 decoration: const InputDecoration(
                   labelText: "Nome",
                   prefixIcon: Icon(Icons.label),
@@ -102,8 +145,9 @@ class CadastroCategoriaRenda extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
-                      final resultado = await cadastrarCategoriaRenda(context);
-                      Navigator.of(context).pop(resultado); // Fecha a modal retornando o resultado
+                      final resultado = await cadastrarCategoria(context);
+                      Navigator.of(context).pop(
+                          resultado); // Fecha a modal retornando o resultado
                     }
                   },
                   child: const Text('Salvar'),
