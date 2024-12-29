@@ -525,7 +525,7 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
                       );
                     } else {
                       return const Center(
-                        child: Text('Nenhum dado encontrado.'),
+                        child: Text('Nenhuma renda encontrada.'),
                       );
                     }
                   },

@@ -622,7 +622,7 @@ class _MainMessagesWidgetState extends State<MainMessagesWidget>
                       );
                     } else {
                       return const Center(
-                        child: Text('Nenhum dado encontrado.'),
+                        child: Text('Nenhuma despesa encontrada.'),
                       );
                     }
                   },
