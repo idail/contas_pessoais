@@ -136,6 +136,7 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
         "execucao": "busca_rendas",
         "opcao": opcao,
         "filtro": filtroRenda.text.trim(),
+        "codigo_usuario_renda":widget.usuariocodigo.toString()
       });
 
       final response = await http.get(uri);

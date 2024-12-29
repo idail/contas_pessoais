@@ -51,6 +51,7 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
   bool exibirSnackbar = false;
 
   late String mensagemSucesso;
+  late String mensagemErro;
   @override
   void dispose() {
     nomeRenda.dispose();
@@ -146,7 +147,7 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
     });
   }
 
-  Future<void> cadastrarRenda() async {
+  Future<bool> cadastrarRenda() async {
     if (_formKey.currentState!.validate()) {
       var uri =
           Uri.parse("https://idailneto.com.br/contas_pessoais/API/Renda.php");
@@ -157,6 +158,7 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
         "categoria_renda": categoriaSelecionada,
         "valor_renda": valorRenda.text,
         "pago_renda": pagoRenda.text,
+        "codigo_renda": widget.codigousuario.toString()
       });
 
       try {
@@ -170,15 +172,20 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
         );
 
         if (respostaCadastrarRenda.statusCode == 200) {
-          var retornoCadastrarRenda = jsonDecode(respostaCadastrarRenda.body);
-
-          // Exibe a mensagem de sucesso
-          exibirMensagem();
+          String resultadoCadastrarRenda =
+              jsonDecode(respostaCadastrarRenda.body);
+          if (int.parse(resultadoCadastrarRenda) > 0) {
+            return true;
+          }
+        } else {
+          return false;
         }
       } catch (e) {
         print("Erro na requisição: $e");
+        return false;
       }
     }
+    return false;
   }
 
   Future<void> alterarRenda() async {
@@ -226,17 +233,18 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
   // Exibir mensagem de sucesso e ocultar após 4 segundos
   Future<void> exibirMensagem() async {
     setState(() {
-      exibirMensagemSucesso = true; // Mostra a mensagem
+      // Define a mensagem para exibição
+      exibirMensagemSucesso = true; // Ou false dependendo da lógica
     });
 
-    // Oculta a mensagem após 4 segundos
-    await Future.delayed(const Duration(seconds: 4));
-
-    if (mounted) {
-      setState(() {
-        exibirMensagemSucesso = false; // Oculta a mensagem
-      });
-    }
+    // Oculta a mensagem após 3 segundos
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) {
+        setState(() {
+          exibirMensagemSucesso = null;
+        });
+      }
+    });
   }
 
   @override
@@ -247,7 +255,7 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
 
   //static bool exibirSnackbar = false; // Variável de controle para o Snackbar
   // Variável para controlar a exibição da mensagem
-  bool exibirMensagemSucesso = false;
+  bool? exibirMensagemSucesso;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -407,23 +415,59 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
                             child: ElevatedButton(
                               onPressed: () async {
                                 if (widget.execucao == "cadastrar_renda") {
-                                  await cadastrarRenda();
-                                  if (mounted) {
-                                    setState(() {
-                                      mensagemSucesso =
-                                          "Renda cadastrada com sucesso!";
-                                      exibirMensagemSucesso = true;
-                                    });
+                                  try {
+                                    final sucesso =
+                                        await cadastrarRenda(); // Retorna true/false
+                                    if (mounted) {
+                                      setState(() {
+                                        if (sucesso) {
+                                          mensagemSucesso =
+                                              "Renda cadastrada com sucesso!";
+                                          exibirMensagem();
+                                          exibirMensagemSucesso = true;
+                                        } else {
+                                          mensagemErro =
+                                              "Erro ao cadastrar renda.";
+                                          exibirMensagem();
+                                          exibirMensagemSucesso = false;
+                                        }
+                                      });
+                                    }
+                                  } catch (e) {
+                                    if (mounted) {
+                                      setState(() {
+                                        mensagemErro =
+                                            "Erro ao cadastrar renda: ${e.toString()}";
+                                        exibirMensagemSucesso = false;
+                                      });
+                                    }
                                   }
                                 } else if (widget.execucao == "alterar_renda") {
-                                  await alterarRenda();
-                                  if (mounted) {
-                                    setState(() {
-                                      mensagemSucesso =
-                                          "Renda alterada com sucesso!";
-                                      exibirMensagemSucesso = true;
-                                    });
-                                  }
+                                  // try {
+                                  //   final sucesso =
+                                  //       await alterarRenda(); // Retorna true/false
+                                  //   if (mounted) {
+                                  //     setState(() {
+                                  //       if (sucesso) {
+                                  //         mensagemSucesso =
+                                  //             "Renda alterada com sucesso!";
+                                  //         exibirMensagemSucesso = true;
+                                  //       } else {
+                                  //         mensagemErro =
+                                  //             "Erro ao alterar renda.";
+                                  //         exibirMensagemSucesso = false;
+                                  //       }
+                                  //     });
+                                  //   }
+                                  // } catch (e) {
+                                  //   if (mounted) {
+                                  //     setState(() {
+                                  //       mensagemErro =
+                                  //           "Erro ao alterar renda: ${e.toString()}";
+                                  //       exibirMensagemSucesso = false;
+                                  //     });
+                                  //   }
+                                  // }
                                 }
                               },
                               child: const Text('Gravar'),
@@ -454,7 +498,7 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
                       ),
 
                       // Exibir mensagem de sucesso abaixo dos botões, condicionalmente
-                      if (exibirMensagemSucesso)
+                      if (exibirMensagemSucesso != null)
                         Padding(
                           padding: const EdgeInsets.only(top: 16.0),
                           child: Container(
@@ -462,11 +506,15 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
                                 .infinity, // Garante que o Container ocupe toda a largura
                             padding: const EdgeInsets.all(16.0),
                             decoration: BoxDecoration(
-                              color: Colors.green,
+                              color: exibirMensagemSucesso == true
+                                  ? Colors.green // Verde para sucesso
+                                  : Colors.red, // Vermelho para erro
                               borderRadius: BorderRadius.circular(8.0),
                             ),
                             child: Text(
-                              mensagemSucesso, // Exibe a mensagem dinâmica
+                              exibirMensagemSucesso == true
+                                  ? mensagemSucesso // Mensagem de sucesso
+                                  : mensagemErro, // Mensagem de erro
                               textAlign: TextAlign
                                   .center, // Centraliza o texto na largura do container
                               style: const TextStyle(
