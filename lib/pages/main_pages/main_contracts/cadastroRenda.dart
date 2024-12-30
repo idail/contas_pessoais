@@ -188,7 +188,7 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
     return false;
   }
 
-  Future<void> alterarRenda() async {
+  Future<bool> alterarRenda() async {
     if (_formKey.currentState!.validate()) {
       var uri =
           Uri.parse("https://idailneto.com.br/contas_pessoais/API/Renda.php");
@@ -202,6 +202,8 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
         "codigo_renda": widget.codigorenda
       });
 
+      print(valorCadastrarRenda);
+
       try {
         var respostaCadastrarRenda = await http.post(
           uri,
@@ -213,15 +215,26 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
         );
 
         if (respostaCadastrarRenda.statusCode == 200) {
-          var retornoCadastrarRenda = jsonDecode(respostaCadastrarRenda.body);
+          String resultadoAlterarRenda =
+              jsonDecode(respostaCadastrarRenda.body);
+          if(resultadoAlterarRenda == "renda alterada")
+          {
+            return true;
+          }
+
+          //var retornoCadastrarRenda = jsonDecode(respostaCadastrarRenda.body);
 
           // Exibe a mensagem de sucesso
-          exibirMensagem();
+          //exibirMensagem();
+        }else{
+          return false;
         }
       } catch (e) {
         print("Erro na requisição: $e");
+        return false;
       }
     }
+    return false;
   }
 
   // Função para atualizar categorias após o cadastro de nova categoria
@@ -438,36 +451,40 @@ class _CadastroRendaPageState extends State<CadastroRendaPage> {
                                       setState(() {
                                         mensagemErro =
                                             "Erro ao cadastrar renda: ${e.toString()}";
+                                      exibirMensagem();      
                                         exibirMensagemSucesso = false;
                                       });
                                     }
                                   }
                                 } else if (widget.execucao == "alterar_renda") {
-                                  // try {
-                                  //   final sucesso =
-                                  //       await alterarRenda(); // Retorna true/false
-                                  //   if (mounted) {
-                                  //     setState(() {
-                                  //       if (sucesso) {
-                                  //         mensagemSucesso =
-                                  //             "Renda alterada com sucesso!";
-                                  //         exibirMensagemSucesso = true;
-                                  //       } else {
-                                  //         mensagemErro =
-                                  //             "Erro ao alterar renda.";
-                                  //         exibirMensagemSucesso = false;
-                                  //       }
-                                  //     });
-                                  //   }
-                                  // } catch (e) {
-                                  //   if (mounted) {
-                                  //     setState(() {
-                                  //       mensagemErro =
-                                  //           "Erro ao alterar renda: ${e.toString()}";
-                                  //       exibirMensagemSucesso = false;
-                                  //     });
-                                  //   }
-                                  // }
+                                  try {
+                                    final sucesso =
+                                        await alterarRenda(); // Retorna true/false
+                                    if (mounted) {
+                                      setState(() {
+                                        if (sucesso) {
+                                          mensagemSucesso =
+                                              "Renda alterada com sucesso!";
+                                          exibirMensagem();
+                                          exibirMensagemSucesso = true;
+                                        } else {
+                                          mensagemErro =
+                                              "Erro ao alterar renda.";
+                                          exibirMensagem();
+                                          exibirMensagemSucesso = false;
+                                        }
+                                      });
+                                    }
+                                  } catch (e) {
+                                    if (mounted) {
+                                      setState(() {
+                                        mensagemErro =
+                                            "Erro ao alterar renda: ${e.toString()}";
+                                      exibirMensagem();
+                                        exibirMensagemSucesso = false;
+                                      });
+                                    }
+                                  }
                                 }
                               },
                               child: const Text('Gravar'),

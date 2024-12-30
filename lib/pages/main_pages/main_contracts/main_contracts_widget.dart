@@ -136,7 +136,7 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
         "execucao": "busca_rendas",
         "opcao": opcao,
         "filtro": filtroRenda.text.trim(),
-        "codigo_usuario_renda":widget.usuariocodigo.toString()
+        "codigo_usuario_renda": widget.usuariocodigo.toString()
       });
 
       final response = await http.get(uri);
@@ -180,18 +180,24 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
 
         var retornoDeletarRenda = jsonDecode(respostaDeletarRenda.body);
 
-        // Exibe a mensagem de sucesso
-        exibirMensagem(context);
+        if(retornoDeletarRenda == "renda excluida")
+        {
+          // Exibe a mensagem de sucesso
+          exibirMensagem(context,"renda excluida");
+        }else{
+          exibirMensagem(context,"renda nao excluida");
+        }
 
-        setState(() {
-          rendas();
-        });
+        // setState(() {
+        //   rendas();
+        // });
       } else {
         print(
             "Erro na requisição DELETE: ${respostaDeletarRenda.statusCode} - ${respostaDeletarRenda.reasonPhrase}");
       }
     } catch (e) {
       print("Erro na requisição: $e");
+      exibirMensagem(context,"renda nao excluida");
     }
   }
 
@@ -379,9 +385,10 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
                         },
                       ).then((_) {
                         // Aqui, a função rendas() será chamada quando o diálogo for fechado
-                        setState(() {
-                          rendas();
-                        });
+                        // setState(() {
+                        //   rendas();
+                        // });
+                        _buscarRendas();
                       });
                     },
                     cardWidth: MediaQuery.of(context)
@@ -731,13 +738,14 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
                                               pagorenda: pagoRenda,
                                               codigorenda: codigoRenda,
                                               execucao: "alterar_renda",
-                                              codigousuario: widget.usuariocodigo,
+                                              codigousuario:
+                                                  widget.usuariocodigo,
                                             ),
                                           ),
                                         );
                                       },
                                     ).then((_) {
-                                      rendas();
+                                      _buscarRendas();
                                     });
                                   },
                                   style: ElevatedButton.styleFrom(
@@ -760,7 +768,41 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
                                 ElevatedButton(
                                   onPressed: () {
                                     var codigoRenda = item['codigo_renda'];
-                                    deletarRenda(context, codigoRenda);
+
+                                    // Mostrar o alerta de confirmação
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return AlertDialog(
+                                          title: Text('Confirmação'),
+                                          content: const Text(
+                                              'Tem certeza de que deseja excluir este registro?'),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () {
+                                                // Fechar o alerta sem fazer nada
+                                                Navigator.of(context).pop();
+                                              },
+                                              child: Text('Cancelar'),
+                                            ),
+                                            TextButton(
+                                              onPressed: () {
+                                                // Confirmar exclusão
+                                                Navigator.of(context)
+                                                    .pop(); // Fechar o alerta
+                                                deletarRenda(
+                                                        context, codigoRenda)
+                                                    .then((_) {
+                                                  // Chamar _buscarRendas após exclusão
+                                                  _buscarRendas();
+                                                });
+                                              },
+                                              child: Text('Excluir'),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
                                   },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.red,
@@ -894,16 +936,22 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
     );
   }
 
-  void exibirMensagem(BuildContext context) {
+  void exibirMensagem(BuildContext context, String opcao) {
+    // Define mensagem e cor com base na opção
+    String mensagem = opcao == "renda excluida"
+        ? "Renda excluída com sucesso"
+        : "Erro ao excluir a renda";
+    Color corFundo = opcao == "renda excluida" ? Colors.green : Colors.red;
+
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Center(
-          child: Text(
-            "Renda excluída com sucesso",
-            textAlign: TextAlign.center, // Garante o alinhamento centralizado
-          ),
+      SnackBar(
+        content: Text(
+          mensagem,
+          textAlign: TextAlign.center, // Garante o alinhamento centralizado
+          style: const TextStyle(color: Colors.white), // Cor do texto
         ),
-        backgroundColor: Colors.green, // Define o fundo como verde
+        backgroundColor: corFundo, // Define a cor do fundo
+        duration: const Duration(seconds: 3), // Define a duração do SnackBar
       ),
     );
   }
