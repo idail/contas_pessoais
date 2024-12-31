@@ -209,6 +209,7 @@ class _MainMessagesWidgetState extends State<MainMessagesWidget>
         "execucao": "busca_despesas",
         "opcao": opcao,
         "filtro": filtroDespesa.text.trim(),
+        "codigo_usuario":widget.codigousuario.toString()
       });
 
       final response = await http.get(uri);
@@ -252,19 +253,26 @@ class _MainMessagesWidgetState extends State<MainMessagesWidget>
         print(respostaDeletarDespesa.body);
 
         var retornoDeletarDespesa = jsonDecode(respostaDeletarDespesa.body);
+        
+        if(retornoDeletarDespesa == "despesa excluida"){
+          exibirMensagem(context,"despesa excluida");
+        }else{
+          exibirMensagem(context,"despesa nao excluida");
+        }
 
         // Exibe a mensagem de sucesso
-        exibirMensagem(contexto);
+        // exibirMensagem(contexto);
 
-        setState(() {
-          _buscarDespesas();
-        });
+        // setState(() {
+        //   _buscarDespesas();
+        // });
       } else {
         print(
             "Erro na requisição DELETE: ${respostaDeletarDespesa.statusCode} - ${respostaDeletarDespesa.reasonPhrase}");
       }
     } catch (e) {
       print("Erro na requisição: $e");
+      exibirMensagem(context,"despesa nao excluida");
     }
   }
 
@@ -765,7 +773,41 @@ class _MainMessagesWidgetState extends State<MainMessagesWidget>
                                 ElevatedButton(
                                   onPressed: () {
                                     var codigoDespesa = item['codigo_despesa'];
-                                    deletarDespesa(context, codigoDespesa);
+
+                                    // Mostrar o alerta de confirmação
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return AlertDialog(
+                                          title: Text('Confirmação'),
+                                          content: const Text(
+                                              'Tem certeza de que deseja excluir este registro?'),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () {
+                                                // Fechar o alerta sem fazer nada
+                                                Navigator.of(context).pop();
+                                              },
+                                              child: Text('Cancelar'),
+                                            ),
+                                            TextButton(
+                                              onPressed: () {
+                                                // Confirmar exclusão
+                                                Navigator.of(context)
+                                                    .pop(); // Fechar o alerta
+                                                deletarDespesa(
+                                                        context, codigoDespesa)
+                                                    .then((_) {
+                                                  // Chamar _buscarRendas após exclusão
+                                                  _buscarDespesas();
+                                                });
+                                              },
+                                              child: Text('Excluir'),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
                                   },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.red,
@@ -899,16 +941,22 @@ class _MainMessagesWidgetState extends State<MainMessagesWidget>
     );
   }
 
-  void exibirMensagem(BuildContext context) {
+  void exibirMensagem(BuildContext context, String opcao) {
+    // Define mensagem e cor com base na opção
+    String mensagem = opcao == "despesa excluida"
+        ? "Despesa excluída com sucesso"
+        : "Erro ao excluir a despesa";
+    Color corFundo = opcao == "despesa excluida" ? Colors.green : Colors.red;
+
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Center(
-          child: Text(
-            "Despesa excluída com sucesso",
-            textAlign: TextAlign.center, // Garante o alinhamento centralizado
-          ),
+      SnackBar(
+        content: Text(
+          mensagem,
+          textAlign: TextAlign.center, // Garante o alinhamento centralizado
+          style: const TextStyle(color: Colors.white), // Cor do texto
         ),
-        backgroundColor: Colors.green, // Define o fundo como verde
+        backgroundColor: corFundo, // Define a cor do fundo
+        duration: const Duration(seconds: 3), // Define a duração do SnackBar
       ),
     );
   }

@@ -49,6 +49,7 @@ class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
 
   bool exibirSnackbar = false;
   late String mensagemSucesso;
+  late String mensagemErro;
   @override
   void dispose() {
     nomeDespesa.dispose();
@@ -154,7 +155,7 @@ class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
     });
   }
 
-  Future<void> cadastrarDespesa() async {
+  Future<bool> cadastrarDespesa() async {
     if (_formKey.currentState!.validate()) {
       var uri =
           Uri.parse("https://idailneto.com.br/contas_pessoais/API/Despesa.php");
@@ -165,6 +166,7 @@ class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
         "categoria_despesa": categoriaSelecionada,
         "valor_despesa": valorDespesa.text,
         "pago_despesa": pagoDespesa.text,
+        "codigo_despesa": widget.codigousuario.toString()
       });
 
       try {
@@ -178,18 +180,27 @@ class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
         );
 
         if (respostaCadastrarRenda.statusCode == 200) {
-          var retornoCadastrarRenda = jsonDecode(respostaCadastrarRenda.body);
+          String resultadoCadastrarRenda =
+              jsonDecode(respostaCadastrarRenda.body);
+
+          if (int.parse(resultadoCadastrarRenda) > 0) {
+            return true;
+          }
 
           // Exibe a mensagem de sucesso
-          exibirMensagem();
+          //exibirMensagem();
+        } else {
+          return false;
         }
       } catch (e) {
         print("Erro na requisição: $e");
+        return false;
       }
     }
+    return false;
   }
 
-  Future<void> alterarDespesa() async {
+  Future<bool> alterarDespesa() async {
     if (_formKey.currentState!.validate()) {
       var uri =
           Uri.parse("https://idailneto.com.br/contas_pessoais/API/Despesa.php");
@@ -216,13 +227,21 @@ class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
         if (respostaAlterarDespesa.statusCode == 200) {
           var retornoAlterarDespesa = jsonDecode(respostaAlterarDespesa.body);
 
+          if(retornoAlterarDespesa == "despesa alterada"){
+            return true;
+          }else{
+            return false;
+          }
+
           // Exibe a mensagem de sucesso
           exibirMensagem();
         }
       } catch (e) {
         print("Erro na requisição: $e");
+        return false;
       }
     }
+    return false;
   }
 
   // Função para atualizar categorias após o cadastro de nova categoria
@@ -233,17 +252,18 @@ class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
   // Exibir mensagem de sucesso e ocultar após 4 segundos
   Future<void> exibirMensagem() async {
     setState(() {
-      exibirMensagemSucesso = true; // Mostra a mensagem
+      // Define a mensagem para exibição
+      exibirMensagemSucesso = true; // Ou false dependendo da lógica
     });
 
-    // Oculta a mensagem após 4 segundos
-    await Future.delayed(const Duration(seconds: 4));
-
-    if (mounted) {
-      setState(() {
-        exibirMensagemSucesso = false; // Oculta a mensagem
-      });
-    }
+    // Oculta a mensagem após 3 segundos
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) {
+        setState(() {
+          exibirMensagemSucesso = null;
+        });
+      }
+    });
   }
 
   @override
@@ -254,7 +274,7 @@ class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
 
   //static bool exibirSnackbar = false; // Variável de controle para o Snackbar
   // Variável para controlar a exibição da mensagem
-  bool exibirMensagemSucesso = false;
+  bool? exibirMensagemSucesso;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -416,25 +436,85 @@ class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
                             child: ElevatedButton(
                               onPressed: () async {
                                 if (widget.execucao == "cadastrar_despesa") {
-                                  await cadastrarDespesa();
-                                  if (mounted) {
-                                    setState(() {
-                                      mensagemSucesso =
-                                          "Despesa cadastrada com sucesso!";
-                                      exibirMensagemSucesso = true;
-                                    });
+                                  try {
+                                    final sucesso =
+                                        await cadastrarDespesa(); // Retorna true/false
+                                    if (mounted) {
+                                      setState(() {
+                                        if (sucesso) {
+                                          mensagemSucesso =
+                                              "Despesa cadastrada com sucesso!";
+                                          exibirMensagem();
+                                          exibirMensagemSucesso = true;
+                                        } else {
+                                          mensagemErro =
+                                              "Erro ao cadastrar despesa.";
+                                          exibirMensagem();
+                                          exibirMensagemSucesso = false;
+                                        }
+                                      });
+                                    }
+                                  } catch (e) {
+                                    if (mounted) {
+                                      setState(() {
+                                        mensagemErro =
+                                            "Erro ao cadastrar despesa: ${e.toString()}";
+                                        exibirMensagem();
+                                        exibirMensagemSucesso = false;
+                                      });
+                                    }
                                   }
-                                } else if (widget.execucao ==
-                                    "alterar_despesa") {
-                                  await alterarDespesa();
-                                  if (mounted) {
-                                    setState(() {
-                                      mensagemSucesso =
-                                          "Despesa alterada com sucesso!";
-                                      exibirMensagemSucesso = true;
-                                    });
+                                } else if (widget.execucao == "alterar_despesa") {
+                                  try {
+                                    final sucesso =
+                                        await alterarDespesa(); // Retorna true/false
+                                    if (mounted) {
+                                      setState(() {
+                                        if (sucesso) {
+                                          mensagemSucesso =
+                                              "Despesa alterada com sucesso!";
+                                          exibirMensagem();
+                                          exibirMensagemSucesso = true;
+                                        } else {
+                                          mensagemErro =
+                                              "Erro ao alterar despesa.";
+                                          exibirMensagem();
+                                          exibirMensagemSucesso = false;
+                                        }
+                                      });
+                                    }
+                                  } catch (e) {
+                                    if (mounted) {
+                                      setState(() {
+                                        mensagemErro =
+                                            "Erro ao alterar despesa: ${e.toString()}";
+                                        exibirMensagem();
+                                        exibirMensagemSucesso = false;
+                                      });
+                                    }
                                   }
                                 }
+
+                                // if (widget.execucao == "cadastrar_despesa") {
+                                //   await cadastrarDespesa();
+                                //   if (mounted) {
+                                //     setState(() {
+                                //       mensagemSucesso =
+                                //           "Despesa cadastrada com sucesso!";
+                                //       exibirMensagemSucesso = true;
+                                //     });
+                                //   }
+                                // } else if (widget.execucao ==
+                                //     "alterar_despesa") {
+                                //   await alterarDespesa();
+                                //   if (mounted) {
+                                //     setState(() {
+                                //       mensagemSucesso =
+                                //           "Despesa alterada com sucesso!";
+                                //       exibirMensagemSucesso = true;
+                                //     });
+                                //   }
+                                // }
 
                                 // Exibir SnackBar com a mensagem de sucesso
                                 // ScaffoldMessenger.of(widget.context)
@@ -476,7 +556,7 @@ class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
                       ),
 
                       //Exibir mensagem de sucesso abaixo dos botões, condicionalmente
-                      if (exibirMensagemSucesso)
+                      if (exibirMensagemSucesso != null)
                         Padding(
                           padding: const EdgeInsets.only(top: 16.0),
                           child: Container(
@@ -484,14 +564,18 @@ class _CadastroDespesaPageState extends State<CadastroDespesaPage> {
                                 .infinity, // Garante que o Container ocupe toda a largura
                             padding: const EdgeInsets.all(16.0),
                             decoration: BoxDecoration(
-                              color: Colors.green,
+                              color: exibirMensagemSucesso == true
+                                  ? Colors.green // Verde para sucesso
+                                  : Colors.red, // Vermelho para erro
                               borderRadius: BorderRadius.circular(8.0),
                             ),
-                            child: const Text(
-                              'Despesa gravada com sucesso!',
+                            child: Text(
+                              exibirMensagemSucesso == true
+                                  ? mensagemSucesso // Mensagem de sucesso
+                                  : mensagemErro, // Mensagem de erro
                               textAlign: TextAlign
                                   .center, // Centraliza o texto na largura do container
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
                               ),
