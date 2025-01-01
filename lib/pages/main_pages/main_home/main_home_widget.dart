@@ -36,6 +36,9 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
 
   final animationsMap = <String, AnimationInfo>{};
 
+  double totalRenda = 0;
+  double totalDespesa = 0;
+
   //var recebeNomeUsuario = "";
 
   @override
@@ -870,7 +873,7 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
   // String valorConsumidoString = "";
 
   Future<void> carregaInformacoes(int codigo_usuario) async {
-    String opcao = "todos";
+    String opcao = "visualizar_tudo";
 
     const String uriBuscaDespesa =
         'https://idailneto.com.br/contas_pessoais/API/Despesa.php';
@@ -887,9 +890,19 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
 
       if (response.statusCode == 200) {
         var retorno = jsonDecode(response.body);
-        if (retorno.length > 0) {
-          print(retorno);
+
+        for (var i = 0; i < retorno.length; i++) {
+          var valorDespesaTotal = retorno[i]['sum(valor_despesa)'];
+          totalDespesa = double.parse(valorDespesaTotal);
+          print(totalDespesa);
         }
+
+        //String valorDespesaTotal = retorno['sum(valor_despesa)'];
+
+        //print(totalDespesa);
+        // if (retorno.length > 0) {
+        //   print(retorno);
+        // }
         //final data = json.decode(response.body) as List;
         //return data.map((item) => Map<String, dynamic>.from(item)).toList();
       } else {
@@ -899,7 +912,7 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
       throw Exception('Erro ao conectar-se à API: $e');
     }
 
-    String opcao_renda = "todos";
+    String opcao_renda = "visualizar_tudo";
 
     const String uriBuscaRenda =
         'https://idailneto.com.br/contas_pessoais/API/Renda.php';
@@ -919,8 +932,10 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
         // return data.map((item) => Map<String, dynamic>.from(item)).toList();
 
         var retorno = jsonDecode(response.body);
-        if (retorno.length > 0) {
-          print(retorno);
+        for (var i = 0; i < retorno.length; i++) {
+          var valorRendaTotal = retorno[i]["sum(valor_renda)"];
+          totalRenda = double.parse(valorRendaTotal);
+          print(totalRenda);
         }
       } else {
         throw Exception('Erro ao buscar dados: ${response.statusCode}');
@@ -1016,6 +1031,20 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
     //     saldoAtual = valorRecebido - valorPendente;
     //   });
     // }
+  }
+
+  double calcularPercentual(double totalRenda, double totalDespesa) {
+    // Calcule o total e a proporção
+    double total = totalRenda + totalDespesa;
+
+    // Garanta que o total não seja zero para evitar divisão por zero
+    if (total == 0) return 0.1;
+
+    // Calcule o percentual baseado em um valor máximo (exemplo: 1000)
+    double percentual = total / 1000;
+
+    // Limite o valor entre 0.1 e 1.0
+    return max(0.1, min(percentual, 1.0));
   }
 
   @override
@@ -1159,18 +1188,24 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
                                       children: [
                                         Padding(
                                           padding: const EdgeInsetsDirectional
-                                              .fromSTEB(16.0, 0.0, 0.0, 8.0),
-                                          child: Text(
-                                            "Informações",
-                                            textAlign: TextAlign.start,
-                                            style: FlutterFlowTheme.of(context)
-                                                .displaySmall
-                                                .override(
-                                                  fontFamily: 'Outfit',
-                                                  letterSpacing: 0.0,
-                                                ),
-                                          ).animateOnPageLoad(animationsMap[
-                                              'textOnPageLoadAnimation1']!),
+                                              .fromSTEB(0.0, 0.0, 0.0, 8.0),
+                                          child: Center(
+                                            // Centraliza o conteúdo horizontal e verticalmente
+                                            child: Text(
+                                              "Informações",
+                                              textAlign: TextAlign.center,
+                                              style:
+                                                  FlutterFlowTheme.of(context)
+                                                      .displaySmall
+                                                      .override(
+                                                        fontFamily: 'Outfit',
+                                                        letterSpacing: 0.0,
+                                                      ),
+                                            ).animateOnPageLoad(
+                                              animationsMap[
+                                                  'textOnPageLoadAnimation1']!,
+                                            ),
+                                          ),
                                         ),
                                         Padding(
                                           padding: const EdgeInsetsDirectional
@@ -1704,7 +1739,8 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
                                                     0.0, 0.0),
                                             children: [
                                               CircularPercentIndicator(
-                                                percent: 0.1,
+                                                percent:
+                                                    calcularPercentual(0, 0),
                                                 radius: 70.0,
                                                 lineWidth: 12.0,
                                                 animation: true,
@@ -1717,6 +1753,17 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
                                               CircularPercentIndicator(
                                                 percent: 0.3,
                                                 radius: 50.0,
+                                                lineWidth: 12.0,
+                                                animation: true,
+                                                animateFromLastPercent: true,
+                                                progressColor: Colors.white,
+                                                backgroundColor:
+                                                    const Color(0x4CFFFFFF),
+                                              ).animateOnPageLoad(animationsMap[
+                                                  'progressBarOnPageLoadAnimation2']!),
+                                              CircularPercentIndicator(
+                                                percent: 0.3,
+                                                radius: 30.0,
                                                 lineWidth: 12.0,
                                                 animation: true,
                                                 animateFromLastPercent: true,
