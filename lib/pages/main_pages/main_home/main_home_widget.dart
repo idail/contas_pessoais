@@ -880,7 +880,7 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
         "execucao": "busca_despesas",
         "opcao": opcao,
         "filtro": "",
-        "codigo_usuario": widget.codigousuario.toString()
+        "codigo_usuario": codigo_usuario.toString()
       });
 
       final response = await http.get(uri);
@@ -909,7 +909,7 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
         "execucao": "busca_rendas",
         "opcao": opcao_renda,
         "filtro": "",
-        "codigo_usuario_renda": widget.codigousuario.toString()
+        "codigo_usuario_renda": codigo_usuario.toString()
       });
 
       final response = await http.get(uri);
@@ -1704,7 +1704,7 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
                                                     0.0, 0.0),
                                             children: [
                                               CircularPercentIndicator(
-                                                percent: 0.9,
+                                                percent: 0.1,
                                                 radius: 70.0,
                                                 lineWidth: 12.0,
                                                 animation: true,
