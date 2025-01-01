@@ -414,62 +414,63 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
             )
           : null,
       drawer: Drawer(
-  child: ListView(
-    padding: EdgeInsets.zero,
-    children: [
-      // Cabeçalho com o nome da pessoa logada
-      DrawerHeader(
-        decoration: BoxDecoration(
-          color: FlutterFlowTheme.of(context).primary,
-        ),
-        child: Center( // Centraliza o conteúdo no centro do DrawerHeader
-          child: Text(
-            'Olá, ${widget.nomeusuario ?? "Usuário"}',
-            textAlign: TextAlign.center, // Garante alinhamento central do texto
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 20,
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            // Cabeçalho com o nome da pessoa logada
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: FlutterFlowTheme.of(context).primary,
+              ),
+              child: Center(
+                // Centraliza o conteúdo no centro do DrawerHeader
+                child: Text(
+                  'Olá, ${widget.nomeusuario ?? "Usuário"}',
+                  textAlign:
+                      TextAlign.center, // Garante alinhamento central do texto
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                  ),
+                ),
+              ),
             ),
-          ),
+
+            // Botão de ajuda com ícone centralizado e texto abaixo
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: ListTile(
+                onTap: () {
+                  // Ação quando o item for clicado
+                  print("Ajuda clicada");
+                },
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 16.0,
+                ),
+                title: const Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.help_rounded,
+                      size: 32.0,
+                      color: Colors.blue,
+                    ),
+                    SizedBox(
+                      height: 8.0,
+                    ),
+                    Text(
+                      "Informar erro, sugestões",
+                      style: TextStyle(fontSize: 16, color: Colors.black),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Aqui você pode adicionar mais itens do menu
+          ],
         ),
       ),
-
-      // Botão de ajuda com ícone centralizado e texto abaixo
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: ListTile(
-          onTap: () {
-            // Ação quando o item for clicado
-            print("Ajuda clicada");
-          },
-          contentPadding: const EdgeInsets.symmetric(
-            vertical: 16.0,
-          ),
-          title: const Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.help_rounded,
-                size: 32.0,
-                color: Colors.blue,
-              ),
-              SizedBox(
-                height: 8.0,
-              ),
-              Text(
-                "Informar erro, sugestões",
-                style: TextStyle(fontSize: 16, color: Colors.black),
-              ),
-            ],
-          ),
-        ),
-      ),
-
-      // Aqui você pode adicionar mais itens do menu
-    ],
-  ),
-),
-
       body: Column(
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.start,
@@ -1157,49 +1158,50 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                 Padding(
                                   padding: const EdgeInsetsDirectional.fromSTEB(
                                       16.0, 12.0, 16.0, 0.0),
-                                  child: ElevatedButton(
-                                    onPressed: () async {
-                                      alterar_usuario();
+                                  child: SizedBox(
+                                    width: double
+                                        .infinity, // Define a largura como 100% da tela
+                                    child: ElevatedButton(
+                                      onPressed: () async {
+                                        alterar_usuario();
 
-                                      // Exibe o SnackBar após a alteração
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
-                                            'Registro alterado com sucesso!',
-                                            style:
-                                                TextStyle(color: Colors.white),
+                                        // Exibe o SnackBar após a alteração
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Registro alterado com sucesso!',
+                                              style: TextStyle(
+                                                  color: Colors.white),
+                                            ),
+                                            backgroundColor: Colors.green,
+                                            duration: Duration(seconds: 3),
                                           ),
-                                          backgroundColor: Colors.green,
-                                          duration: Duration(seconds: 3),
+                                        );
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor:
+                                            FlutterFlowTheme.of(context)
+                                                .primary,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12.0),
                                         ),
-                                      );
-                                    }
-                                    // Adicione a lógica de edição aqui
-                                    ,
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor:
-                                          FlutterFlowTheme.of(context).primary,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(12.0),
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 16.0),
+                                        elevation: 3.0,
                                       ),
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 16.0),
-                                      minimumSize: const Size(
-                                          180.0, 50.0), // Largura aumentada
-                                      elevation: 3.0,
-                                    ),
-                                    child: Text(
-                                      'Editar',
-                                      style: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .override(
-                                            fontFamily: 'Plus Jakarta Sans',
-                                            color: Colors.white,
-                                            fontSize: 16.0,
-                                            fontWeight: FontWeight.w600,
-                                          ),
+                                      child: Text(
+                                        'Editar',
+                                        style: FlutterFlowTheme.of(context)
+                                            .titleSmall
+                                            .override(
+                                              fontFamily: 'Plus Jakarta Sans',
+                                              color: Colors.white,
+                                              fontSize: 16.0,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -1402,7 +1404,7 @@ class _MainProfilePageWidgetState extends State<MainProfilePageWidget>
                                                     CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    "Escolhar a cor que deseja",
+                                                    "Escolha a cor que deseja",
                                                     style: FlutterFlowTheme.of(
                                                             context)
                                                         .titleLarge

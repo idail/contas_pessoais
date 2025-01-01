@@ -483,7 +483,7 @@ class _MainMessagesWidgetState extends State<MainMessagesWidget>
             // ),
 
             // Espaçamento entre o campo de pesquisa e as abas
-            const SizedBox(height: 20.0),
+            // const SizedBox(height: 20.0),
 
             // Flexible(
             //   flex: 2, // Aumente o valor para expandir mais altura
@@ -542,7 +542,7 @@ class _MainMessagesWidgetState extends State<MainMessagesWidget>
             // ),
 
             // Espaçamento entre o campo de pesquisa e as abas
-            const SizedBox(height: 20.0),
+            // const SizedBox(height: 20.0),
 
             // Campo de pesquisa com botão de pesquisa
             Row(
@@ -551,13 +551,13 @@ class _MainMessagesWidgetState extends State<MainMessagesWidget>
                   child: TextField(
                     controller:filtroDespesa,
                     decoration: InputDecoration(
-                      hintText: 'Pesquisar despesa...',
-                      hintStyle: TextStyle(color: Colors.grey),
+                      hintText: 'Pesquisar pelo nome...',
+                      hintStyle: const TextStyle(color: Colors.grey),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.grey),
+                        borderSide: const BorderSide(color: Colors.grey),
                       ),
-                      prefixIcon: Icon(Icons.search, color: Colors.grey),
+                      // prefixIcon: const Icon(Icons.search, color: Colors.grey),
                     ),
                     onChanged: (query) {
                       // Adicione a lógica de pesquisa aqui

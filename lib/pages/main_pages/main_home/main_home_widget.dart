@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import '/components/web_nav/web_nav_widget.dart';
 import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -858,16 +860,75 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
     super.dispose();
   }
 
-  double valorEmpenhoGestor = 0;
-  double valorEmpenhoRecebido = 0;
-  double valorConsumido = 0;
-  double saldoAtual = 0;
-  double valorRecebido = 0;
-  double valorPendente = 0;
-  double valorTotal = 0;
-  String valorConsumidoString = "";
+  // double valorEmpenhoGestor = 0;
+  // double valorEmpenhoRecebido = 0;
+  // double valorConsumido = 0;
+  // double saldoAtual = 0;
+  // double valorRecebido = 0;
+  // double valorPendente = 0;
+  // double valorTotal = 0;
+  // String valorConsumidoString = "";
 
   Future<void> carregaInformacoes(int codigo_usuario) async {
+    String opcao = "todos";
+
+    const String uriBuscaDespesa =
+        'https://idailneto.com.br/contas_pessoais/API/Despesa.php';
+
+    try {
+      final uri = Uri.parse(uriBuscaDespesa).replace(queryParameters: {
+        "execucao": "busca_despesas",
+        "opcao": opcao,
+        "filtro": "",
+        "codigo_usuario": widget.codigousuario.toString()
+      });
+
+      final response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        var retorno = jsonDecode(response.body);
+        if (retorno.length > 0) {
+          print(retorno);
+        }
+        //final data = json.decode(response.body) as List;
+        //return data.map((item) => Map<String, dynamic>.from(item)).toList();
+      } else {
+        throw Exception('Erro ao buscar dados: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Erro ao conectar-se à API: $e');
+    }
+
+    String opcao_renda = "todos";
+
+    const String uriBuscaRenda =
+        'https://idailneto.com.br/contas_pessoais/API/Renda.php';
+
+    try {
+      final uri = Uri.parse(uriBuscaRenda).replace(queryParameters: {
+        "execucao": "busca_rendas",
+        "opcao": opcao_renda,
+        "filtro": "",
+        "codigo_usuario_renda": widget.codigousuario.toString()
+      });
+
+      final response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        // final data = json.decode(response.body) as List;
+        // return data.map((item) => Map<String, dynamic>.from(item)).toList();
+
+        var retorno = jsonDecode(response.body);
+        if (retorno.length > 0) {
+          print(retorno);
+        }
+      } else {
+        throw Exception('Erro ao buscar dados: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Erro ao conectar-se à API: $e');
+    }
+
     // var busca_empenho = "valor_empenho";
     // var busca_valor_cotacao = "valor_cotacao";
     // var busca_cotacao_pago = "valor_cotacao_pago";
@@ -1100,9 +1161,7 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
                                           padding: const EdgeInsetsDirectional
                                               .fromSTEB(16.0, 0.0, 0.0, 8.0),
                                           child: Text(
-                                            FFLocalizations.of(context).getText(
-                                              '3bi54x5g' /* Dashboard */,
-                                            ),
+                                            "Informações",
                                             textAlign: TextAlign.start,
                                             style: FlutterFlowTheme.of(context)
                                                 .displaySmall
@@ -1229,8 +1288,7 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
                                                               EdgeInsets.all(
                                                                   12.0),
                                                           child: Icon(
-                                                            Icons
-                                                                .shopping_basket,
+                                                            Icons.money_rounded,
                                                             color: Colors.white,
                                                             size: 24.0,
                                                           ),
@@ -1373,7 +1431,7 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
                                                                   12.0),
                                                           child: Icon(
                                                             Icons
-                                                                .shopping_basket,
+                                                                .account_balance_wallet,
                                                             color: Colors.white,
                                                             size: 24.0,
                                                           ),
@@ -1514,7 +1572,7 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
                                                                   12.0),
                                                           child: Icon(
                                                             Icons
-                                                                .shopping_basket,
+                                                                .account_balance_wallet,
                                                             color: Colors.white,
                                                             size: 24.0,
                                                           ),
@@ -1594,9 +1652,7 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
                             padding: const EdgeInsetsDirectional.fromSTEB(
                                 16.0, 8.0, 0.0, 0.0),
                             child: Text(
-                              FFLocalizations.of(context).getText(
-                                'kphqz3hi' /* Projects */,
-                              ),
+                              "",
                               textAlign: TextAlign.start,
                               style: FlutterFlowTheme.of(context)
                                   .labelLarge
@@ -1648,7 +1704,7 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
                                                     0.0, 0.0),
                                             children: [
                                               CircularPercentIndicator(
-                                                percent: 0.7,
+                                                percent: 0.9,
                                                 radius: 70.0,
                                                 lineWidth: 12.0,
                                                 animation: true,
@@ -1686,9 +1742,7 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
                                           const EdgeInsetsDirectional.fromSTEB(
                                               0.0, 0.0, 0.0, 8.0),
                                       child: Text(
-                                        FFLocalizations.of(context).getText(
-                                          'xlzf8qqx' /* UI Design Team */,
-                                        ),
+                                        "Saldo Atual",
                                         style: FlutterFlowTheme.of(context)
                                             .headlineMedium
                                             .override(
@@ -1701,9 +1755,7 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
                                           'textOnPageLoadAnimation10']!),
                                     ),
                                     Text(
-                                      FFLocalizations.of(context).getText(
-                                        'zt3s5l2s' /* 4 Members */,
-                                      ),
+                                      "",
                                       style: FlutterFlowTheme.of(context)
                                           .titleSmall
                                           .override(

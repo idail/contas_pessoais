@@ -409,7 +409,7 @@ class _MainContractsWidgetState extends State<MainContractsWidget>
                   child: TextField(
                     controller: filtroRenda,
                     decoration: InputDecoration(
-                      hintText: 'Pesquisar renda...',
+                      hintText: 'Pesquisar pelo nome...',
                       hintStyle: const TextStyle(color: Colors.grey),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
