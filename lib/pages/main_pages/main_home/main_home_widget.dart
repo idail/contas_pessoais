@@ -38,6 +38,7 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
 
   double totalRenda = 0;
   double totalDespesa = 0;
+  double totalFinal = 0;
 
   //var recebeNomeUsuario = "";
 
@@ -410,6 +411,26 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
         ],
       ),
       'progressBarOnPageLoadAnimation2': AnimationInfo(
+        trigger: AnimationTrigger.onPageLoad,
+        effectsBuilder: () => [
+          VisibilityEffect(duration: 1200.ms),
+          FadeEffect(
+            curve: Curves.easeInOut,
+            delay: 1200.0.ms,
+            duration: 400.0.ms,
+            begin: 0.0,
+            end: 1.0,
+          ),
+          ScaleEffect(
+            curve: Curves.easeInOut,
+            delay: 1200.0.ms,
+            duration: 400.0.ms,
+            begin: const Offset(0.8, 0.8),
+            end: const Offset(1.0, 1.0),
+          ),
+        ],
+      ),
+      'progressBarOnPageLoadAnimation3': AnimationInfo(
         trigger: AnimationTrigger.onPageLoad,
         effectsBuilder: () => [
           VisibilityEffect(duration: 1200.ms),
@@ -944,6 +965,10 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
       throw Exception('Erro ao conectar-se à API: $e');
     }
 
+    setState(() {
+      totalFinal = totalRenda - totalDespesa;
+    });
+
     // var busca_empenho = "valor_empenho";
     // var busca_valor_cotacao = "valor_cotacao";
     // var busca_cotacao_pago = "valor_cotacao_pago";
@@ -1047,6 +1072,49 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
     return max(0.1, min(percentual, 1.0));
   }
 
+  // Função para exibir o diálogo de ajuda
+// Função para exibir o diálogo de ajuda
+  void _showHelpDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        TextEditingController messageController = TextEditingController();
+
+        return AlertDialog(
+          title: Text("Informar erro ou sugestão"),
+          content: Container(
+            width: MediaQuery.of(context).size.width, // Largura total da tela
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // TextArea para o usuário digitar a mensagem
+                TextField(
+                  controller: messageController,
+                  maxLines: 5,
+                  decoration: InputDecoration(
+                    hintText: "Digite sua mensagem...",
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                SizedBox(height: 20),
+                // Botão de envio
+                ElevatedButton(
+                  onPressed: () {
+                    // Aqui você pode capturar o texto e realizar a ação desejada
+                    String message = messageController.text;
+                    print("Mensagem enviada: $message");
+                    Navigator.of(context).pop(); // Fecha o diálogo após enviar
+                  },
+                  child: Text("Enviar"),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -1091,11 +1159,9 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
                   color: FlutterFlowTheme.of(context).primary,
                 ),
                 child: Center(
-                  // Centraliza o conteúdo no centro do DrawerHeader
                   child: Text(
                     'Olá, ${widget.nomeusuario ?? "Usuário"}',
-                    textAlign: TextAlign
-                        .center, // Garante alinhamento central do texto
+                    textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 20,
@@ -1109,12 +1175,10 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: ListTile(
                   onTap: () {
-                    // Ação quando o item for clicado
-                    print("Ajuda clicada");
+                    // Exibe o diálogo ao clicar no item
+                    _showHelpDialog(context);
                   },
-                  contentPadding: const EdgeInsets.symmetric(
-                    vertical: 16.0,
-                  ),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 16.0),
                   title: const Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -1134,8 +1198,6 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
                   ),
                 ),
               ),
-
-              // Aqui você pode adicionar mais itens do menu
             ],
           ),
         ),
@@ -1332,59 +1394,20 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
                                                     ).animateOnPageLoad(
                                                         animationsMap[
                                                             'containerOnPageLoadAnimation2']!),
-                                                    const Padding(
-                                                      padding:
-                                                          EdgeInsets.all(12.0),
-                                                      child: Column(
-                                                        mainAxisSize:
-                                                            MainAxisSize.max,
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
-                                                        children: [
-                                                          // Text(widget.tipoacesso == 'gestor' ? 'VALORES DO EMPENHO' : 'VALOR RECEBIDO',
-                                                          //   style: FlutterFlowTheme
-                                                          //           .of(context)
-                                                          //       .labelMedium
-                                                          //       .override(
-                                                          //         fontFamily:
-                                                          //             'Plus Jakarta Sans',
-                                                          //         letterSpacing:
-                                                          //             0.0,
-                                                          //       ),
-                                                          // ).animateOnPageLoad(
-                                                          //     animationsMap[
-                                                          //         'textOnPageLoadAnimation3']!),
-                                                          // Padding(
-                                                          //   padding:
-                                                          //       const EdgeInsetsDirectional
-                                                          //           .fromSTEB(
-                                                          //               0.0,
-                                                          //               8.0,
-                                                          //               0.0,
-                                                          //               0.0),
-                                                          //                                                         child: Text(widget.tipoacesso == "gestor"
-                                                          // ? valorEmpenhoGestor.toStringAsFixed(2)
-                                                          // : valorRecebido.toStringAsFixed(2),
-                                                          //                                                           style: FlutterFlowTheme
-                                                          //                                                                   .of(context)
-                                                          //                                                               .displaySmall
-                                                          //                                                               .override(
-                                                          //                                                                 fontFamily:
-                                                          //                                                                     'Outfit',
-                                                          //                                                                 letterSpacing:
-                                                          //                                                                     0.0,
-                                                          //                                                               ),
-                                                          //                                                         ).animateOnPageLoad(
-                                                          //                                                             animationsMap[
-                                                          //                                                                 'textOnPageLoadAnimation4']!),
-                                                          // ),
-                                                        ],
-                                                      ),
-                                                    ),
+                                                    Text(
+                                                      'R\$${totalRenda.toStringAsFixed(2)}', // Exibe R$ e o valor formatado
+                                                      style:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .bodyMedium
+                                                              .override(
+                                                                fontFamily:
+                                                                    'Outfit',
+                                                                color: Colors
+                                                                    .blue, // Cor azul para o texto
+                                                                fontSize: 40.0,
+                                                              ),
+                                                    )
                                                   ],
                                                 ),
                                               ),
@@ -1475,57 +1498,20 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
                                                     ).animateOnPageLoad(
                                                         animationsMap[
                                                             'containerOnPageLoadAnimation4']!),
-                                                    const Padding(
-                                                      padding:
-                                                          EdgeInsets.all(12.0),
-                                                      child: Column(
-                                                        mainAxisSize:
-                                                            MainAxisSize.max,
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
-                                                        children: [
-                                                          // Text(widget.tipoacesso == 'gestor' ? 'VALORES CONSUMIDOS' : 'VALOR PENDENTE',
-                                                          //   style: FlutterFlowTheme
-                                                          //           .of(context)
-                                                          //       .labelMedium
-                                                          //       .override(
-                                                          //         fontFamily:
-                                                          //             'Plus Jakarta Sans',
-                                                          //         letterSpacing:
-                                                          //             0.0,
-                                                          //       ),
-                                                          // ).animateOnPageLoad(
-                                                          //     animationsMap[
-                                                          //         'textOnPageLoadAnimation5']!),
-                                                          // Padding(
-                                                          //   padding:
-                                                          //       const EdgeInsetsDirectional
-                                                          //           .fromSTEB(
-                                                          //               0.0,
-                                                          //               8.0,
-                                                          //               0.0,
-                                                          //               0.0),
-                                                          //   child: Text(widget.tipoacesso == "gestor" ? valorConsumido.toStringAsFixed(2) : valorPendente.toStringAsFixed(2),
-                                                          //     style: FlutterFlowTheme
-                                                          //             .of(context)
-                                                          //         .displaySmall
-                                                          //         .override(
-                                                          //           fontFamily:
-                                                          //               'Outfit',
-                                                          //           letterSpacing:
-                                                          //               0.0,
-                                                          //         ),
-                                                          //   ).animateOnPageLoad(
-                                                          //       animationsMap[
-                                                          //           'textOnPageLoadAnimation6']!),
-                                                          // ),
-                                                        ],
-                                                      ),
-                                                    ),
+                                                    Text(
+                                                      'R\$${totalDespesa.toStringAsFixed(2)}', // Exibe R$ e o valor formatado
+                                                      style:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .bodyMedium
+                                                              .override(
+                                                                fontFamily:
+                                                                    'Outfit',
+                                                                color: Colors
+                                                                    .blue, // Cor azul para o texto
+                                                                fontSize: 40.0,
+                                                              ),
+                                                    )
                                                   ],
                                                 ),
                                               ),
@@ -1616,59 +1602,20 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
                                                     ).animateOnPageLoad(
                                                         animationsMap[
                                                             'containerOnPageLoadAnimation6']!),
-                                                    const Padding(
-                                                      padding:
-                                                          EdgeInsets.all(12.0),
-                                                      child: Column(
-                                                        mainAxisSize:
-                                                            MainAxisSize.max,
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
-                                                        children: [
-                                                          //                                                       Text(widget.tipoacesso == 'gestor' ? 'SALDO ATUAL' : 'VALOR PENDENTE',
-                                                          //                                                         style: FlutterFlowTheme
-                                                          //                                                                 .of(context)
-                                                          //                                                             .labelMedium
-                                                          //                                                             .override(
-                                                          //                                                               fontFamily:
-                                                          //                                                                   'Plus Jakarta Sans',
-                                                          //                                                               letterSpacing:
-                                                          //                                                                   0.0,
-                                                          //                                                             ),
-                                                          //                                                       ).animateOnPageLoad(
-                                                          //                                                           animationsMap[
-                                                          //                                                               'textOnPageLoadAnimation7']!),
-                                                          //                                                       Padding(
-                                                          //                                                         padding:
-                                                          //                                                             const EdgeInsetsDirectional
-                                                          //                                                                 .fromSTEB(
-                                                          //                                                                     0.0,
-                                                          //                                                                     8.0,
-                                                          //                                                                     0.0,
-                                                          //                                                                     0.0),
-                                                          //                                                         child: Text(widget.tipoacesso == "gestor"
-                                                          // ? saldoAtual.toStringAsFixed(2)
-                                                          // : saldoAtual.toStringAsFixed(2),
-                                                          //                                                           style: FlutterFlowTheme
-                                                          //                                                                   .of(context)
-                                                          //                                                               .displaySmall
-                                                          //                                                               .override(
-                                                          //                                                                 fontFamily:
-                                                          //                                                                     'Outfit',
-                                                          //                                                                 letterSpacing:
-                                                          //                                                                     0.0,
-                                                          //                                                               ),
-                                                          //                                                         ).animateOnPageLoad(
-                                                          //                                                             animationsMap[
-                                                          //                                                                 'textOnPageLoadAnimation8']!),
-                                                          //                                                       ),
-                                                        ],
-                                                      ),
-                                                    ),
+                                                    Text(
+                                                      'R\$${totalFinal.toStringAsFixed(2)}', // Exibe R$ e o valor formatado
+                                                      style:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .bodyMedium
+                                                              .override(
+                                                                fontFamily:
+                                                                    'Outfit',
+                                                                color: Colors
+                                                                    .blue, // Cor azul para o texto
+                                                                fontSize: 40.0,
+                                                              ),
+                                                    )
                                                   ],
                                                 ),
                                               ),
@@ -1728,53 +1675,74 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
                                       padding:
                                           const EdgeInsetsDirectional.fromSTEB(
                                               0.0, 12.0, 0.0, 0.0),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.max,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Stack(
-                                            alignment:
-                                                const AlignmentDirectional(
-                                                    0.0, 0.0),
-                                            children: [
-                                              CircularPercentIndicator(
-                                                percent:
-                                                    calcularPercentual(0, 0),
-                                                radius: 70.0,
-                                                lineWidth: 12.0,
-                                                animation: true,
-                                                animateFromLastPercent: true,
-                                                progressColor: Colors.white,
-                                                backgroundColor:
-                                                    const Color(0x4CFFFFFF),
-                                              ).animateOnPageLoad(animationsMap[
-                                                  'progressBarOnPageLoadAnimation1']!),
-                                              CircularPercentIndicator(
-                                                percent: 0.3,
-                                                radius: 50.0,
-                                                lineWidth: 12.0,
-                                                animation: true,
-                                                animateFromLastPercent: true,
-                                                progressColor: Colors.white,
-                                                backgroundColor:
-                                                    const Color(0x4CFFFFFF),
-                                              ).animateOnPageLoad(animationsMap[
-                                                  'progressBarOnPageLoadAnimation2']!),
-                                              CircularPercentIndicator(
-                                                percent: 0.3,
-                                                radius: 30.0,
-                                                lineWidth: 12.0,
-                                                animation: true,
-                                                animateFromLastPercent: true,
-                                                progressColor: Colors.white,
-                                                backgroundColor:
-                                                    const Color(0x4CFFFFFF),
-                                              ).animateOnPageLoad(animationsMap[
-                                                  'progressBarOnPageLoadAnimation2']!),
-                                            ],
-                                          ),
-                                        ],
+                                      child: SingleChildScrollView(
+                                        scrollDirection: Axis.horizontal,
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            // Saldo Total
+                                            Column(
+                                              children: [
+                                                CircularPercentIndicator(
+                                                  percent: 1,
+                                                  radius: 55.0,
+                                                  lineWidth: 12.0,
+                                                  animation: true,
+                                                  animateFromLastPercent: true,
+                                                  progressColor: Colors.blue,
+                                                  backgroundColor:
+                                                      const Color(0x4CFFFFFF),
+                                                ),
+                                                const SizedBox(height: 8.0),
+                                                _buildLegenda(
+                                                    "Saldo Total",
+                                                    totalRenda - totalDespesa,
+                                                    Colors.blue),
+                                              ],
+                                            ),
+                                            const SizedBox(width: 20.0),
+                                            // Total de Despesas
+                                            Column(
+                                              children: [
+                                                CircularPercentIndicator(
+                                                  percent: 1,
+                                                  radius: 55.0,
+                                                  lineWidth: 12.0,
+                                                  animation: true,
+                                                  animateFromLastPercent: true,
+                                                  progressColor: Colors.red,
+                                                  backgroundColor:
+                                                      const Color(0x4CFFFFFF),
+                                                ),
+                                                const SizedBox(height: 8.0),
+                                                _buildLegenda(
+                                                    "Total de Despesas",
+                                                    totalDespesa,
+                                                    Colors.red),
+                                              ],
+                                            ),
+                                            const SizedBox(width: 20.0),
+                                            // Total de Renda
+                                            Column(
+                                              children: [
+                                                CircularPercentIndicator(
+                                                  percent: 1,
+                                                  radius: 55.0,
+                                                  lineWidth: 12.0,
+                                                  animation: true,
+                                                  animateFromLastPercent: true,
+                                                  progressColor: Colors.green,
+                                                  backgroundColor:
+                                                      const Color(0x4CFFFFFF),
+                                                ),
+                                                const SizedBox(height: 8.0),
+                                                _buildLegenda("Total de Renda",
+                                                    totalRenda, Colors.green),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                     Divider(
@@ -1789,7 +1757,7 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
                                           const EdgeInsetsDirectional.fromSTEB(
                                               0.0, 0.0, 0.0, 8.0),
                                       child: Text(
-                                        "Saldo Atual",
+                                        "Saldo Atual:$totalFinal",
                                         style: FlutterFlowTheme.of(context)
                                             .headlineMedium
                                             .override(
@@ -1823,679 +1791,679 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
                             phone: false,
                             tablet: false,
                           ))
-                            Align(
-                              alignment: const AlignmentDirectional(0.0, 0.0),
-                              child: Padding(
+                            // Align(
+                            //   alignment: const AlignmentDirectional(0.0, 0.0),
+                            //   child: Padding(
+                            //     padding: const EdgeInsetsDirectional.fromSTEB(
+                            //         16.0, 16.0, 16.0, 0.0),
+                            //     child: Row(
+                            //       mainAxisSize: MainAxisSize.max,
+                            //       children: [
+                            //         Expanded(
+                            //           child: AnimatedContainer(
+                            //             duration:
+                            //                 const Duration(milliseconds: 100),
+                            //             curve: Curves.easeInOut,
+                            //             width: double.infinity,
+                            //             constraints: const BoxConstraints(
+                            //               minHeight: 70.0,
+                            //               maxWidth: 770.0,
+                            //             ),
+                            //             decoration: BoxDecoration(
+                            //               color: FlutterFlowTheme.of(context)
+                            //                   .secondaryBackground,
+                            //               boxShadow: const [
+                            //                 BoxShadow(
+                            //                   blurRadius: 3.0,
+                            //                   color: Color(0x33000000),
+                            //                   offset: Offset(
+                            //                     0.0,
+                            //                     1.0,
+                            //                   ),
+                            //                 )
+                            //               ],
+                            //               borderRadius:
+                            //                   BorderRadius.circular(12.0),
+                            //               border: Border.all(
+                            //                 color: FlutterFlowTheme.of(context)
+                            //                     .alternate,
+                            //                 width: 1.0,
+                            //               ),
+                            //             ),
+                            //             child: Padding(
+                            //               padding: const EdgeInsetsDirectional
+                            //                   .fromSTEB(0.0, 0.0, 0.0, 12.0),
+                            //               child: Column(
+                            //                 mainAxisSize: MainAxisSize.max,
+                            //                 crossAxisAlignment:
+                            //                     CrossAxisAlignment.center,
+                            //                 children: [
+                            //                   Padding(
+                            //                     padding:
+                            //                         const EdgeInsetsDirectional
+                            //                             .fromSTEB(
+                            //                             12.0, 8.0, 16.0, 4.0),
+                            //                     child: Row(
+                            //                       mainAxisSize:
+                            //                           MainAxisSize.max,
+                            //                       mainAxisAlignment:
+                            //                           MainAxisAlignment
+                            //                               .spaceBetween,
+                            //                       children: [
+                            //                         Padding(
+                            //                           padding:
+                            //                               const EdgeInsetsDirectional
+                            //                                   .fromSTEB(4.0,
+                            //                                   12.0, 12.0, 12.0),
+                            //                           child: Column(
+                            //                             mainAxisSize:
+                            //                                 MainAxisSize.max,
+                            //                             mainAxisAlignment:
+                            //                                 MainAxisAlignment
+                            //                                     .center,
+                            //                             crossAxisAlignment:
+                            //                                 CrossAxisAlignment
+                            //                                     .start,
+                            //                             children: [
+                            //                               Text(
+                            //                                 FFLocalizations.of(
+                            //                                         context)
+                            //                                     .getText(
+                            //                                   'puy8obok' /* Contract Activity */,
+                            //                                 ),
+                            //                                 style: FlutterFlowTheme
+                            //                                         .of(context)
+                            //                                     .titleLarge
+                            //                                     .override(
+                            //                                       fontFamily:
+                            //                                           'Plus Jakarta Sans',
+                            //                                       letterSpacing:
+                            //                                           0.0,
+                            //                                     ),
+                            //                               ).animateOnPageLoad(
+                            //                                   animationsMap[
+                            //                                       'textOnPageLoadAnimation12']!),
+                            //                               Padding(
+                            //                                 padding:
+                            //                                     const EdgeInsetsDirectional
+                            //                                         .fromSTEB(
+                            //                                         0.0,
+                            //                                         4.0,
+                            //                                         0.0,
+                            //                                         0.0),
+                            //                                 child: Text(
+                            //                                   FFLocalizations.of(
+                            //                                           context)
+                            //                                       .getText(
+                            //                                     'zlovh0zt' /* Below is an a summary of activ... */,
+                            //                                   ),
+                            //                                   style: FlutterFlowTheme
+                            //                                           .of(context)
+                            //                                       .labelMedium
+                            //                                       .override(
+                            //                                         fontFamily:
+                            //                                             'Plus Jakarta Sans',
+                            //                                         letterSpacing:
+                            //                                             0.0,
+                            //                                       ),
+                            //                                 ).animateOnPageLoad(
+                            //                                     animationsMap[
+                            //                                         'textOnPageLoadAnimation13']!),
+                            //                               ),
+                            //                             ],
+                            //                           ),
+                            //                         ),
+                            //                         Container(
+                            //                           width: 60.0,
+                            //                           height: 60.0,
+                            //                           decoration: BoxDecoration(
+                            //                             color: FlutterFlowTheme
+                            //                                     .of(context)
+                            //                                 .primaryBackground,
+                            //                             shape: BoxShape.circle,
+                            //                           ),
+                            //                           alignment:
+                            //                               const AlignmentDirectional(
+                            //                                   0.0, 0.0),
+                            //                           child: Card(
+                            //                             clipBehavior: Clip
+                            //                                 .antiAliasWithSaveLayer,
+                            //                             color:
+                            //                                 FlutterFlowTheme.of(
+                            //                                         context)
+                            //                                     .alternate,
+                            //                             shape:
+                            //                                 RoundedRectangleBorder(
+                            //                               borderRadius:
+                            //                                   BorderRadius
+                            //                                       .circular(
+                            //                                           40.0),
+                            //                             ),
+                            //                             child: Padding(
+                            //                               padding:
+                            //                                   const EdgeInsets
+                            //                                       .all(12.0),
+                            //                               child: Icon(
+                            //                                 Icons
+                            //                                     .folder_open_outlined,
+                            //                                 color: FlutterFlowTheme
+                            //                                         .of(context)
+                            //                                     .primaryText,
+                            //                                 size: 24.0,
+                            //                               ),
+                            //                             ),
+                            //                           ),
+                            //                         ).animateOnPageLoad(
+                            //                             animationsMap[
+                            //                                 'containerOnPageLoadAnimation9']!),
+                            //                       ],
+                            //                     ),
+                            //                   ),
+                            //                   if (responsiveVisibility(
+                            //                     context: context,
+                            //                     tabletLandscape: false,
+                            //                     desktop: false,
+                            //                   ))
+                            //                     Padding(
+                            //                       padding:
+                            //                           const EdgeInsetsDirectional
+                            //                               .fromSTEB(
+                            //                               16.0, 0.0, 16.0, 0.0),
+                            //                       child: LinearPercentIndicator(
+                            //                         percent: 0.5,
+                            //                         width: MediaQuery.sizeOf(
+                            //                                     context)
+                            //                                 .width *
+                            //                             0.82,
+                            //                         lineHeight: 16.0,
+                            //                         animation: true,
+                            //                         animateFromLastPercent:
+                            //                             true,
+                            //                         progressColor:
+                            //                             FlutterFlowTheme.of(
+                            //                                     context)
+                            //                                 .primary,
+                            //                         backgroundColor:
+                            //                             const Color(0x4D91D0E8),
+                            //                         barRadius:
+                            //                             const Radius.circular(
+                            //                                 24.0),
+                            //                         padding: EdgeInsets.zero,
+                            //                       ),
+                            //                     ),
+                            //                   if (responsiveVisibility(
+                            //                     context: context,
+                            //                     phone: false,
+                            //                     tablet: false,
+                            //                   ))
+                            //                     Padding(
+                            //                       padding:
+                            //                           const EdgeInsetsDirectional
+                            //                               .fromSTEB(
+                            //                               16.0, 0.0, 16.0, 0.0),
+                            //                       child: LinearPercentIndicator(
+                            //                         percent: 0.5,
+                            //                         width: MediaQuery.sizeOf(
+                            //                                     context)
+                            //                                 .width *
+                            //                             0.3,
+                            //                         lineHeight: 16.0,
+                            //                         animation: true,
+                            //                         animateFromLastPercent:
+                            //                             true,
+                            //                         progressColor:
+                            //                             FlutterFlowTheme.of(
+                            //                                     context)
+                            //                                 .primary,
+                            //                         backgroundColor:
+                            //                             FlutterFlowTheme.of(
+                            //                                     context)
+                            //                                 .accent1,
+                            //                         barRadius:
+                            //                             const Radius.circular(
+                            //                                 24.0),
+                            //                         padding: EdgeInsets.zero,
+                            //                       ),
+                            //                     ),
+                            //                 ],
+                            //               ),
+                            //             ),
+                            //           ).animateOnPageLoad(animationsMap[
+                            //               'containerOnPageLoadAnimation8']!),
+                            //         ),
+                            //         Expanded(
+                            //           child: AnimatedContainer(
+                            //             duration:
+                            //                 const Duration(milliseconds: 100),
+                            //             curve: Curves.easeInOut,
+                            //             width: double.infinity,
+                            //             constraints: const BoxConstraints(
+                            //               minHeight: 70.0,
+                            //               maxWidth: 770.0,
+                            //             ),
+                            //             decoration: BoxDecoration(
+                            //               color: FlutterFlowTheme.of(context)
+                            //                   .secondaryBackground,
+                            //               boxShadow: const [
+                            //                 BoxShadow(
+                            //                   blurRadius: 3.0,
+                            //                   color: Color(0x33000000),
+                            //                   offset: Offset(
+                            //                     0.0,
+                            //                     1.0,
+                            //                   ),
+                            //                 )
+                            //               ],
+                            //               borderRadius:
+                            //                   BorderRadius.circular(12.0),
+                            //               border: Border.all(
+                            //                 color: FlutterFlowTheme.of(context)
+                            //                     .alternate,
+                            //                 width: 1.0,
+                            //               ),
+                            //             ),
+                            //             child: Padding(
+                            //               padding: const EdgeInsetsDirectional
+                            //                   .fromSTEB(0.0, 0.0, 0.0, 12.0),
+                            //               child: Column(
+                            //                 mainAxisSize: MainAxisSize.max,
+                            //                 crossAxisAlignment:
+                            //                     CrossAxisAlignment.center,
+                            //                 children: [
+                            //                   Padding(
+                            //                     padding:
+                            //                         const EdgeInsetsDirectional
+                            //                             .fromSTEB(
+                            //                             12.0, 8.0, 16.0, 4.0),
+                            //                     child: Row(
+                            //                       mainAxisSize:
+                            //                           MainAxisSize.max,
+                            //                       mainAxisAlignment:
+                            //                           MainAxisAlignment
+                            //                               .spaceBetween,
+                            //                       children: [
+                            //                         Padding(
+                            //                           padding:
+                            //                               const EdgeInsetsDirectional
+                            //                                   .fromSTEB(4.0,
+                            //                                   12.0, 12.0, 12.0),
+                            //                           child: Column(
+                            //                             mainAxisSize:
+                            //                                 MainAxisSize.max,
+                            //                             mainAxisAlignment:
+                            //                                 MainAxisAlignment
+                            //                                     .center,
+                            //                             crossAxisAlignment:
+                            //                                 CrossAxisAlignment
+                            //                                     .start,
+                            //                             children: [
+                            //                               Text(
+                            //                                 FFLocalizations.of(
+                            //                                         context)
+                            //                                     .getText(
+                            //                                   'g1uaaovn' /* Customer Activity */,
+                            //                                 ),
+                            //                                 style: FlutterFlowTheme
+                            //                                         .of(context)
+                            //                                     .titleLarge
+                            //                                     .override(
+                            //                                       fontFamily:
+                            //                                           'Plus Jakarta Sans',
+                            //                                       letterSpacing:
+                            //                                           0.0,
+                            //                                     ),
+                            //                               ).animateOnPageLoad(
+                            //                                   animationsMap[
+                            //                                       'textOnPageLoadAnimation14']!),
+                            //                               Padding(
+                            //                                 padding:
+                            //                                     const EdgeInsetsDirectional
+                            //                                         .fromSTEB(
+                            //                                         0.0,
+                            //                                         4.0,
+                            //                                         0.0,
+                            //                                         0.0),
+                            //                                 child: Text(
+                            //                                   FFLocalizations.of(
+                            //                                           context)
+                            //                                       .getText(
+                            //                                     'e5q3ows1' /* Below is an a summary of activ... */,
+                            //                                   ),
+                            //                                   style: FlutterFlowTheme
+                            //                                           .of(context)
+                            //                                       .labelMedium
+                            //                                       .override(
+                            //                                         fontFamily:
+                            //                                             'Plus Jakarta Sans',
+                            //                                         letterSpacing:
+                            //                                             0.0,
+                            //                                       ),
+                            //                                 ).animateOnPageLoad(
+                            //                                     animationsMap[
+                            //                                         'textOnPageLoadAnimation15']!),
+                            //                               ),
+                            //                             ],
+                            //                           ),
+                            //                         ),
+                            //                         Container(
+                            //                           width: 60.0,
+                            //                           height: 60.0,
+                            //                           decoration: BoxDecoration(
+                            //                             color: FlutterFlowTheme
+                            //                                     .of(context)
+                            //                                 .primaryBackground,
+                            //                             shape: BoxShape.circle,
+                            //                           ),
+                            //                           alignment:
+                            //                               const AlignmentDirectional(
+                            //                                   0.0, 0.0),
+                            //                           child: Card(
+                            //                             clipBehavior: Clip
+                            //                                 .antiAliasWithSaveLayer,
+                            //                             color:
+                            //                                 FlutterFlowTheme.of(
+                            //                                         context)
+                            //                                     .alternate,
+                            //                             shape:
+                            //                                 RoundedRectangleBorder(
+                            //                               borderRadius:
+                            //                                   BorderRadius
+                            //                                       .circular(
+                            //                                           40.0),
+                            //                             ),
+                            //                             child: Padding(
+                            //                               padding:
+                            //                                   const EdgeInsets
+                            //                                       .all(12.0),
+                            //                               child: Icon(
+                            //                                 Icons.group,
+                            //                                 color: FlutterFlowTheme
+                            //                                         .of(context)
+                            //                                     .primaryText,
+                            //                                 size: 24.0,
+                            //                               ),
+                            //                             ),
+                            //                           ),
+                            //                         ).animateOnPageLoad(
+                            //                             animationsMap[
+                            //                                 'containerOnPageLoadAnimation11']!),
+                            //                       ],
+                            //                     ),
+                            //                   ),
+                            //                   if (responsiveVisibility(
+                            //                     context: context,
+                            //                     tabletLandscape: false,
+                            //                     desktop: false,
+                            //                   ))
+                            //                     Padding(
+                            //                       padding:
+                            //                           const EdgeInsetsDirectional
+                            //                               .fromSTEB(
+                            //                               16.0, 0.0, 16.0, 0.0),
+                            //                       child: LinearPercentIndicator(
+                            //                         percent: 0.2,
+                            //                         width: MediaQuery.sizeOf(
+                            //                                     context)
+                            //                                 .width *
+                            //                             0.82,
+                            //                         lineHeight: 16.0,
+                            //                         animation: true,
+                            //                         animateFromLastPercent:
+                            //                             true,
+                            //                         progressColor:
+                            //                             FlutterFlowTheme.of(
+                            //                                     context)
+                            //                                 .primary,
+                            //                         backgroundColor:
+                            //                             const Color(0x4D91D0E8),
+                            //                         barRadius:
+                            //                             const Radius.circular(
+                            //                                 24.0),
+                            //                         padding: EdgeInsets.zero,
+                            //                       ),
+                            //                     ),
+                            //                   if (responsiveVisibility(
+                            //                     context: context,
+                            //                     phone: false,
+                            //                     tablet: false,
+                            //                   ))
+                            //                     Padding(
+                            //                       padding:
+                            //                           const EdgeInsetsDirectional
+                            //                               .fromSTEB(
+                            //                               16.0, 0.0, 16.0, 0.0),
+                            //                       child: LinearPercentIndicator(
+                            //                         percent: 0.2,
+                            //                         width: MediaQuery.sizeOf(
+                            //                                     context)
+                            //                                 .width *
+                            //                             0.3,
+                            //                         lineHeight: 16.0,
+                            //                         animation: true,
+                            //                         animateFromLastPercent:
+                            //                             true,
+                            //                         progressColor:
+                            //                             FlutterFlowTheme.of(
+                            //                                     context)
+                            //                                 .primary,
+                            //                         backgroundColor:
+                            //                             FlutterFlowTheme.of(
+                            //                                     context)
+                            //                                 .accent1,
+                            //                         barRadius:
+                            //                             const Radius.circular(
+                            //                                 24.0),
+                            //                         padding: EdgeInsets.zero,
+                            //                       ),
+                            //                     ),
+                            //                 ],
+                            //               ),
+                            //             ),
+                            //           ).animateOnPageLoad(animationsMap[
+                            //               'containerOnPageLoadAnimation10']!),
+                            //         ),
+                            //       ].divide(const SizedBox(width: 16.0)),
+                            //     ),
+                            //   ),
+                            // ),
+                            if (responsiveVisibility(
+                              context: context,
+                              tabletLandscape: false,
+                              desktop: false,
+                            ))
+                              Padding(
                                 padding: const EdgeInsetsDirectional.fromSTEB(
-                                    16.0, 16.0, 16.0, 0.0),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  children: [
-                                    Expanded(
-                                      child: AnimatedContainer(
-                                        duration:
-                                            const Duration(milliseconds: 100),
-                                        curve: Curves.easeInOut,
-                                        width: double.infinity,
-                                        constraints: const BoxConstraints(
-                                          minHeight: 70.0,
-                                          maxWidth: 770.0,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: FlutterFlowTheme.of(context)
-                                              .secondaryBackground,
-                                          boxShadow: const [
-                                            BoxShadow(
-                                              blurRadius: 3.0,
-                                              color: Color(0x33000000),
-                                              offset: Offset(
-                                                0.0,
-                                                1.0,
-                                              ),
-                                            )
-                                          ],
-                                          borderRadius:
-                                              BorderRadius.circular(12.0),
-                                          border: Border.all(
-                                            color: FlutterFlowTheme.of(context)
-                                                .alternate,
-                                            width: 1.0,
-                                          ),
-                                        ),
-                                        child: Padding(
-                                          padding: const EdgeInsetsDirectional
-                                              .fromSTEB(0.0, 0.0, 0.0, 12.0),
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.max,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                            children: [
-                                              Padding(
-                                                padding:
-                                                    const EdgeInsetsDirectional
-                                                        .fromSTEB(
-                                                        12.0, 8.0, 16.0, 4.0),
-                                                child: Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.max,
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          const EdgeInsetsDirectional
-                                                              .fromSTEB(4.0,
-                                                              12.0, 12.0, 12.0),
-                                                      child: Column(
-                                                        mainAxisSize:
-                                                            MainAxisSize.max,
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
-                                                        children: [
-                                                          Text(
-                                                            FFLocalizations.of(
-                                                                    context)
-                                                                .getText(
-                                                              'puy8obok' /* Contract Activity */,
-                                                            ),
-                                                            style: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .titleLarge
-                                                                .override(
-                                                                  fontFamily:
-                                                                      'Plus Jakarta Sans',
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                ),
-                                                          ).animateOnPageLoad(
-                                                              animationsMap[
-                                                                  'textOnPageLoadAnimation12']!),
-                                                          Padding(
-                                                            padding:
-                                                                const EdgeInsetsDirectional
-                                                                    .fromSTEB(
-                                                                    0.0,
-                                                                    4.0,
-                                                                    0.0,
-                                                                    0.0),
-                                                            child: Text(
-                                                              FFLocalizations.of(
-                                                                      context)
-                                                                  .getText(
-                                                                'zlovh0zt' /* Below is an a summary of activ... */,
-                                                              ),
-                                                              style: FlutterFlowTheme
-                                                                      .of(context)
-                                                                  .labelMedium
-                                                                  .override(
-                                                                    fontFamily:
-                                                                        'Plus Jakarta Sans',
-                                                                    letterSpacing:
-                                                                        0.0,
-                                                                  ),
-                                                            ).animateOnPageLoad(
-                                                                animationsMap[
-                                                                    'textOnPageLoadAnimation13']!),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                    Container(
-                                                      width: 60.0,
-                                                      height: 60.0,
-                                                      decoration: BoxDecoration(
-                                                        color: FlutterFlowTheme
-                                                                .of(context)
-                                                            .primaryBackground,
-                                                        shape: BoxShape.circle,
-                                                      ),
-                                                      alignment:
-                                                          const AlignmentDirectional(
-                                                              0.0, 0.0),
-                                                      child: Card(
-                                                        clipBehavior: Clip
-                                                            .antiAliasWithSaveLayer,
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .alternate,
-                                                        shape:
-                                                            RoundedRectangleBorder(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      40.0),
-                                                        ),
-                                                        child: Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(12.0),
-                                                          child: Icon(
-                                                            Icons
-                                                                .folder_open_outlined,
-                                                            color: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .primaryText,
-                                                            size: 24.0,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ).animateOnPageLoad(
-                                                        animationsMap[
-                                                            'containerOnPageLoadAnimation9']!),
-                                                  ],
-                                                ),
-                                              ),
-                                              if (responsiveVisibility(
-                                                context: context,
-                                                tabletLandscape: false,
-                                                desktop: false,
-                                              ))
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsetsDirectional
-                                                          .fromSTEB(
-                                                          16.0, 0.0, 16.0, 0.0),
-                                                  child: LinearPercentIndicator(
-                                                    percent: 0.5,
-                                                    width: MediaQuery.sizeOf(
-                                                                context)
-                                                            .width *
-                                                        0.82,
-                                                    lineHeight: 16.0,
-                                                    animation: true,
-                                                    animateFromLastPercent:
-                                                        true,
-                                                    progressColor:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .primary,
-                                                    backgroundColor:
-                                                        const Color(0x4D91D0E8),
-                                                    barRadius:
-                                                        const Radius.circular(
-                                                            24.0),
-                                                    padding: EdgeInsets.zero,
-                                                  ),
-                                                ),
-                                              if (responsiveVisibility(
-                                                context: context,
-                                                phone: false,
-                                                tablet: false,
-                                              ))
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsetsDirectional
-                                                          .fromSTEB(
-                                                          16.0, 0.0, 16.0, 0.0),
-                                                  child: LinearPercentIndicator(
-                                                    percent: 0.5,
-                                                    width: MediaQuery.sizeOf(
-                                                                context)
-                                                            .width *
-                                                        0.3,
-                                                    lineHeight: 16.0,
-                                                    animation: true,
-                                                    animateFromLastPercent:
-                                                        true,
-                                                    progressColor:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .primary,
-                                                    backgroundColor:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .accent1,
-                                                    barRadius:
-                                                        const Radius.circular(
-                                                            24.0),
-                                                    padding: EdgeInsets.zero,
-                                                  ),
-                                                ),
-                                            ],
-                                          ),
-                                        ),
-                                      ).animateOnPageLoad(animationsMap[
-                                          'containerOnPageLoadAnimation8']!),
-                                    ),
-                                    Expanded(
-                                      child: AnimatedContainer(
-                                        duration:
-                                            const Duration(milliseconds: 100),
-                                        curve: Curves.easeInOut,
-                                        width: double.infinity,
-                                        constraints: const BoxConstraints(
-                                          minHeight: 70.0,
-                                          maxWidth: 770.0,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: FlutterFlowTheme.of(context)
-                                              .secondaryBackground,
-                                          boxShadow: const [
-                                            BoxShadow(
-                                              blurRadius: 3.0,
-                                              color: Color(0x33000000),
-                                              offset: Offset(
-                                                0.0,
-                                                1.0,
-                                              ),
-                                            )
-                                          ],
-                                          borderRadius:
-                                              BorderRadius.circular(12.0),
-                                          border: Border.all(
-                                            color: FlutterFlowTheme.of(context)
-                                                .alternate,
-                                            width: 1.0,
-                                          ),
-                                        ),
-                                        child: Padding(
-                                          padding: const EdgeInsetsDirectional
-                                              .fromSTEB(0.0, 0.0, 0.0, 12.0),
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.max,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                            children: [
-                                              Padding(
-                                                padding:
-                                                    const EdgeInsetsDirectional
-                                                        .fromSTEB(
-                                                        12.0, 8.0, 16.0, 4.0),
-                                                child: Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.max,
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          const EdgeInsetsDirectional
-                                                              .fromSTEB(4.0,
-                                                              12.0, 12.0, 12.0),
-                                                      child: Column(
-                                                        mainAxisSize:
-                                                            MainAxisSize.max,
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
-                                                        children: [
-                                                          Text(
-                                                            FFLocalizations.of(
-                                                                    context)
-                                                                .getText(
-                                                              'g1uaaovn' /* Customer Activity */,
-                                                            ),
-                                                            style: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .titleLarge
-                                                                .override(
-                                                                  fontFamily:
-                                                                      'Plus Jakarta Sans',
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                ),
-                                                          ).animateOnPageLoad(
-                                                              animationsMap[
-                                                                  'textOnPageLoadAnimation14']!),
-                                                          Padding(
-                                                            padding:
-                                                                const EdgeInsetsDirectional
-                                                                    .fromSTEB(
-                                                                    0.0,
-                                                                    4.0,
-                                                                    0.0,
-                                                                    0.0),
-                                                            child: Text(
-                                                              FFLocalizations.of(
-                                                                      context)
-                                                                  .getText(
-                                                                'e5q3ows1' /* Below is an a summary of activ... */,
-                                                              ),
-                                                              style: FlutterFlowTheme
-                                                                      .of(context)
-                                                                  .labelMedium
-                                                                  .override(
-                                                                    fontFamily:
-                                                                        'Plus Jakarta Sans',
-                                                                    letterSpacing:
-                                                                        0.0,
-                                                                  ),
-                                                            ).animateOnPageLoad(
-                                                                animationsMap[
-                                                                    'textOnPageLoadAnimation15']!),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                    Container(
-                                                      width: 60.0,
-                                                      height: 60.0,
-                                                      decoration: BoxDecoration(
-                                                        color: FlutterFlowTheme
-                                                                .of(context)
-                                                            .primaryBackground,
-                                                        shape: BoxShape.circle,
-                                                      ),
-                                                      alignment:
-                                                          const AlignmentDirectional(
-                                                              0.0, 0.0),
-                                                      child: Card(
-                                                        clipBehavior: Clip
-                                                            .antiAliasWithSaveLayer,
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .alternate,
-                                                        shape:
-                                                            RoundedRectangleBorder(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      40.0),
-                                                        ),
-                                                        child: Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(12.0),
-                                                          child: Icon(
-                                                            Icons.group,
-                                                            color: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .primaryText,
-                                                            size: 24.0,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ).animateOnPageLoad(
-                                                        animationsMap[
-                                                            'containerOnPageLoadAnimation11']!),
-                                                  ],
-                                                ),
-                                              ),
-                                              if (responsiveVisibility(
-                                                context: context,
-                                                tabletLandscape: false,
-                                                desktop: false,
-                                              ))
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsetsDirectional
-                                                          .fromSTEB(
-                                                          16.0, 0.0, 16.0, 0.0),
-                                                  child: LinearPercentIndicator(
-                                                    percent: 0.2,
-                                                    width: MediaQuery.sizeOf(
-                                                                context)
-                                                            .width *
-                                                        0.82,
-                                                    lineHeight: 16.0,
-                                                    animation: true,
-                                                    animateFromLastPercent:
-                                                        true,
-                                                    progressColor:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .primary,
-                                                    backgroundColor:
-                                                        const Color(0x4D91D0E8),
-                                                    barRadius:
-                                                        const Radius.circular(
-                                                            24.0),
-                                                    padding: EdgeInsets.zero,
-                                                  ),
-                                                ),
-                                              if (responsiveVisibility(
-                                                context: context,
-                                                phone: false,
-                                                tablet: false,
-                                              ))
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsetsDirectional
-                                                          .fromSTEB(
-                                                          16.0, 0.0, 16.0, 0.0),
-                                                  child: LinearPercentIndicator(
-                                                    percent: 0.2,
-                                                    width: MediaQuery.sizeOf(
-                                                                context)
-                                                            .width *
-                                                        0.3,
-                                                    lineHeight: 16.0,
-                                                    animation: true,
-                                                    animateFromLastPercent:
-                                                        true,
-                                                    progressColor:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .primary,
-                                                    backgroundColor:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .accent1,
-                                                    barRadius:
-                                                        const Radius.circular(
-                                                            24.0),
-                                                    padding: EdgeInsets.zero,
-                                                  ),
-                                                ),
-                                            ],
-                                          ),
-                                        ),
-                                      ).animateOnPageLoad(animationsMap[
-                                          'containerOnPageLoadAnimation10']!),
-                                    ),
-                                  ].divide(const SizedBox(width: 16.0)),
-                                ),
+                                    16.0, 12.0, 16.0, 0.0),
+                                // child: Container(
+                                //   width: double.infinity,
+                                //   decoration: BoxDecoration(
+                                //     color: FlutterFlowTheme.of(context)
+                                //         .secondaryBackground,
+                                //     boxShadow: const [
+                                //       BoxShadow(
+                                //         blurRadius: 4.0,
+                                //         color: Color(0x1F000000),
+                                //         offset: Offset(
+                                //           0.0,
+                                //           2.0,
+                                //         ),
+                                //       )
+                                //     ],
+                                //     borderRadius: BorderRadius.circular(8.0),
+                                //     border: Border.all(
+                                //       color: FlutterFlowTheme.of(context)
+                                //           .primaryBackground,
+                                //       width: 1.0,
+                                //     ),
+                                //   ),
+                                //   child: Padding(
+                                //     padding: const EdgeInsetsDirectional.fromSTEB(
+                                //         0.0, 0.0, 0.0, 12.0),
+                                //     child: Column(
+                                //       mainAxisSize: MainAxisSize.max,
+                                //       crossAxisAlignment:
+                                //           CrossAxisAlignment.center,
+                                //       children: [
+                                //         Padding(
+                                //           padding: const EdgeInsetsDirectional
+                                //               .fromSTEB(12.0, 8.0, 16.0, 4.0),
+                                //           child: Row(
+                                //             mainAxisSize: MainAxisSize.max,
+                                //             mainAxisAlignment:
+                                //                 MainAxisAlignment.spaceBetween,
+                                //             children: [
+                                //               Padding(
+                                //                 padding:
+                                //                     const EdgeInsetsDirectional
+                                //                         .fromSTEB(
+                                //                         4.0, 12.0, 12.0, 12.0),
+                                //                 child: Column(
+                                //                   mainAxisSize: MainAxisSize.max,
+                                //                   mainAxisAlignment:
+                                //                       MainAxisAlignment.center,
+                                //                   crossAxisAlignment:
+                                //                       CrossAxisAlignment.start,
+                                //                   children: [
+                                //                     Text(
+                                //                       FFLocalizations.of(context)
+                                //                           .getText(
+                                //                         'uj7jsxmo' /* Contract Activity */,
+                                //                       ),
+                                //                       style: FlutterFlowTheme.of(
+                                //                               context)
+                                //                           .titleLarge
+                                //                           .override(
+                                //                             fontFamily:
+                                //                                 'Plus Jakarta Sans',
+                                //                             letterSpacing: 0.0,
+                                //                           ),
+                                //                     ).animateOnPageLoad(animationsMap[
+                                //                         'textOnPageLoadAnimation16']!),
+                                //                     Padding(
+                                //                       padding:
+                                //                           const EdgeInsetsDirectional
+                                //                               .fromSTEB(
+                                //                               0.0, 4.0, 0.0, 0.0),
+                                //                       child: Text(
+                                //                         FFLocalizations.of(
+                                //                                 context)
+                                //                             .getText(
+                                //                           'hkk2zmjw' /* Below is an a summary of activ... */,
+                                //                         ),
+                                //                         style: FlutterFlowTheme
+                                //                                 .of(context)
+                                //                             .labelMedium
+                                //                             .override(
+                                //                               fontFamily:
+                                //                                   'Plus Jakarta Sans',
+                                //                               letterSpacing: 0.0,
+                                //                             ),
+                                //                       ).animateOnPageLoad(
+                                //                           animationsMap[
+                                //                               'textOnPageLoadAnimation17']!),
+                                //                     ),
+                                //                   ],
+                                //                 ),
+                                //               ),
+                                //               Container(
+                                //                 width: 60.0,
+                                //                 height: 60.0,
+                                //                 decoration: BoxDecoration(
+                                //                   color:
+                                //                       FlutterFlowTheme.of(context)
+                                //                           .primaryBackground,
+                                //                   shape: BoxShape.circle,
+                                //                 ),
+                                //                 alignment:
+                                //                     const AlignmentDirectional(
+                                //                         0.0, 0.0),
+                                //                 child: Card(
+                                //                   clipBehavior:
+                                //                       Clip.antiAliasWithSaveLayer,
+                                //                   color:
+                                //                       FlutterFlowTheme.of(context)
+                                //                           .alternate,
+                                //                   shape: RoundedRectangleBorder(
+                                //                     borderRadius:
+                                //                         BorderRadius.circular(
+                                //                             40.0),
+                                //                   ),
+                                //                   child: Padding(
+                                //                     padding: const EdgeInsets.all(
+                                //                         12.0),
+                                //                     child: Icon(
+                                //                       Icons.folder_open_outlined,
+                                //                       color: FlutterFlowTheme.of(
+                                //                               context)
+                                //                           .primaryText,
+                                //                       size: 24.0,
+                                //                     ),
+                                //                   ),
+                                //                 ),
+                                //               ).animateOnPageLoad(animationsMap[
+                                //                   'containerOnPageLoadAnimation13']!),
+                                //             ],
+                                //           ),
+                                //         ),
+                                //         if (responsiveVisibility(
+                                //           context: context,
+                                //           tabletLandscape: false,
+                                //           desktop: false,
+                                //         ))
+                                //           Padding(
+                                //             padding: const EdgeInsetsDirectional
+                                //                 .fromSTEB(16.0, 0.0, 16.0, 0.0),
+                                //             child: LinearPercentIndicator(
+                                //               percent: 0.5,
+                                //               width: MediaQuery.sizeOf(context)
+                                //                       .width *
+                                //                   0.82,
+                                //               lineHeight: 16.0,
+                                //               animation: true,
+                                //               animateFromLastPercent: true,
+                                //               progressColor:
+                                //                   FlutterFlowTheme.of(context)
+                                //                       .primary,
+                                //               backgroundColor:
+                                //                   FlutterFlowTheme.of(context)
+                                //                       .accent1,
+                                //               barRadius:
+                                //                   const Radius.circular(24.0),
+                                //               padding: EdgeInsets.zero,
+                                //             ),
+                                //           ),
+                                //         if (responsiveVisibility(
+                                //           context: context,
+                                //           phone: false,
+                                //           tablet: false,
+                                //         ))
+                                //           Padding(
+                                //             padding: const EdgeInsetsDirectional
+                                //                 .fromSTEB(16.0, 0.0, 16.0, 0.0),
+                                //             child: LinearPercentIndicator(
+                                //               percent: 0.5,
+                                //               width: MediaQuery.sizeOf(context)
+                                //                       .width *
+                                //                   0.3,
+                                //               lineHeight: 16.0,
+                                //               animation: true,
+                                //               animateFromLastPercent: true,
+                                //               progressColor:
+                                //                   FlutterFlowTheme.of(context)
+                                //                       .primary,
+                                //               backgroundColor:
+                                //                   const Color(0x4D91D0E8),
+                                //               barRadius:
+                                //                   const Radius.circular(24.0),
+                                //               padding: EdgeInsets.zero,
+                                //             ),
+                                //           ),
+                                //       ],
+                                //     ),
+                                //   ),
+                                // ).animateOnPageLoad(animationsMap[
+                                //     'containerOnPageLoadAnimation12']!),
                               ),
-                            ),
-                          if (responsiveVisibility(
-                            context: context,
-                            tabletLandscape: false,
-                            desktop: false,
-                          ))
-                            Padding(
-                              padding: const EdgeInsetsDirectional.fromSTEB(
-                                  16.0, 12.0, 16.0, 0.0),
-                              child: Container(
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  color: FlutterFlowTheme.of(context)
-                                      .secondaryBackground,
-                                  boxShadow: const [
-                                    BoxShadow(
-                                      blurRadius: 4.0,
-                                      color: Color(0x1F000000),
-                                      offset: Offset(
-                                        0.0,
-                                        2.0,
-                                      ),
-                                    )
-                                  ],
-                                  borderRadius: BorderRadius.circular(8.0),
-                                  border: Border.all(
-                                    color: FlutterFlowTheme.of(context)
-                                        .primaryBackground,
-                                    width: 1.0,
-                                  ),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsetsDirectional.fromSTEB(
-                                      0.0, 0.0, 0.0, 12.0),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.max,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsetsDirectional
-                                            .fromSTEB(12.0, 8.0, 16.0, 4.0),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.max,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsetsDirectional
-                                                      .fromSTEB(
-                                                      4.0, 12.0, 12.0, 12.0),
-                                              child: Column(
-                                                mainAxisSize: MainAxisSize.max,
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    FFLocalizations.of(context)
-                                                        .getText(
-                                                      'uj7jsxmo' /* Contract Activity */,
-                                                    ),
-                                                    style: FlutterFlowTheme.of(
-                                                            context)
-                                                        .titleLarge
-                                                        .override(
-                                                          fontFamily:
-                                                              'Plus Jakarta Sans',
-                                                          letterSpacing: 0.0,
-                                                        ),
-                                                  ).animateOnPageLoad(animationsMap[
-                                                      'textOnPageLoadAnimation16']!),
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsetsDirectional
-                                                            .fromSTEB(
-                                                            0.0, 4.0, 0.0, 0.0),
-                                                    child: Text(
-                                                      FFLocalizations.of(
-                                                              context)
-                                                          .getText(
-                                                        'hkk2zmjw' /* Below is an a summary of activ... */,
-                                                      ),
-                                                      style: FlutterFlowTheme
-                                                              .of(context)
-                                                          .labelMedium
-                                                          .override(
-                                                            fontFamily:
-                                                                'Plus Jakarta Sans',
-                                                            letterSpacing: 0.0,
-                                                          ),
-                                                    ).animateOnPageLoad(
-                                                        animationsMap[
-                                                            'textOnPageLoadAnimation17']!),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            Container(
-                                              width: 60.0,
-                                              height: 60.0,
-                                              decoration: BoxDecoration(
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primaryBackground,
-                                                shape: BoxShape.circle,
-                                              ),
-                                              alignment:
-                                                  const AlignmentDirectional(
-                                                      0.0, 0.0),
-                                              child: Card(
-                                                clipBehavior:
-                                                    Clip.antiAliasWithSaveLayer,
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .alternate,
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          40.0),
-                                                ),
-                                                child: Padding(
-                                                  padding: const EdgeInsets.all(
-                                                      12.0),
-                                                  child: Icon(
-                                                    Icons.folder_open_outlined,
-                                                    color: FlutterFlowTheme.of(
-                                                            context)
-                                                        .primaryText,
-                                                    size: 24.0,
-                                                  ),
-                                                ),
-                                              ),
-                                            ).animateOnPageLoad(animationsMap[
-                                                'containerOnPageLoadAnimation13']!),
-                                          ],
-                                        ),
-                                      ),
-                                      if (responsiveVisibility(
-                                        context: context,
-                                        tabletLandscape: false,
-                                        desktop: false,
-                                      ))
-                                        Padding(
-                                          padding: const EdgeInsetsDirectional
-                                              .fromSTEB(16.0, 0.0, 16.0, 0.0),
-                                          child: LinearPercentIndicator(
-                                            percent: 0.5,
-                                            width: MediaQuery.sizeOf(context)
-                                                    .width *
-                                                0.82,
-                                            lineHeight: 16.0,
-                                            animation: true,
-                                            animateFromLastPercent: true,
-                                            progressColor:
-                                                FlutterFlowTheme.of(context)
-                                                    .primary,
-                                            backgroundColor:
-                                                FlutterFlowTheme.of(context)
-                                                    .accent1,
-                                            barRadius:
-                                                const Radius.circular(24.0),
-                                            padding: EdgeInsets.zero,
-                                          ),
-                                        ),
-                                      if (responsiveVisibility(
-                                        context: context,
-                                        phone: false,
-                                        tablet: false,
-                                      ))
-                                        Padding(
-                                          padding: const EdgeInsetsDirectional
-                                              .fromSTEB(16.0, 0.0, 16.0, 0.0),
-                                          child: LinearPercentIndicator(
-                                            percent: 0.5,
-                                            width: MediaQuery.sizeOf(context)
-                                                    .width *
-                                                0.3,
-                                            lineHeight: 16.0,
-                                            animation: true,
-                                            animateFromLastPercent: true,
-                                            progressColor:
-                                                FlutterFlowTheme.of(context)
-                                                    .primary,
-                                            backgroundColor:
-                                                const Color(0x4D91D0E8),
-                                            barRadius:
-                                                const Radius.circular(24.0),
-                                            padding: EdgeInsets.zero,
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                              ).animateOnPageLoad(animationsMap[
-                                  'containerOnPageLoadAnimation12']!),
-                            ),
                           if (responsiveVisibility(
                             context: context,
                             tabletLandscape: false,
@@ -2504,195 +2472,195 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
                             Padding(
                               padding: const EdgeInsetsDirectional.fromSTEB(
                                   16.0, 12.0, 16.0, 16.0),
-                              child: Container(
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  color: FlutterFlowTheme.of(context)
-                                      .secondaryBackground,
-                                  boxShadow: const [
-                                    BoxShadow(
-                                      blurRadius: 4.0,
-                                      color: Color(0x1F000000),
-                                      offset: Offset(
-                                        0.0,
-                                        2.0,
-                                      ),
-                                    )
-                                  ],
-                                  borderRadius: BorderRadius.circular(8.0),
-                                  border: Border.all(
-                                    color: FlutterFlowTheme.of(context)
-                                        .primaryBackground,
-                                    width: 1.0,
-                                  ),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsetsDirectional.fromSTEB(
-                                      0.0, 0.0, 0.0, 12.0),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.max,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsetsDirectional
-                                            .fromSTEB(12.0, 8.0, 16.0, 4.0),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.max,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsetsDirectional
-                                                      .fromSTEB(
-                                                      4.0, 12.0, 12.0, 12.0),
-                                              child: Column(
-                                                mainAxisSize: MainAxisSize.max,
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    FFLocalizations.of(context)
-                                                        .getText(
-                                                      'jkgae0vc' /* Customer Activity */,
-                                                    ),
-                                                    style: FlutterFlowTheme.of(
-                                                            context)
-                                                        .titleLarge
-                                                        .override(
-                                                          fontFamily:
-                                                              'Plus Jakarta Sans',
-                                                          letterSpacing: 0.0,
-                                                        ),
-                                                  ).animateOnPageLoad(animationsMap[
-                                                      'textOnPageLoadAnimation18']!),
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsetsDirectional
-                                                            .fromSTEB(
-                                                            0.0, 4.0, 0.0, 0.0),
-                                                    child: Text(
-                                                      FFLocalizations.of(
-                                                              context)
-                                                          .getText(
-                                                        'g4os7kcp' /* Below is an a summary of activ... */,
-                                                      ),
-                                                      style: FlutterFlowTheme
-                                                              .of(context)
-                                                          .labelMedium
-                                                          .override(
-                                                            fontFamily:
-                                                                'Plus Jakarta Sans',
-                                                            letterSpacing: 0.0,
-                                                          ),
-                                                    ).animateOnPageLoad(
-                                                        animationsMap[
-                                                            'textOnPageLoadAnimation19']!),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            Container(
-                                              width: 60.0,
-                                              height: 60.0,
-                                              decoration: BoxDecoration(
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primaryBackground,
-                                                shape: BoxShape.circle,
-                                              ),
-                                              alignment:
-                                                  const AlignmentDirectional(
-                                                      0.0, 0.0),
-                                              child: Card(
-                                                clipBehavior:
-                                                    Clip.antiAliasWithSaveLayer,
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .alternate,
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          40.0),
-                                                ),
-                                                child: Padding(
-                                                  padding: const EdgeInsets.all(
-                                                      12.0),
-                                                  child: Icon(
-                                                    Icons.group,
-                                                    color: FlutterFlowTheme.of(
-                                                            context)
-                                                        .primaryText,
-                                                    size: 24.0,
-                                                  ),
-                                                ),
-                                              ),
-                                            ).animateOnPageLoad(animationsMap[
-                                                'containerOnPageLoadAnimation15']!),
-                                          ],
-                                        ),
-                                      ),
-                                      if (responsiveVisibility(
-                                        context: context,
-                                        tabletLandscape: false,
-                                        desktop: false,
-                                      ))
-                                        Padding(
-                                          padding: const EdgeInsetsDirectional
-                                              .fromSTEB(16.0, 0.0, 16.0, 0.0),
-                                          child: LinearPercentIndicator(
-                                            percent: 0.2,
-                                            width: MediaQuery.sizeOf(context)
-                                                    .width *
-                                                0.82,
-                                            lineHeight: 16.0,
-                                            animation: true,
-                                            animateFromLastPercent: true,
-                                            progressColor:
-                                                FlutterFlowTheme.of(context)
-                                                    .primary,
-                                            backgroundColor:
-                                                FlutterFlowTheme.of(context)
-                                                    .accent1,
-                                            barRadius:
-                                                const Radius.circular(24.0),
-                                            padding: EdgeInsets.zero,
-                                          ),
-                                        ),
-                                      if (responsiveVisibility(
-                                        context: context,
-                                        phone: false,
-                                        tablet: false,
-                                      ))
-                                        Padding(
-                                          padding: const EdgeInsetsDirectional
-                                              .fromSTEB(16.0, 0.0, 16.0, 0.0),
-                                          child: LinearPercentIndicator(
-                                            percent: 0.2,
-                                            width: MediaQuery.sizeOf(context)
-                                                    .width *
-                                                0.3,
-                                            lineHeight: 16.0,
-                                            animation: true,
-                                            animateFromLastPercent: true,
-                                            progressColor:
-                                                FlutterFlowTheme.of(context)
-                                                    .primary,
-                                            backgroundColor:
-                                                const Color(0x4D91D0E8),
-                                            barRadius:
-                                                const Radius.circular(24.0),
-                                            padding: EdgeInsets.zero,
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                              ).animateOnPageLoad(animationsMap[
-                                  'containerOnPageLoadAnimation14']!),
+                              // child: Container(
+                              //   width: double.infinity,
+                              //   decoration: BoxDecoration(
+                              //     color: FlutterFlowTheme.of(context)
+                              //         .secondaryBackground,
+                              //     boxShadow: const [
+                              //       BoxShadow(
+                              //         blurRadius: 4.0,
+                              //         color: Color(0x1F000000),
+                              //         offset: Offset(
+                              //           0.0,
+                              //           2.0,
+                              //         ),
+                              //       )
+                              //     ],
+                              //     borderRadius: BorderRadius.circular(8.0),
+                              //     border: Border.all(
+                              //       color: FlutterFlowTheme.of(context)
+                              //           .primaryBackground,
+                              //       width: 1.0,
+                              //     ),
+                              //   ),
+                              //   child: Padding(
+                              //     padding: const EdgeInsetsDirectional.fromSTEB(
+                              //         0.0, 0.0, 0.0, 12.0),
+                              //     child: Column(
+                              //       mainAxisSize: MainAxisSize.max,
+                              //       crossAxisAlignment:
+                              //           CrossAxisAlignment.center,
+                              //       children: [
+                              //         Padding(
+                              //           padding: const EdgeInsetsDirectional
+                              //               .fromSTEB(12.0, 8.0, 16.0, 4.0),
+                              //           child: Row(
+                              //             mainAxisSize: MainAxisSize.max,
+                              //             mainAxisAlignment:
+                              //                 MainAxisAlignment.spaceBetween,
+                              //             children: [
+                              //               Padding(
+                              //                 padding:
+                              //                     const EdgeInsetsDirectional
+                              //                         .fromSTEB(
+                              //                         4.0, 12.0, 12.0, 12.0),
+                              //                 child: Column(
+                              //                   mainAxisSize: MainAxisSize.max,
+                              //                   mainAxisAlignment:
+                              //                       MainAxisAlignment.center,
+                              //                   crossAxisAlignment:
+                              //                       CrossAxisAlignment.start,
+                              //                   children: [
+                              //                     Text(
+                              //                       FFLocalizations.of(context)
+                              //                           .getText(
+                              //                         'jkgae0vc' /* Customer Activity */,
+                              //                       ),
+                              //                       style: FlutterFlowTheme.of(
+                              //                               context)
+                              //                           .titleLarge
+                              //                           .override(
+                              //                             fontFamily:
+                              //                                 'Plus Jakarta Sans',
+                              //                             letterSpacing: 0.0,
+                              //                           ),
+                              //                     ).animateOnPageLoad(animationsMap[
+                              //                         'textOnPageLoadAnimation18']!),
+                              //                     Padding(
+                              //                       padding:
+                              //                           const EdgeInsetsDirectional
+                              //                               .fromSTEB(
+                              //                               0.0, 4.0, 0.0, 0.0),
+                              //                       child: Text(
+                              //                         FFLocalizations.of(
+                              //                                 context)
+                              //                             .getText(
+                              //                           'g4os7kcp' /* Below is an a summary of activ... */,
+                              //                         ),
+                              //                         style: FlutterFlowTheme
+                              //                                 .of(context)
+                              //                             .labelMedium
+                              //                             .override(
+                              //                               fontFamily:
+                              //                                   'Plus Jakarta Sans',
+                              //                               letterSpacing: 0.0,
+                              //                             ),
+                              //                       ).animateOnPageLoad(
+                              //                           animationsMap[
+                              //                               'textOnPageLoadAnimation19']!),
+                              //                     ),
+                              //                   ],
+                              //                 ),
+                              //               ),
+                              //               Container(
+                              //                 width: 60.0,
+                              //                 height: 60.0,
+                              //                 decoration: BoxDecoration(
+                              //                   color:
+                              //                       FlutterFlowTheme.of(context)
+                              //                           .primaryBackground,
+                              //                   shape: BoxShape.circle,
+                              //                 ),
+                              //                 alignment:
+                              //                     const AlignmentDirectional(
+                              //                         0.0, 0.0),
+                              //                 child: Card(
+                              //                   clipBehavior:
+                              //                       Clip.antiAliasWithSaveLayer,
+                              //                   color:
+                              //                       FlutterFlowTheme.of(context)
+                              //                           .alternate,
+                              //                   shape: RoundedRectangleBorder(
+                              //                     borderRadius:
+                              //                         BorderRadius.circular(
+                              //                             40.0),
+                              //                   ),
+                              //                   child: Padding(
+                              //                     padding: const EdgeInsets.all(
+                              //                         12.0),
+                              //                     child: Icon(
+                              //                       Icons.group,
+                              //                       color: FlutterFlowTheme.of(
+                              //                               context)
+                              //                           .primaryText,
+                              //                       size: 24.0,
+                              //                     ),
+                              //                   ),
+                              //                 ),
+                              //               ).animateOnPageLoad(animationsMap[
+                              //                   'containerOnPageLoadAnimation15']!),
+                              //             ],
+                              //           ),
+                              //         ),
+                              //         if (responsiveVisibility(
+                              //           context: context,
+                              //           tabletLandscape: false,
+                              //           desktop: false,
+                              //         ))
+                              //           Padding(
+                              //             padding: const EdgeInsetsDirectional
+                              //                 .fromSTEB(16.0, 0.0, 16.0, 0.0),
+                              //             child: LinearPercentIndicator(
+                              //               percent: 0.2,
+                              //               width: MediaQuery.sizeOf(context)
+                              //                       .width *
+                              //                   0.82,
+                              //               lineHeight: 16.0,
+                              //               animation: true,
+                              //               animateFromLastPercent: true,
+                              //               progressColor:
+                              //                   FlutterFlowTheme.of(context)
+                              //                       .primary,
+                              //               backgroundColor:
+                              //                   FlutterFlowTheme.of(context)
+                              //                       .accent1,
+                              //               barRadius:
+                              //                   const Radius.circular(24.0),
+                              //               padding: EdgeInsets.zero,
+                              //             ),
+                              //           ),
+                              //         if (responsiveVisibility(
+                              //           context: context,
+                              //           phone: false,
+                              //           tablet: false,
+                              //         ))
+                              //           Padding(
+                              //             padding: const EdgeInsetsDirectional
+                              //                 .fromSTEB(16.0, 0.0, 16.0, 0.0),
+                              //             child: LinearPercentIndicator(
+                              //               percent: 0.2,
+                              //               width: MediaQuery.sizeOf(context)
+                              //                       .width *
+                              //                   0.3,
+                              //               lineHeight: 16.0,
+                              //               animation: true,
+                              //               animateFromLastPercent: true,
+                              //               progressColor:
+                              //                   FlutterFlowTheme.of(context)
+                              //                       .primary,
+                              //               backgroundColor:
+                              //                   const Color(0x4D91D0E8),
+                              //               barRadius:
+                              //                   const Radius.circular(24.0),
+                              //               padding: EdgeInsets.zero,
+                              //             ),
+                              //           ),
+                              //       ],
+                              //     ),
+                              //   ),
+                              // ).animateOnPageLoad(animationsMap[
+                              //     'containerOnPageLoadAnimation14']!),
                             ),
                         ],
                       ),
@@ -2706,4 +2674,45 @@ class _MainHomeWidgetState extends State<MainHomeWidget>
       ),
     );
   }
+}
+
+// void _exibirInformacao(BuildContext context,
+//     {required String titulo, required double valor}) {
+//   showDialog(
+//     context: context,
+//     builder: (context) {
+//       return AlertDialog(
+//         title: Text(titulo),
+//         content: Text('Valor: R\$ ${valor.toStringAsFixed(2)}'),
+//         actions: [
+//           TextButton(
+//             onPressed: () {
+//               Navigator.of(context).pop();
+//             },
+//             child: const Text('OK'),
+//           ),
+//         ],
+//       );
+//     },
+//   );
+// }
+
+Widget _buildLegenda(String titulo, double valor, Color cor) {
+  return Row(
+    children: [
+      Container(
+        width: 10.0,
+        height: 10.0,
+        decoration: BoxDecoration(
+          color: cor,
+          shape: BoxShape.circle,
+        ),
+      ),
+      const SizedBox(width: 8.0),
+      Text(
+        '$titulo: R\$ ${valor.toStringAsFixed(2)}',
+        style: TextStyle(fontSize: 16.0, color: Colors.black),
+      ),
+    ],
+  );
 }
